@@ -1,0 +1,5 @@
+Release notes for Beans Binding (http://beansbinding.dev.java.net)
+
+0.5 Release (2007/03/23)
+------------------------
+Initial public release.
