@@ -1,45 +1,96 @@
 <html>
-<head>
-<title>Project Home Page</title>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-</head>
+  <head>
+    <title>Beans Binding (JSR 295)</title>
+  </head>
 
-<body bgcolor="#FFFFFF" text="#000000">
-<h1>Default project home page </h1>
-<p>Congratulations on your new java.net project! </p>
-<p>This page is the home page for your new project. This content is appearing 
-  because you have selected the option <b>Use project index.html</b>. To edit 
-  the information displayed on this page, just use CVS to check out your project's 
-  CVS repository and edit index.html in directory www. You can get more information 
-  on how to set-up your local CVS client, click on <b>Version Control</b> on the 
-  left nav bar. </p>
-<p>If you don't want to use CVS to manage your home page, click on the <b>Edit 
-  project</b> link on this page and unclick the option <b>Use project index.html</b>. 
-  Your project home page contents will be generated from the <b>Edit project</b> 
-  field <b>Description</b>. Edit the text on that field to change your home page 
-  contents. Click on <b>Submit changes</b> to save your edits. </p>
-<p>If you are looking for <a href="https://java-net.dev.java.net/ProjectPages.html#templates">sample 
-  home page templates</a>, check out the <a href="https://java-net.dev.java.net/ProjectPages.html">java.net 
-  Project Starter Kit</a>. Copy either of the templates into your project's html 
-  to get started on your project's home page. </p>
-<p>You can find lots of helpful information in the Starter Kit to get your project 
-  started. Some of the things you will find in there include:</p>
-<ul>
-  <li>Hints on how to <a href="https://java-net.dev.java.net/ProjectPages.html#pages">set-up 
-    your project's</a> home page</li>
-  <li>Ideas on how to <a href="https://java-net.dev.java.net/ProjectPages.html#publicity">publicize 
-    your project</a> including RSS feeds</li>
-  <li>Hints on <a href="https://java-net.dev.java.net/pagedesign.html">project 
-    page HTML</a></li>
-  <li>Setting up project <a href="https://java-net.dev.java.net/ProjectPages.html#wiki">wiki 
-    pages</a></li>
-  <li>And places to go if <a href="https://java-net.dev.java.net/ProjectPages.html#feedback">you 
-    have questions</a>.</li>
-</ul>
-<p>Remember that you will attract more new members and your project team will 
-  work more effectively if you, as the project owner, supply sufficient information 
-  about your project for visitors to your project space. Good luck with your new 
-  project! </p>
-</body>
+  <body>
+    <h1>
+      Beans Binding (JSR 295)
+    </h1>
+
+    <p>
+      In essence, Beans Binding (<a href="http://jcp.org/en/jsr/detail?id=295">JSR 295</a>)
+      is about keeping the properties of two beans in sync. This project provides the reference
+      implementation of Beans Binding, with an additional emphasis on the ability to bind to
+      Swing components, and easy integration with IDEs such as NetBeans.
+    </p>
+    <p>
+      In its current form, the Beans Binding work is targeted at version 5.0 of
+      the JDK. The goal is to pull successful portions into a future version
+      of the JDK.
+    </p>
+    <p>
+      The JSR 295 expert group launched this effort in late summer
+      2006. Although the JSR has not reached the "Early Draft" JCP review
+      stage, this early prototype is being made public to give interested
+      members of the community the opportunity to provide feedback. This
+      version is just a snapshot of the ongoing design process, and it's
+      likely to change substantially in the coming months.
+    </p>
+    <p>
+      The intended audience for this snapshot is members of the community
+      interested in binding, who want to see where we're headed and to
+      provide early feedback. So that's exactly what we're looking for at this
+      point; constructive feedback and bug reports are welcome.
+    </p>
+
+    <h3>A Note on EL</h3>
+
+    <p>
+    Bindings between beans are specified using the Expression Language (EL) syntax
+    from project Glassfish. As we required a handful of changes to EL in order to
+    support the needs of Beans Binding, the EL source has been included, with those
+    modifications, in this project. However, the eventual goal is to get these changes
+    back into the official EL (and hopefully EL into Java SE). We do not intend
+    to create a significant branch of EL with this project.
+    </p>
+
+    <h3>Downloads, Docs, and Feedback</h3>
+
+    <p>
+      For the time being, the quickest way to see this project in action is to check
+      out the examples and discussion on
+      <a href="http://weblogs.java.net/blog/zixle/">Scott Violet's blog</a>.
+      An proper introduction and examples on this project page are forthcoming.
+    </p>
+
+    <p>
+      The following downloads are available for this project in the project's
+      "Documents and Files" section:
+
+      <ul>
+        <li>Release Notes</li>
+        <li>Beans Binding JAR file</li>
+        <li>Beans Binding source ZIP, including NetBeans project files</li>
+        <li>Beans Binding JavaDoc ZIP</li>
+      </ul>
+    </p>
+
+    <p>
+      If you'd like to send feedback about the design, please
+      subscribe to the users mailing list and send your feedback there:
+      <a href="https://beansbinding.dev.java.net/servlets/ProjectMailingListList">
+	  https://beansbinding.dev.java.net/servlets/ProjectMailingListList
+      </a>
+      <br>
+      [The users email alias is the last one, all the way at the bottom.]
+    </p>
+
+
+    <h3>Presentations, Blogs, other Links</h3>
+
+    <ul>
+      <li>
+        <a href="http://www.jcp.org/en/jsr/detail?id=295">JSR 295</a> on JCP.org
+      </li>
+      <li>
+        <a href="http://weblogs.java.net/blog/zixle/">Scott Violet's blog</a> with discussion and examples
+      </li>
+      <li>
+        <a href="http://weblogs.java.net/blog/shan_man/">Shannon Hickey's blog</a> for upcoming discussion and examples
+      </li>
+    </ul>
+
+  </body>
 </html>
 
