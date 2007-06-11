@@ -204,6 +204,8 @@ public class Binding {
         VALID
     }
 
+    private Object ID;
+
     private List<BindingListener> bindingListeners;
     private Map<Parameter<?>, Object> properties;
 
@@ -242,8 +244,6 @@ public class Binding {
     private boolean completeTargetPath;
     private Object lastTarget;
 
-    
-    
     /**
      * Creates a {@code Binding}.
      */
@@ -269,9 +269,31 @@ public class Binding {
      * @throws IllegalArgumentException if {@code args} is odd
      */
     public Binding(String sourceExpression, String targetPath, Object...args) {
-        this(null, sourceExpression, null, targetPath, args);
+        this(null, null, sourceExpression, null, targetPath, args);
     }
-    
+
+    /**
+     * Creates a {@code Binding}. See 
+     * {@link javax.swing.binding.SwingBindingSupport} for examples.
+     *
+     * @param ID an ID for this binding
+     * @param sourceExpression El expression specifying the "property" of the source
+     * @param targetPath path to the property of the target
+     * @param args alternating set of key/value pairs where each even numbered
+     *             entry is of type {@code Parameter}, and the following
+     *             value is of a type specified by the {@code Parameter}
+     *
+     * @throws NullPointerException if one of the even entries in {@code args}
+     *         is {@code null}
+     * @throws ClassCastException if one of the even entries in {@code args} 
+     *         is not a {@code Parameter}, or one of the odd entries is not 
+     *         of a type identified by the preceeding {@code Parameter} entry
+     * @throws IllegalArgumentException if {@code args} is odd
+     */
+    public Binding(Object ID, String sourceExpression, String targetPath, Object...args) {
+        this(ID, null, sourceExpression, null, targetPath, args);
+    }
+
     /**
      * Creates a {@code Binding}. See 
      * {@link javax.swing.binding.SwingBindingSupport} for examples.
@@ -293,7 +315,34 @@ public class Binding {
      */
     public Binding(Object source, String sourceExpression, Object target,
                    String targetPath, Object...args) {
+        
+        this(null, source, sourceExpression, target, targetPath, args);
+    }
 
+    /**
+     * Creates a {@code Binding}. See 
+     * {@link javax.swing.binding.SwingBindingSupport} for examples.
+     *
+     * @param ID an ID for this binding
+     * @param source the source of the binding
+     * @param sourceExpression El expression specifying the "property" of the source
+     * @param target the target of the binding
+     * @param targetPath path to the property of the target
+     * @param args alternating set of key/value pairs; each even numbered
+     *             entry is of type {@code Parameter}, and the following
+     *             value is of a type specified by the {@code Parameter}
+     *
+     * @throws NullPointerException if one of the even entries in {@code args}
+     *         is {@code null}
+     * @throws ClassCastException if one of the even entries in {@code args} 
+     *         is not a {@code Parameter}, or one of the odd entries is not of a type
+     *         identified by the preceeding {@code Parameter} entry
+     * @throws IllegalArgumentException if {@code args} is odd
+     */
+    public Binding(Object ID, Object source, String sourceExpression, Object target,
+                   String targetPath, Object...args) {
+
+        setID(ID);
         setUpdateStrategy(updateStrategy.READ_WRITE);
         setSource(source);
         setSourceExpression(sourceExpression);
@@ -309,7 +358,31 @@ public class Binding {
             setValue(key, key.getValueClass().cast(value));
         }
     }
-    
+
+    /**
+     * Sets an ID for this binding. This is useful to fetch bindings by ID.
+     * May be {@code null} to indicate that the binding doesn't have an ID.
+     *
+     * @param ID an ID for this binding
+     * @throws IllegalStateException if bound, or if this binding belongs
+     *         to a BindingContext or a parent binding that already contains
+     *         a binding with this ID
+     */
+    public final void setID(Object ID) {
+        this.ID = ID;
+        // PENDING - check the context and/or parent for the same name.
+        // Question: can a binding have a parent AND a context?
+    }
+
+    /**
+     * Returns the binding's ID.
+     *
+     * @return the binding's ID, or {@code null}
+     */
+    public final Object getID() {
+        return ID;
+    }
+
     /**
      * Sets the source of the binding.
      *
