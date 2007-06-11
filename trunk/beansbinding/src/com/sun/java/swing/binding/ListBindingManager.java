@@ -236,7 +236,7 @@ abstract class ListBindingManager implements ObservableListListener {
         private ELPropertyResolver createPropertyResolver() {
             ELPropertyResolver resolver = getController().createResolver();
             if (binding != null) {
-                resolver.setPath(binding.getSourcePath());
+                resolver.setPath(binding.getSourceExpression());
             }
             return resolver;
         }

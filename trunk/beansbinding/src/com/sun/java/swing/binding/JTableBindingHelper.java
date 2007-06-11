@@ -291,7 +291,7 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
             if (d != null) {
                 Binding binding = d.getBinding();
                 if (binding != null) {
-                    String path = binding.getSourcePath();
+                    String path = binding.getSourceExpression();
                     if (path != null) {
                         String name = path;
                         if (path.startsWith("${")) {

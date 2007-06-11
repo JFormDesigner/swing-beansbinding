@@ -458,7 +458,7 @@ final class JTreeBindingHelper extends AbstractBindingHelper implements
             if (binding != null) {
                 resolver = controller.createResolver();
                 resolver.setSource(source);
-                resolver.setPath(binding.getSourcePath());
+                resolver.setPath(binding.getSourceExpression());
                 resolver.bind();
                 resolver.setDelegate(this);
                 valueChanged(resolver);
