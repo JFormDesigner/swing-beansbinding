@@ -53,32 +53,33 @@ import static javax.el.Expression.Result.Type.*;
  * {@code "manager.firstName"} is equivalent to
  * {@code getManager().getFirstName()}. Using EL for the source provides more
  * power than using simple reflection. You can reference multiple properties
- * using an expression ({@code "${lastName}, ${firstName}"} for example)
+ * using an expression (for example: {@code "${lastName}, ${firstName}"})
  * and even use functions. Please refer to the EL documentation for more
  * information.
  * <p>
  * The target of a binding uses simple dot-separation syntax to identify the path
  * to a property, and is resolved using reflection. To resolve the target property,
- * {@code Binding} makes use of {@code PropertyResolver}. Refer to the
- * {@code PropertyResolver} documentation for more information on the syntax.
+ * {@code Binding} makes use of {@code PropertyResolver}. Refer to its
+ * documentation for more information on the syntax.
  * <p>
- * Often it is not possible to fully evaluate a path specified in the source or
- * target; this is referred to as an incomplete path. For example, when
+ * Often it is not possible to fully evaluate a path to a property; this is
+ * referred to as an incomplete path. For example, when
  * evaluating the path {@code "manager.firstName"}, if {@code source.getManager()}
- * returns null (and therefore the "firstName" property can't be reached), then
+ * returns null (and therefore its "firstName" property can't be reached), then
  * that path is incomplete. {@code Binding} provides for this by way of the
  * {@code setValueForIncompleteSourcePath} and
  * {@code setValueForIncompleteTargetPath} methods that allow you to specify the
  * value to use when an incomplete path is encountered.
  * <p>
- * If a property changes such that a source expression or target contain an
+ * If a property changes such that a source expression or target path contain an
  * incomplete path, and the corresponding value for the incomplete path property
  * is {@code non-null}, then that value is applied to the opposite object's property.
  * Otherwise the opposite property is not updated. For example, if the source
  * expression contains the path {@code "manager.firstName"}, the target path is
  * {@code "text"}, and the {@code "manager"} property of the source becomes
  * {@code null}, then if {@code getValueForIncompleteSourcePath} is {@code non-null},
- * it is set on the target. Otherwise the target is not updated.
+ * that value is set as the target's {@code "text"} property.
+ * Otherwise the target is not updated.
  * <p>
  * To keep the properties of the two objects in sync, listeners are installed on
  * all objects along the paths. Any time an object along a path changes, the
