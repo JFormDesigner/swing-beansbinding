@@ -19,45 +19,86 @@ import javax.el.Expression;
 import static javax.el.Expression.Result.Type.*;
 
 /**
- * {@code Binding} represents a binding between two properties of two
- * objects. Once bound, the two properties of the two objects are
- * kept in sync.
+ * {@code Binding} represents a binding between one or more properties of a
+ * source object and a single property of a target object. Once bound, a binding
+ * keeps those properties in sync as specified by the binding's update strategy.
  * <p>
  * The following example illustrates binding the {@code "name"} property
  * of a {@code Customer} to the {@code "text"} property of a {@code JTextField}:
  * <pre>
- *   class Customer {
- *     public void setName(String text);
- *     public String getName();
- *   }
- *   JTextField textField = ...;
- *   Customer customer = ...;
- *   new Binding(customer, "${name}", textField, "text").bind();
+ * class Customer {
+ *     private String name;
+ *
+ *     public Customer(String name) { this.name = name; }
+ *
+ *     public String getName() { return name; }
+ *
+ *     public void setName(String name) {
+ *         String old = this.name;
+ *         this.name = name;
+ *         firePropertyChange("name", old, name);
+ *     }
+ * }
+ *
+ * Customer customer = new Customer("Duke");
+ * JTextField nameField = new JTextField();
+ * Binding customerBinding = new Binding(customer, "${name}", nameField, "text");
+ * customerBinding.bind();
  * </pre>
  * <p>
- * The properties of the two objects are identified as a dot separated list of 
- * property names resolved using reflection. For example, the path 
- * {@code "manager.firstName"} is equivalent to 
- * {@code target.getManager().getFirstName()}.
- * {@code Binding} makes use of {@code PropertyResolver} to resolve
- * the value for a property; refer to it for information on the path syntax.
+ * Notice that the binding's source string is prefixed with '$' and is wrapped in
+ * curly brackets; the source of a binding is specified using the EL expression
+ * language syntax, and is resolved using EL. Dot-separation is used to identify
+ * the path to a property through multiple levels. For example,
+ * {@code "manager.firstName"} is equivalent to
+ * {@code getManager().getFirstName()}. Using EL for the source provides more
+ * power than using simple reflection. You can reference multiple properties
+ * using an expression ({@code "${lastName}, ${firstName}"} for example)
+ * and even use functions. Please refer to the EL documentation for more
+ * information.
  * <p>
- * To keep the two properties of the two objects in sync, listeners are
- * installed on all objects along the paths. Any time an object along the path
- * changes, the other object is updated. For example, if the source path is
- * "manager.firstName", and either the "manager" or "firstName" property 
- * changes, the the target property is updated. There is one exception to
- * this; when initially bound if the target path is incomplete, changes in the
- * target path only update the source if {@code getValueForIncompleteTargetPath}
- * returns {@code non-null}, otherwise, once the target path becomes complete
- * it's value is reset from that of the source.
+ * The target of a binding uses simple dot-separation syntax to identify the path
+ * to a property, and is resolved using reflection. To resolve the target property,
+ * {@code Binding} makes use of {@code PropertyResolver}. Refer to the
+ * {@code PropertyResolver} documentation for more information on the syntax.
  * <p>
- * Data flowing from the source to the target, and from target to
- * source, are passed to a {@code BindingConverter}. A {@code
- * BindingConverter} is used to convert the value in some way. For
- * example, you might bind the background color of a {@code JTextField} to a
- * string property with a {@code BindingConverter} that can convert the
- * {@code String} to a {@code Color}.
+ * Often it is not possible to fully evaluate a path specified in the source or
+ * target; this is referred to as an incomplete path. For example, when
+ * evaluating the path {@code "manager.firstName"}, if {@code source.getManager()}
+ * returns null (and therefore the "firstName" property can't be reached), then
+ * that path is incomplete. {@code Binding} provides for this by way of the
+ * {@code setValueForIncompleteSourcePath} and
+ * {@code setValueForIncompleteTargetPath} methods that allow you to specify the
+ * value to use when an incomplete path is encountered.
+ * <p>
+ * If a property changes such that a source expression or target contain an
+ * incomplete path, and the corresponding value for the incomplete path property
+ * is {@code non-null}, then that value is applied to the opposite object's property.
+ * Otherwise the opposite property is not updated. For example, if the source
+ * expression contains the path {@code "manager.firstName"}, the target path is
+ * {@code "text"}, and the {@code "manager"} property of the source becomes
+ * {@code null}, then if {@code getValueForIncompleteSourcePath} is {@code non-null},
+ * it is set on the target. Otherwise the target is not updated.
+ * <p>
+ * To keep the properties of the two objects in sync, listeners are installed on
+ * all objects along the paths. Any time an object along a path changes, the
+ * opposite property is updated, if appropriate. For example, if the source
+ * expression contains the path {@code "${manager.firstName}"},
+ * and either the {@code "manager"} or
+ * {@code "firstName"} property of the source object changes, then the target
+ * property is updated. There is one exception to this: when initially bound,
+ * if the target path is incomplete, then changes in the target path only update
+ * the source if {@code getValueForIncompleteTargetPath} returns {@code non-null}.
+ * Otherwise, once the target path becomes complete its value is reset from that
+ * of the source.
+ * <p>
+ * Data flowing from the source to the target, and from the target to the
+ * source, may pass through a {@code BindingConverter}, which is used to convert
+ * the data in some way; typically between types. For
+ * example, you may want to bind the background color of a component to a string
+ * property, and set a {@code BindingConverter} that can convert between
+ * {@code String} and {@code Color}. {@code Binding} automatically converts
+ * between some of the known types if no converter is specified.
  * <p>
  * If a {@code BindingValidator} is specified, all changes from the
  * target are passed to the {@code BindingValidator}. The {@code
@@ -65,36 +106,25 @@ import static javax.el.Expression.Result.Type.*;
  * well as for specifying if the change should be propagated back to
  * the source.
  * <p>
- * A {@code Binding} also specifies an update strategy for
- * the binding. The update strategy dictates how the
- * source and target properties are kept in sync.
+ * Bindings need not automatically be two-way: {@code Binding} allows for an
+ * update strategy to be specified for the binding, which dictates how the
+ * source and target properties are kept in sync. A typical use case is to have
+ * a set of one-way bindings from source to target where the target values are
+ * validated as a set before explicitly committing the values back to the source.
  * <p>
- * The source and target are typically {@code non-null} values. An
- * exception to this is for children bindings, in which case the parent
- * binding supplies the two endpoints.
+ * The source and target of a binding are typically {@code non-null} values,
+ * since the binding needs objects on which to operate. An exception to this
+ * is for children bindings, in which case the parent binding supplies the two
+ * endpoints.
  * <p>
- * Once a {@code Binding} is bound it can not be
- * mutated. All setter methods of this class throw an {@code
- * IllegalStateException} if invoked on a bound {@code Binding}.
- * <p>
- * Often times it is not possible to evaluate the path of the source
- * or target; this is referred to as an incomplete path. For example, 
- * if {@code source.getManager()} returns {@code null} when evaluating the
- * path {@code "manager.firstName"}, then the path is incomplete.
- * {@code Binding} provides the {@code setValueForIncompleteSourcePath} and
- * {@code setValueForIncompleteTargetPath} methods that allow you to specify the
- * value to use when the source or target path is incomplete. If a property
- * along the source or target path changes, and the corresponding value for
- * incomplete path property is {@code non-null}, then it is applied to the
- * opposite object, otherwise the opposite property is not updated. For example,
- * if the source path is "manager.firstName", the target path is "text", and
- * the "manager" property of the source is initially {@code null}, then if
- * {@code setValueForIncompleteSourcePath} is {@code non-null}, it is set on
- * the target, otherwise the target is not updated.
+ * While a {@code Binding} is bound, it can not be mutated. All setter methods
+ * of this class throw an {@code IllegalStateException} if invoked on a bound
+ * {@code Binding}.
  *
  * @see javax.swing.binding.SwingBindingSupport
  *
- * @author sky
+ * @author Scott Violet
+ * @author Shannon Hickey
  */
 public class Binding {
     //
@@ -420,8 +450,8 @@ public class Binding {
     }
     
     /**
-     * Sets the value to use if the source path can not be completely
-     * evaluated.
+     * Sets the value to use if the source contains a path that can not be
+     * completely evaluated.
      *
      * @param value the value
      */
@@ -431,8 +461,8 @@ public class Binding {
     }
     
     /**
-     * Returns the value to use if the source path can not be completely
-     * evaluated.
+     * Returns the value to use if the source contains a path that can not be
+     * completely evaluated.
      *
      * @return the value
      */
