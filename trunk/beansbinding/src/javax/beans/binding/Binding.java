@@ -139,70 +139,71 @@ public class Binding {
     //
 
     /**
-     * Enumeration of the possible ways the source and target properties
-     * can be kept in sync.
+     * Enumeration of the possible ways that the source and target can be kept
+     * in sync.
      */
     public enum UpdateStrategy {
         /**
-         * Enumeration value indicating the target property should be kept in
-         * sync with the source. Changes to the target property are not
-         * propaged to the source.
+         * Enumeration value indicating that the target should be kept in sync
+         * with the source. Changes to the target are not propaged back to the
+         * source. A one-way binding.
          */
         READ_FROM_SOURCE,
         
         /**
-         * Enumeration value indicating the target property should only be
-         * set from the source value once, when the {@code Binding} is created.
+         * Enumeration value indicating that the target should only be set from
+         * the source value once, when the {@code Binding} is created.
          * Subsequent changes to the source or target are not propagated to
-         * the target or source.
+         * the other.
          */
         READ_ONCE,
         
         /**
-         * Enumeration value indicating the source and target property should
-         * be kept in sync at all times. This is the default update strategy
+         * Enumeration value indicating that the source and target should be
+         * kept in sync at all times. This is the default update strategy
          * for {@code Binding}.
          */
         READ_WRITE
     }
 
     /**
-     * Enumeration of the possible states the source and target may be in.
+     * Enumeration of the possible states that the source and target may be in.
      */
     public enum ValueState {
         /**
-         * Enumeration value indicating not all elements of the path are
-         * reachable. For example, if the source path is {@code
-         * "manager.firstName"} and manager property is {@code null}, then the
-         * {@code "firstName"} property can not be evaluated and the
-         * source state is set to {@code INCOMPLETE_PATH}.
+         * Enumeration value indicating that the expression/path contains
+         * elements that are not fully reachable. For example, if the source
+         * expression contains {@code "manager.firstName"} and the {@code "manager"}
+         * property is {@code null}, then the {@code "firstName"} property can
+         * not be evaluated, and the source state is set to
+         * {@code INCOMPLETE_PATH}.
          */
         INCOMPLETE_PATH,
         
         /**
-         * Enumeration value indicating the value has not been
-         * committed to the the other object. For example, if the
+         * Enumeration value indicating that the value has not been
+         * committed to the the opposite end. For example, if the
          * update strategy is {@code READ_ONCE} and the source value
          * changes, then the source value state is set to {@code UNCOMMITTED}.
          */
         UNCOMMITTED,
         
         /**
-         * Enumeration value indicating the value is invalid. This
+         * Enumeration value indicating that the value is invalid. This
          * occurs if the {@code BindingValidator} indicates an invalid
          * value should be left in the target, or if the {@code BindingConverter}
-         * throws a {@code ClassCastException} or 
-         * {@code IllegalArgumentException} on conversion.
+         * throws a {@code ClassCastException} or {@code IllegalArgumentException}
+         * on conversion.
          */
         INVALID,
         
         /**
-         * Enumeration value indicating the value is valid and in sync with
+         * Enumeration value indicating that the value is valid and in sync with
          * the other object.
          */
         VALID
     }
-    
+
     private List<BindingListener> bindingListeners;
     private Map<Parameter<?>, Object> properties;
 
