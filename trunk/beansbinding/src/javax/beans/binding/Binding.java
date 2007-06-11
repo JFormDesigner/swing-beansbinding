@@ -46,7 +46,7 @@ import static javax.el.Expression.Result.Type.*;
  * customerBinding.bind();
  * </pre>
  * <p>
- * Notice that the binding's source string is prefixed with '$' and is wrapped in
+ * Notice that this binding's source string is prefixed with '$' and is wrapped in
  * curly brackets; the source of a binding is specified using the EL expression
  * language syntax, and is resolved using EL. Dot-separation is used to identify
  * the path to a property through multiple levels. For example,
