@@ -208,7 +208,7 @@ public class Binding {
     private Map<Parameter<?>, Object> properties;
 
     private Object source;
-    private String sourcePath;
+    private String sourceExpression;
     private Object target;
     private String targetPath;
     private Object tmpSource;
@@ -255,10 +255,10 @@ public class Binding {
      * Creates a {@code Binding}. See 
      * {@link javax.swing.binding.SwingBindingSupport} for examples.
      *
-     * @param sourcePath path to the property of the source
+     * @param sourceExpression El expression specifying the "property" of the source
      * @param targetPath path to the property of the target
      * @param args alternating set of key/value pairs where each even numbered
-     *             entry is of type {@code Paramater}, and the following
+     *             entry is of type {@code Parameter}, and the following
      *             value is of a type specified by the {@code Parameter}
      *
      * @throws NullPointerException if one of the even entries in {@code args}
@@ -268,9 +268,8 @@ public class Binding {
      *         of a type identified by the preceeding {@code Parameter} entry
      * @throws IllegalArgumentException if {@code args} is odd
      */
-    public Binding(String sourcePath, String targetPath,
-            Object...args) {
-        this(null, sourcePath, null, targetPath, args);
+    public Binding(String sourceExpression, String targetPath, Object...args) {
+        this(null, sourceExpression, null, targetPath, args);
     }
     
     /**
@@ -278,9 +277,9 @@ public class Binding {
      * {@link javax.swing.binding.SwingBindingSupport} for examples.
      *
      * @param source the source of the binding
-     * @param sourcePath path to the property of the source
+     * @param sourceExpression El expression specifying the "property" of the source
      * @param target the target of the binding
-     * @param targetPath path to the paroperty of the target
+     * @param targetPath path to the property of the target
      * @param args alternating set of key/value pairs; each even numbered
      *             entry is of type {@code Parameter}, and the following
      *             value is of a type specified by the {@code Parameter}
@@ -292,11 +291,12 @@ public class Binding {
      *         identified by the preceeding {@code Parameter} entry
      * @throws IllegalArgumentException if {@code args} is odd
      */
-    public Binding(Object source, String sourcePath, Object target,
-            String targetPath, Object...args) {
+    public Binding(Object source, String sourceExpression, Object target,
+                   String targetPath, Object...args) {
+
         setUpdateStrategy(updateStrategy.READ_WRITE);
         setSource(source);
-        setSourcePath(sourcePath);
+        setSourceExpression(sourceExpression);
         setTarget(target);
         setTargetPath(targetPath);
         if (args.length % 2 != 0) {
@@ -335,23 +335,25 @@ public class Binding {
     }
     
     /**
-     * Sets the path to the property of the source to bind to.
+     * Sets the El expression indicating the "property" to bind to
+     * with respect to the source object.
      *
-     * @param path path to the property of the source to bind to
+     * @param expression EL expression specifying the source "property"
      * @throws IllegalStateException if bound
      */
-    public final void setSourcePath(String path) {
+    public final void setSourceExpression(String expression) {
         throwIfBound();
-        this.sourcePath = path;
+        this.sourceExpression = expression;
     }
     
     /**
-     * Returns the path to the property of the source to bind to.
+     * Returns the EL expression indicating the "property" to bind to
+     * with respect to the source object.
      *
-     * @return the path to the property of the source to bind to
+     * @return EL expression specifying the source "property"
      */
-    public final String getSourcePath() {
-        return sourcePath;
+    public final String getSourceExpression() {
+        return sourceExpression;
     }
     
     /**
@@ -494,11 +496,11 @@ public class Binding {
     }
     
     /**
-     * Sets the value to use if the value of the property of the source is
+     * Sets the value to use if the source "property" value evaluates to
      * {@code null}.
      *
-     * @param value the value to use if the value of the property of the
-     *        source is {@code null}
+     * @param value the value to use if the source "property" value
+     *        is {@code null}
      * @throws IllegalStateException if bound
      */
     public final void setNullSourceValue(Object value) {
@@ -507,11 +509,10 @@ public class Binding {
     }
     
     /**
-     * Returns the value to use if the value of the property of the source is
+     * Returns the value to use if the source "property" value evaluates to
      * {@code null}.
      *
-     * @return the value to use if the value of the property of the
-     *        source is {@code null}
+     * @return the value to use if the source "property" value is {@code null}
      */
     public final Object getNullSourceValue() {
         return nullSourceValue;
@@ -772,7 +773,7 @@ public class Binding {
         
         // Create PropertyResolvers for source and target
         sourceResolver = new ELPropertyResolver(getELContext(), 
-                getSource0(), getSourcePath());
+                getSource0(), getSourceExpression());
         sourceResolver.bind();
         if (sourceResolver.getEvaluationResultType() == INCOMPLETE_PATH) {
             sourceValueState = ValueState.INCOMPLETE_PATH;
@@ -1332,8 +1333,8 @@ public class Binding {
     /**
      * Creates and adds a {@code Binding} as a child of this {@code Binding}.
      *
-     * @param sourcePath path to the property of the source
-     * @param targetPath path to the paroperty of the target
+     * @param sourceExpression El expression specifying the "property" of the source
+     * @param targetPath path to the property of the target
      * @param args alternating set of key/value pairs where each even numbered
      *             entry is of type {@code Parameter}, and the following
      *             value is of a type specified by the {@code Parameter}
@@ -1343,9 +1344,10 @@ public class Binding {
      *         {@code Parameter}, or one of the odd entries is not of a type
      *         identified by the preceeding {@code Parameter} entry
      */
-    public final Binding addBinding(String sourcePath, String targetPath,
-            Object...args) {
-        Binding binding = new Binding(sourcePath, targetPath, args);
+    public final Binding addBinding(String sourceExpression, String targetPath,
+                                    Object...args) {
+
+        Binding binding = new Binding(sourceExpression, targetPath, args);
         addBinding(binding);
         return binding;
     }
@@ -1524,7 +1526,7 @@ public class Binding {
      */
     private String paramString() {
         return "source=" + getSource() +
-                ", sourcePath=" + getSourcePath() +
+                ", sourceExpression=" + getSourceExpression() +
                 ", target=" + getTarget() +
                 ", targetPath=" + getTargetPath0() +
                 ", bound=" + isBound() +

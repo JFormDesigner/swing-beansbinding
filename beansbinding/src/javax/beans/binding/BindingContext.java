@@ -41,7 +41,7 @@ import javax.el.VariableMapper;
  * binding it:
  * <pre>
  *   BindingContext context = new BindingContext();
- *   context.addBinding(source, "${sourcePath}", target, "targetPath");
+ *   context.addBinding(source, "${sourceExpression}", target, "targetPath");
  *   context.bind();
  * </pre>
  * {@code BindingContext} provides methods for tracking the state of the
@@ -175,7 +175,7 @@ public class BindingContext {
      * Creates and adds {@code Binding} to this {@code BindingContext}.
      *
      * @param source the source of the binding
-     * @param sourcePath path to the property of the source
+     * @param sourceExpression El expression specifying the "property" of the source
      * @param target the target of the binding
      * @param targetPath path to the paroperty of the target
      * @param args alternating set of key/value pairs; each even numbered
@@ -190,9 +190,10 @@ public class BindingContext {
      * @throws IllegalArgumentException if {@code args} is odd
      */
     public Binding addBinding(
-            Object source, String sourcePath, Object target, String targetPath,
+            Object source, String sourceExpression, Object target, String targetPath,
             Object...args) {
-        Binding binding = new Binding(source, sourcePath, target, targetPath, args);
+
+        Binding binding = new Binding(source, sourceExpression, target, targetPath, args);
         addBinding(binding);
         return binding;
     }
