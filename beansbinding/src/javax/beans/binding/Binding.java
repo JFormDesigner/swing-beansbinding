@@ -207,7 +207,7 @@ public class Binding {
     private String name;
 
     private List<BindingListener> bindingListeners;
-    private Map<Class<? extends Parameter>, Parameter<?>> parameters;
+    private Map<Parameter<?>, Object> parameters;
 
     private Object source;
     private String sourceExpression;
@@ -638,15 +638,15 @@ public class Binding {
         throwIfBound();
 
         if (value == null) {
-            if (properties != null) {
-                properties.remove(key);
+            if (parameters != null) {
+                parameters.remove(key);
             }
         } else {
             key.getValueClass().cast(value);
-            if (properties == null) {
-                properties = new HashMap<Parameter<?>,Object>(1);
+            if (parameters == null) {
+                parameters = new HashMap<Parameter<?>,Object>(1);
             }
-            properties.put(key, value);
+            parameters.put(key, value);
         }
     }
 
@@ -662,10 +662,10 @@ public class Binding {
      */
     public final <T> T getValue(Parameter<T> key, T defaultValue) {
         Class<T> valueType = key.getValueClass();
-        if (properties == null) {
+        if (parameters == null) {
             return defaultValue;
         }
-        Object value = properties.get(key);
+        Object value = parameters.get(key);
         if (value == null) {
             return defaultValue;
         }
