@@ -28,8 +28,8 @@ import javax.swing.JSlider;
  * it should not disable if the source path is incomplete:
  *
  * <pre>
- *   Binding binding = new Binding(source, "sourcePath", jCheckBox, "selected",
- *       SwingBindingSupport.DisableOnIncompletePathParameter, false);
+ *   Binding binding = new Binding(source, "sourcePath", jCheckBox, "selected");
+ *   binding.setParameter(SwingBindingSupport.DisableOnIncompletePathParameter.FALSE);
  * </pre>
  *
  * <h3><a name="JComboBoxBinding"></a>JComboBox</h3>
@@ -70,10 +70,10 @@ import javax.swing.JSlider;
  * <pre>
  *   List<BugTypes> bugTypes;
  *   // Create the binding specifying the 
- *   Binding binding = new Binding(bugTypes, null, jComboBox, "elements",
+ *   Binding binding = new Binding(bugTypes, null, jComboBox, "elements");
  *   // Specify that the "selectedElementProperty" corresponds to
  *   // selectedObject.id.
- *           SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, "${id}");
+ *   binding.setParameter(new SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter("${id}"));
  *
  *   // Bind to the selection
  *   binding = new Binding(source, "id", jComboBox, "selectedElementProperty");
@@ -136,11 +136,11 @@ import javax.swing.JSlider;
  *   // Create the binding for the List.
  *   Binding binding = new Binding(customers, null, jTable, "elements");
  *   // Specify the first column should use the "firstName" property
- *   binding.addBinding("firstName", null, 
- *                      SwingBindingSupport.TableColumnParameter, 0);
+ *   binding.addBinding("firstName", null).setParameter(
+ *                      new SwingBindingSupport.TableColumnParameter(0));
  *   // Specify the second column should use the "lastName" property
- *   binding.addBinding("lastName", null, 
- *                      SwingBindingSupport.TableColumnParameter, 1);
+ *   binding.addBinding("lastName", null).setParameter(
+ *                      new SwingBindingSupport.TableColumnParameter(1));
  * </pre>
  *
  * <h3>JTextComponent</h3>
@@ -153,8 +153,8 @@ import javax.swing.JSlider;
  * {@code Document} of the {@code JTextComponent} changes.
  *
  * <pre>
- *   Binding binding = new Binding(source, "sourcePath", jTextField, "text",
- *           SwingBindingSupport.TextChangeStrategyParameter, CHANGE_ON_TYPE);
+ *   Binding binding = new Binding(source, "sourcePath", jTextField, "text");
+ *   binding.setParameter(SwingBindingSupport.TextChangeStrategyParameter.CHANGE_ON_TYPE);
  * </pre>
  *
  * <h3>JTree</h3>
@@ -173,8 +173,8 @@ import javax.swing.JSlider;
  *   Binding binding = new Binding(root, null, jTree, "root");
  *   // For all nodes of type Manager, use the 'reports' property to find
  *   // their children.
- *   binding.addBinding("reports", null,
- *           SwingBindingSupport.TreeNodeClassParameter, Manager.class);
+ *   binding.addBinding("reports", null).setParameter(
+ *           new SwingBindingSupport.TreeNodeClassParameter(Manager.class));
  * </pre>
  * @author sky
  */
@@ -209,7 +209,7 @@ public final class SwingBindingSupport {
      * text components should change. If not specified, the default value is
      *{@code CHANGE_ON_ACTION_OR_FOCUS_LOST}.
      *
-     * @see javax.beans.binding.Binding#setValue(Binding.Parameter,Object)
+     * @see javax.beans.binding.Binding#setParameter
      */
     public static final class TextChangeStrategyParameter extends Parameter<TextChangeStrategy> {
         public TextChangeStrategyParameter(TextChangeStrategy value) {
@@ -249,10 +249,10 @@ public final class SwingBindingSupport {
             super("DisableOnIncompletePath", value);
         }
         
-        /** {@code DisableOnIncompletePathParameter} with value of {@code TRUE} */
+        /** {@code DisableOnIncompletePathParameter} with value of {@code Boolean.TRUE} */
         public static final DisableOnIncompletePathParameter TRUE = new DisableOnIncompletePathParameter(Boolean.TRUE);
 
-        /** {@code DisableOnIncompletePathParameter} with value of {@code TRUE} */
+        /** {@code DisableOnIncompletePathParameter} with value of {@code Boolean.FALSE} */
         public static final DisableOnIncompletePathParameter FALSE = new DisableOnIncompletePathParameter(Boolean.FALSE);
     }
 
@@ -275,7 +275,7 @@ public final class SwingBindingSupport {
      * This is used on child bindings where the target is a {@code JTable}.
      * If not specified, the column class is treated as {@code Object.class}.
      *
-     * @see javax.beans.binding.Binding#setValue(Binding.Parameter,Object)
+     * @see javax.beans.binding.Binding#setParameter
      */
     public static final class TableColumnClassParameter extends Parameter<Class<?>> {
         public TableColumnClassParameter(Class<?> value) {
@@ -294,17 +294,17 @@ public final class SwingBindingSupport {
      * A {@code Binding.Parameter} used to specify whether a node with no children
      * is treated as a leaf. The default is {@code false}.
      *
-     * @see javax.beans.binding.Binding#setValue(Binding.Parameter,Object)
+     * @see javax.beans.binding.Binding#setParameter
      */
     public static final class EmptyNodeTreatedAsLeafParameter extends Parameter<Boolean> {
         public EmptyNodeTreatedAsLeafParameter(Boolean value) {
             super("EmptyNodeTreatedAsLeaf", value);
         }
         
-        /** {@code EmptyNodeTreatedAsLeafParameter} with value of {@code TRUE} */
+        /** {@code EmptyNodeTreatedAsLeafParameter} with value of {@code Boolean.TRUE} */
         public static final EmptyNodeTreatedAsLeafParameter TRUE = new EmptyNodeTreatedAsLeafParameter(Boolean.TRUE);
 
-        /** {@code EmptyNodeTreatedAsLeafParameter} with value of {@code TRUE} */
+        /** {@code EmptyNodeTreatedAsLeafParameter} with value of {@code Boolean.FALSE} */
         public static final EmptyNodeTreatedAsLeafParameter FALSE = new EmptyNodeTreatedAsLeafParameter(Boolean.FALSE);
     }
 
@@ -313,7 +313,7 @@ public final class SwingBindingSupport {
      * applies to. If not specified, an {@code IllegalArgumentException} is
      * thrown when bound.
      *
-     * @see javax.beans.binding.Binding#setValue(Binding.Parameter,Object)
+     * @see javax.beans.binding.Binding#setParameter
      */
     public static final class TreeNodeClassParameter extends Parameter<Class<?>> {
         public TreeNodeClassParameter(Class<?> value) {
