@@ -644,7 +644,6 @@ public class Binding {
                 parameters.remove(key);
             }
         } else {
-            key.getValueClass().cast(value);
             if (parameters == null) {
                 parameters = new HashMap<Parameter<?>,Object>(1);
             }
@@ -665,7 +664,6 @@ public class Binding {
      * @throws NullPointerException if {@code key} is {@code null}
      */
     public final <T> T getValue(Parameter<T> key, T defaultValue) {
-        Class<T> valueType = key.getValueClass();
         if (parameters == null) {
             return defaultValue;
         }
@@ -673,7 +671,7 @@ public class Binding {
         if (value == null) {
             return defaultValue;
         }
-        return valueType.cast(value);
+        return (T)value;
     }
 
     /**
@@ -1721,34 +1719,19 @@ public class Binding {
      * @see #getValue
      */
     public static class Parameter<T> {
-        private final Class<T> valueClass;
         private final String description;
 
         /**
-         * Creates a {@code Parameter} with the specified value {@code Class} and
-         * description.
+         * Creates a {@code Parameter} with the specified description.
          *
-         * @param valueClass the expected type for values with this key
-         * @param description a description of this {@code Parameter}
-         * @throws IllegalArgumentException if {@code valueClass} or
-         *         {@code description} {@code null}
+         * @param description a description of the {@code Parameter}
+         * @throws IllegalArgumentException if {@code description} is {@code null}
          */
-        public Parameter(Class<T> valueClass, String description) {
-            if (valueClass == null || description == null) {
-                throw new IllegalArgumentException(
-                        "Value class and description must be non-null");
+        public Parameter(String description) {
+            if (description == null) {
+                throw new IllegalArgumentException("Description must be non-null");
             }
-            this.valueClass = valueClass;
             this.description = description;
-        }
-
-        /**
-         * Returns the expected type for values associated with this key.
-         *
-         * @return the expected type for values associated with this key
-         */
-        public final Class<T> getValueClass() {
-            return valueClass;
         }
 
         /**
@@ -1765,15 +1748,12 @@ public class Binding {
          * This method is intended to be used only for debugging purposes, and
          * the content and format of the returned string may vary between
          * implementations. The returned string may be empty but may not
-         * be <code>null</code>.
+         * be {@code null}.
          *
          * @return a string representation of this {@code Parameter}
          */
         public String toString() {
-            return getClass() + " [" +
-                    " description=" + description + ", " +
-                    " valueClass=" + getValueClass() +
-                    "]";
+            return getClass() + " [" + " description=" + description + "]";
         }
     }
 }
