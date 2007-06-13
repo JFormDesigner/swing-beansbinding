@@ -834,7 +834,7 @@ public class BindingTest extends TestCase {
         }
     }
 
-    public void testParent() {
+    public void testSetParent() {
         Binding bindingP = new Binding(source, "${value}", target, "value");
         Binding bindingC = new Binding(source, "${value}", target, "value");
         BindingContext context = new BindingContext();
