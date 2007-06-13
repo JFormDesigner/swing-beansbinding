@@ -82,8 +82,9 @@ abstract class AbstractBindingHelper implements BindingTarget {
     }
 
     protected boolean getDisableOnIncompletePath() {
-        return getBinding().getValue(
-                SwingBindingSupport.DisableOnIncompletePathParameter, Boolean.TRUE);
+        return getBinding().getParameterValue(
+                SwingBindingSupport.DisableOnIncompletePathParameter.class,
+                Boolean.TRUE);
     }
     
     

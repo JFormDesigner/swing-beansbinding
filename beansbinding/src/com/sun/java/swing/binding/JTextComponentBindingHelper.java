@@ -113,8 +113,8 @@ class JTextComponentBindingHelper extends AbstractBindingHelper {
     }
     
     private TextChangeStrategy getChangeStrategy() {
-        return controller.getBinding().getValue(
-                SwingBindingSupport.TextChangeStrategyParameter,
+        return controller.getBinding().getParameterValue(
+                SwingBindingSupport.TextChangeStrategyParameter.class,
                 TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST);
     }
     

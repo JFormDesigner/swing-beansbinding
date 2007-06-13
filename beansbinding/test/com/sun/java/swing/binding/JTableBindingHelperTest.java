@@ -56,9 +56,9 @@ public class JTableBindingHelperTest extends TestCase {
     public void testTableColumnClass() {
         Binding binding = new Binding(
                 values, null, table, "elements");
-        binding.addBinding("value", null,
-                SwingBindingSupport.TableColumnClassParameter, String.class,
-                SwingBindingSupport.TableColumnParameter, 0);
+        binding.addBinding("value", null).setParameters(
+                new SwingBindingSupport.TableColumnClassParameter(String.class),
+                new SwingBindingSupport.TableColumnParameter(0));
         binding.bind();
         assertEquals(String.class, table.getModel().getColumnClass(0));
     }
@@ -92,9 +92,8 @@ public class JTableBindingHelperTest extends TestCase {
     public void testMultiedit() {
         Binding binding = new Binding(
                 values, null, table, "elements");
-        Binding column0Binding = new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 0);
+        Binding column0Binding = new Binding("${value}", null);
+        column0Binding.setParameter(new SwingBindingSupport.TableColumnParameter(0));
         binding.addBinding(column0Binding);
         context.addBinding(binding);
         context.bind();
@@ -122,9 +121,8 @@ public class JTableBindingHelperTest extends TestCase {
     public void testColumnTitle() {
         Binding binding = new Binding(
                 values, null, table, "elements");
-        binding.addBinding(new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 0));
+        binding.addBinding("${value}", null).setParameter(
+                new SwingBindingSupport.TableColumnParameter(0));
         binding.bind();
         assertEquals("Value", table.getModel().getColumnName(0));
     }
@@ -133,13 +131,11 @@ public class JTableBindingHelperTest extends TestCase {
         values.get(0).setValue("foo");
         Binding binding = new Binding(
                 values, null, table, "elements");
-        Binding column0Binding = new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 0);
+        Binding column0Binding = new Binding("${value}", null);
+        column0Binding.setParameter(new SwingBindingSupport.TableColumnParameter(0));
         binding.addBinding(column0Binding);
-        binding.addBinding(new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 1));
+        binding.addBinding("${value}", null).setParameter(
+                new SwingBindingSupport.TableColumnParameter(1));
         binding.bind();
         
         assertEquals(2, table.getModel().getColumnCount());
@@ -182,13 +178,11 @@ public class JTableBindingHelperTest extends TestCase {
     public void testGenericEditor2() {
         Binding binding = new Binding(
                 values, null, table, "elements");
-        Binding zeroBinding = new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 0);
+        Binding zeroBinding = new Binding("${value}", null);
+        zeroBinding.setParameter(new SwingBindingSupport.TableColumnParameter(0));
         binding.addBinding(zeroBinding);
-        binding.addBinding(new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 1));
+        binding.addBinding("${value}", null).setParameter(
+                new SwingBindingSupport.TableColumnParameter(1));
         binding.bind();
         
         assertEquals(2, table.getModel().getColumnCount());
@@ -218,9 +212,8 @@ public class JTableBindingHelperTest extends TestCase {
     public void testGenericEditor() {
         Binding binding = new Binding(
                 values, null, table, "elements");
-        Binding column0Binding = new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 0);
+        Binding column0Binding = new Binding("${value}", null);
+        column0Binding.setParameter(new SwingBindingSupport.TableColumnParameter(0));
         binding.addBinding(column0Binding);
         context.addBinding(binding);
         context.bind();
@@ -245,9 +238,8 @@ public class JTableBindingHelperTest extends TestCase {
     public void testTwo() {
         Binding binding = new Binding(
                 values, null, table, "elements");
-        binding.addBinding(new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 0));
+        binding.addBinding("${value}", null).setParameter(
+                new SwingBindingSupport.TableColumnParameter(0));
         binding.bind();
         TableModel tableModel = table.getModel();
         assertEquals(2, tableModel.getRowCount());
@@ -267,9 +259,8 @@ public class JTableBindingHelperTest extends TestCase {
     public void testThree() {
         Binding binding= new Binding(
                 values, null, table, "elements");
-        Binding column0Binding = new Binding(
-                "${value}", null, 
-                SwingBindingSupport.TableColumnParameter, 0);
+        Binding column0Binding = new Binding("${value}", null);
+        column0Binding.setParameter(new SwingBindingSupport.TableColumnParameter(0));
         binding.addBinding(column0Binding);
         binding.bind();
         

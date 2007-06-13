@@ -204,10 +204,10 @@ public class Binding {
         VALID
     }
 
-    private Object ID;
+    private String name;
 
     private List<BindingListener> bindingListeners;
-    private Map<Parameter<?>, Object> properties;
+    private Map<Class<? extends Parameter>, Parameter<?>> parameters;
 
     private Object source;
     private String sourceExpression;
@@ -257,41 +257,22 @@ public class Binding {
      *
      * @param sourceExpression El expression specifying the "property" of the source
      * @param targetPath path to the property of the target
-     * @param args alternating set of key/value pairs where each even numbered
-     *             entry is of type {@code Parameter}, and the following
-     *             value is of a type specified by the {@code Parameter}
-     *
-     * @throws NullPointerException if one of the even entries in {@code args}
-     *         is {@code null}
-     * @throws ClassCastException if one of the even entries in {@code args} 
-     *         is not a {@code Parameter}, or one of the odd entries is not 
-     *         of a type identified by the preceeding {@code Parameter} entry
-     * @throws IllegalArgumentException if {@code args} is odd
      */
-    public Binding(String sourceExpression, String targetPath, Object...args) {
-        this(null, null, sourceExpression, null, targetPath, args);
+    public Binding(String sourceExpression, String targetPath) {
+        this(null, null, sourceExpression, null, targetPath);
     }
 
     /**
      * Creates a {@code Binding}. See 
      * {@link javax.swing.binding.SwingBindingSupport} for examples.
      *
-     * @param ID an ID for this binding
+     * @param name a name for the binding
      * @param sourceExpression El expression specifying the "property" of the source
      * @param targetPath path to the property of the target
-     * @param args alternating set of key/value pairs where each even numbered
-     *             entry is of type {@code Parameter}, and the following
-     *             value is of a type specified by the {@code Parameter}
      *
-     * @throws NullPointerException if one of the even entries in {@code args}
-     *         is {@code null}
-     * @throws ClassCastException if one of the even entries in {@code args} 
-     *         is not a {@code Parameter}, or one of the odd entries is not 
-     *         of a type identified by the preceeding {@code Parameter} entry
-     * @throws IllegalArgumentException if {@code args} is odd
      */
-    public Binding(Object ID, String sourceExpression, String targetPath, Object...args) {
-        this(ID, null, sourceExpression, null, targetPath, args);
+    public Binding(String name, String sourceExpression, String targetPath) {
+        this(name, null, sourceExpression, null, targetPath);
     }
 
     /**
@@ -302,85 +283,57 @@ public class Binding {
      * @param sourceExpression El expression specifying the "property" of the source
      * @param target the target of the binding
      * @param targetPath path to the property of the target
-     * @param args alternating set of key/value pairs; each even numbered
-     *             entry is of type {@code Parameter}, and the following
-     *             value is of a type specified by the {@code Parameter}
-     *
-     * @throws NullPointerException if one of the even entries in {@code args}
-     *         is {@code null}
-     * @throws ClassCastException if one of the even entries in {@code args} 
-     *         is not a {@code Parameter}, or one of the odd entries is not of a type
-     *         identified by the preceeding {@code Parameter} entry
-     * @throws IllegalArgumentException if {@code args} is odd
      */
-    public Binding(Object source, String sourceExpression, Object target,
-                   String targetPath, Object...args) {
-        
-        this(null, source, sourceExpression, target, targetPath, args);
+    public Binding(Object source, String sourceExpression,
+                   Object target, String targetPath) {
+
+        this(null, source, sourceExpression, target, targetPath);
     }
 
     /**
      * Creates a {@code Binding}. See 
      * {@link javax.swing.binding.SwingBindingSupport} for examples.
      *
-     * @param ID an ID for this binding
+     * @param name a name for the binding
      * @param source the source of the binding
      * @param sourceExpression El expression specifying the "property" of the source
      * @param target the target of the binding
      * @param targetPath path to the property of the target
-     * @param args alternating set of key/value pairs; each even numbered
-     *             entry is of type {@code Parameter}, and the following
-     *             value is of a type specified by the {@code Parameter}
-     *
-     * @throws NullPointerException if one of the even entries in {@code args}
-     *         is {@code null}
-     * @throws ClassCastException if one of the even entries in {@code args} 
-     *         is not a {@code Parameter}, or one of the odd entries is not of a type
-     *         identified by the preceeding {@code Parameter} entry
-     * @throws IllegalArgumentException if {@code args} is odd
      */
-    public Binding(Object ID, Object source, String sourceExpression, Object target,
-                   String targetPath, Object...args) {
+    public Binding(String name,
+                   Object source, String sourceExpression,
+                   Object target, String targetPath) {
 
-        setID(ID);
+        setName(name);
         setUpdateStrategy(updateStrategy.READ_WRITE);
         setSource(source);
         setSourceExpression(sourceExpression);
         setTarget(target);
         setTargetPath(targetPath);
-        if (args.length % 2 != 0) {
-            throw new IllegalArgumentException(
-                    "Args must be of even length");
-        }
-        for (int i = 0; i < args.length; i += 2) {
-            Parameter key = (Parameter)args[i];
-            Object value = args[i + 1];
-            setValue(key, key.getValueClass().cast(value));
-        }
     }
 
     /**
-     * Sets an ID for this binding. This is useful to fetch bindings by ID.
-     * May be {@code null} to indicate that the binding doesn't have an ID.
+     * Sets a name for the binding. This is useful to fetch bindings by name.
+     * May be {@code null} to indicate that the binding doesn't have a name.
      *
-     * @param ID an ID for this binding
+     * @param name a name for the binding
      * @throws IllegalStateException if bound, or if this binding belongs
      *         to a BindingContext or a parent binding that already contains
-     *         a binding with this ID
+     *         a binding with this name
      */
-    public final void setID(Object ID) {
-        this.ID = ID;
+    public final void setName(String name) {
+        this.name = name;
         // PENDING - check the context and/or parent for the same name.
         // Question: can a binding have a parent AND a context?
     }
 
     /**
-     * Returns the binding's ID.
+     * Returns the binding's name.
      *
-     * @return the binding's ID, or {@code null}
+     * @return the binding's name, or {@code null}
      */
-    public final Object getID() {
-        return ID;
+    public final String getName() {
+        return name;
     }
 
     /**
@@ -661,61 +614,72 @@ public class Binding {
     public final ListCondenser getListCondenser() {
         return condenser;
     }
-    
+
     /**
-     * Sets a parameter for the binding. If 
-     * {@code value} is {@code null}, the entry is removed. This method is
-     * used to specify target specific properties. For example, the following
-     * specifies the "text" property of a {@code JTextComponent} should change
-     * as you type:
-     * <pre>
-     *   binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
-     *                    TextChangeStrategy.CHANGE_ON_TYPE);
-     * </pre>
+     * A convenience method for calling {@code setParameter} with a set of
+     * parameters. See the description for {@code setParameter} for details
+     * on how each parameter is handled.
      *
-     * @param key the key
-     * @param value the value
-     *
-     * @throws ClassCastException if {@code value} is not of the type defined
-     *         by {@code key}
-     * @throws NullPointerException if {@code key} is {@code null}
+     * @throws NullPointerException if {@code params} is {@code null}
+     *         or if any of the items are {@code null}
      * @throws IllegalStateException if bound
+     * @see setParameter
      */
-    public final <T> void setValue(Parameter<T> key, T value) {
-        throwIfBound();
-        if (value == null) {
-            if (properties != null) {
-                properties.remove(key);
-            }
-        } else {
-            key.getValueClass().cast(value);
-            if (properties == null) {
-                properties = new HashMap<Parameter<?>,Object>(1);
-            }
-            properties.put(key, value);
+    public final void setParameters(Parameter<?>...params) {
+        for (int i = 0; i < params.length; i++) {
+            setParameter(params[i]);
         }
     }
     
     /**
-     * Returns the value for the specified parameter.
+     * Sets a parameter for the binding. If a parameter already exists with
+     * the same class type, then it is replaced by this parameter.
+     * If the parameter's {@code getValue()} returns {@code null},
+     * then the parameter is removed. This method is used to specify target
+     * specific parameters. For example, the following specifies that the
+     * "text" property of a {@code JTextComponent} should change as you type:
+     * <pre>
+     *   binding.setParameter(SwingBindingSupport.TextChangeStrategyParameter.CHANGE_ON_TYPE);
+     * </pre>
      *
-     * @param key the key to obtain the value for
-     * @param defaultValue the value to return if {@code setValue} has not
-     *        been invoked with the specified key
-     * @return the value for the specified key
+     * @param param the parameter
+     *
+     * @throws NullPointerException if {@code param} is {@code null}
+     * @throws IllegalStateException if bound
+     */
+    public final void setParameter(Parameter<?> param) {
+        throwIfBound();
+
+        if (param.getValue() == null) {
+            if (parameters != null) {
+                parameters.remove(param.getClass());
+            }
+        } else {
+            if (parameters == null) {
+                parameters = new HashMap<Class<? extends Parameter>, Parameter<?>>(1);
+            }
+            parameters.put(param.getClass(), param);
+        }
+    }
+    
+    /**
+     * Returns the value for the specified parameter type.
+     *
+     * @param paramType the class of the parameter for which to fetch the value
+     * @param defaultValue the value to return if this binding has no value
+     *        for the specified parameter type
+     * @return the value for the specified parameter
      *
      * @throws NullPointerException if {@code key} is {@code null}
      */
-    public final <T> T getValue(Parameter<T> key, T defaultValue) {
-        Class<T> valueType = key.getValueClass();
-        if (properties == null) {
+    public final <T> T getParameterValue(Class<? extends Parameter<T>> paramType, T defaultValue) {
+        if (parameters == null) {
             return defaultValue;
         }
-        Object value = properties.get(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        return valueType.cast(value);
+
+        Parameter<T> value = (Parameter<T>)parameters.get(paramType);
+
+        return value == null ? defaultValue : value.getValue();
     }
     
     /**
@@ -1408,19 +1372,24 @@ public class Binding {
      *
      * @param sourceExpression El expression specifying the "property" of the source
      * @param targetPath path to the property of the target
-     * @param args alternating set of key/value pairs where each even numbered
-     *             entry is of type {@code Parameter}, and the following
-     *             value is of a type specified by the {@code Parameter}
-     *
-     * @throws NullPointerException if one of the even entries is {@code null}
-     * @throws ClassCastException if one of the even entries is not a
-     *         {@code Parameter}, or one of the odd entries is not of a type
-     *         identified by the preceeding {@code Parameter} entry
+     * @return the {@code Binding}
      */
-    public final Binding addBinding(String sourceExpression, String targetPath,
-                                    Object...args) {
+    public final Binding addBinding(String sourceExpression, String targetPath) {
+        return addBinding(null, sourceExpression, targetPath);
+    }
 
-        Binding binding = new Binding(sourceExpression, targetPath, args);
+    /**
+     * Creates and adds a {@code Binding} as a child of this {@code Binding}.
+     *
+     * @param name a name for the binding
+     * @param sourceExpression El expression specifying the "property" of the source
+     * @param targetPath path to the property of the target
+     * @return the {@code Binding}
+     * @throws IllegalStateException if this binding already has a child with the
+     *         given name
+     */
+    public final Binding addBinding(String name, String sourceExpression, String targetPath) {
+        Binding binding = new Binding(name, sourceExpression, targetPath);
         addBinding(binding);
         return binding;
     }
@@ -1431,7 +1400,8 @@ public class Binding {
      * @param binding the {@code Binding} to add as a child
      * @throws IllegalArgumentException if {@code binding} has already been
      *         added to another {@code Binding}
-     * @throws IllegalStateException if bound
+     * @throws IllegalStateException if bound or if this binding already has
+     *         a child with the same name as the given binding
      * @throws NullPointerException if {@code binding} is {@code null}
      */
     public final void addBinding(Binding binding) {
@@ -1598,21 +1568,22 @@ public class Binding {
      * @return a string representing the state of this binding
      */
     private String paramString() {
-        return "source=" + getSource() +
-                ", sourceExpression=" + getSourceExpression() +
-                ", target=" + getTarget() +
-                ", targetPath=" + getTargetPath0() +
-                ", bound=" + isBound() +
-                ", validator=" + validator +
-                ", converter=" + converter +
-                ", valueForIncompleteTargetPath=" + incompleteTargetPathValue +
-                ", valueForIncompleteSourcePath=" + incompleteSourcePathValue +
-                ", updateStrategy=" + updateStrategy +
-                ", sourceValueState=" + sourceValueState +
-                ", targetValueState=" + targetValueState +
-                ", childBindings=" + childBindings +
-                ", keepUncommited=" + keepUncommitted +
-                ", properties=" + properties;
+        return "name=" + getName() +
+               ", source=" + getSource() +
+               ", sourceExpression=" + getSourceExpression() +
+               ", target=" + getTarget() +
+               ", targetPath=" + getTargetPath0() +
+               ", bound=" + isBound() +
+               ", validator=" + validator +
+               ", converter=" + converter +
+               ", valueForIncompleteTargetPath=" + incompleteTargetPathValue +
+               ", valueForIncompleteSourcePath=" + incompleteSourcePathValue +
+               ", updateStrategy=" + updateStrategy +
+               ", sourceValueState=" + sourceValueState +
+               ", targetValueState=" + targetValueState +
+               ", childBindings=" + childBindings +
+               ", keepUncommited=" + keepUncommitted +
+               ", parameters=" + parameters;
     }
 
 
@@ -1737,66 +1708,68 @@ public class Binding {
 
 
     /**
-     * {@code Parameter} is used to provide additional information to configure a 
-     * specific binding. See {@link javax.swing.binding.SwingBindingSupport}
+     * {@code Parameter} is used to provide additional information to configure
+     * a specific binding. See {@link javax.swing.binding.SwingBindingSupport}
      * for examples of this.
+     * <p>
+     * A {@code Parameter} encapsulates both the parameter that is being set, and
+     * the value that it is being set to. Parameters are identified based on their
+     * class type. As such, setting a parameter on a binding replaces any existing
+     * parameter of the same type.
      *
-     * @see #setValue
-     * @see #getValue
+     * @see #setParameter
+     * @see #getParameterValue
      */
-    public static class Parameter<T> {
-        private final Class<T> valueClass;
+    public static abstract class Parameter<T> {
         private final String description;
+        private final T value;
 
         /**
-         * Creates a {@code Parameter} with the specified value {@code Class}.
+         * Creates a {@code Parameter} with the specified description and value.
          *
-         * @param valueClass the expected type for values with this key
-         * @param description a description of this {@code Parameter}, used only 
-         *        for debugging
-         * @throws IllegalArgumentException if {@code valueClass} or
-         *         {@code description} {@code null}
+         * @param description a description of the {@code Parameter}
+         * @param value the parameter value, or {@code null}
+         * @throws IllegalArgumentException if {@code description} is {@code null}
          */
-        public Parameter(Class<T> valueClass, String description) {
-            if (valueClass == null || description == null) {
-                throw new IllegalArgumentException(
-                        "Value class and description must be non-null");
+        public Parameter(String description, T value) {
+            if (description == null) {
+                throw new IllegalArgumentException("Description must be non-null.");
             }
-            this.valueClass = valueClass;
             this.description = description;
+            this.value = value;
         }
-        
+
         /**
-         * Returns the expected type for values associated with this key.
+         * Returns a description of the parameter.
          *
-         * @return the expected type for values associated with this key
-         */
-        public final Class<T> getValueClass() {
-            return valueClass;
-        }
-        
-        /**
-         * Returns a description of this parameter.
-         *
-         * @return the description of this parameter
+         * @return a description of the parameter
          */
         public final String getDescription() {
             return description;
         }
-        
+
         /**
-         * Returns a string representing the state of this {@code Parameter}.
+         * Returns the parameter's value.
+         *
+         * @return the parameter's value
+         */
+        public final T getValue() {
+            return value;
+        }
+
+        /**
+         * Returns a string representing the state of the {@code Parameter}.
          * This method is intended to be used only for debugging purposes, and
          * the content and format of the returned string may vary between
          * implementations. The returned string may be empty but may not
          * be <code>null</code>.
          *
-         * @return a string representation of this {@code Parameter}
+         * @return a string representation of the {@code Parameter}
          */
         public String toString() {
             return getClass() + " [" +
-                    " description=" + description + ", " +
-                    " valueClass=" + getValueClass() +
+                    "description=" + description +
+                    ", value=" + getValue() +
                     "]";
         }
     }
