@@ -617,54 +617,39 @@ public class Binding {
     }
 
     /**
-     * A convenience method for calling {@code setParameter} with a set of
-     * parameters. See the description for {@code setParameter} for details
-     * on how each parameter is handled.
-     *
-     * @throws NullPointerException if {@code params} is {@code null}
-     *         or if any of the items are {@code null}
-     * @throws IllegalStateException if bound
-     * @see setParameter
-     */
-    public final void setParameters(Parameter<?>...params) {
-        throwIfBound();
-
-        for (int i = 0; i < params.length; i++) {
-            setParameter(params[i]);
-        }
-    }
-    
-    /**
-     * Sets a parameter for the binding. If a parameter already exists with
-     * the same class type, then it is replaced by this parameter.
-     * If the parameter's {@code getValue()} returns {@code null},
-     * then the parameter is removed. This method is used to specify target
-     * specific parameters. For example, the following specifies that the
-     * "text" property of a {@code JTextComponent} should change as you type:
+     * Sets a parameter for the binding. If {@code value} is {@code null}, then
+     * the entry is removed. This method is used to specify target specific
+     * parameters. For example, the following specifies that the "text" property
+     * of a {@code JTextComponent} should change as you type:
      * <pre>
-     *   binding.setParameter(SwingBindingSupport.TextChangeStrategyParameter.CHANGE_ON_TYPE);
+     *   binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
+     *                    TextChangeStrategy.CHANGE_ON_TYPE);
      * </pre>
      *
-     * @param param the parameter
+     * @param key the key
+     * @param value the value
      *
-     * @throws NullPointerException if {@code param} is {@code null}
+     * @throws ClassCastException if {@code value} is not of the type defined
+     *         by {@code key}
+     * @throws NullPointerException if {@code key} is {@code null}
      * @throws IllegalStateException if bound
      */
-    public final void setParameter(Parameter<?> param) {
+    public final <T> void setValue(Parameter<T> key, T value) {
         throwIfBound();
 
-        if (param.getValue() == null) {
-            if (parameters != null) {
-                parameters.remove(param.getClass());
+        if (value == null) {
+            if (properties != null) {
+                properties.remove(key);
             }
         } else {
-            if (parameters == null) {
-                parameters = new HashMap<Class<? extends Parameter>, Parameter<?>>(1);
+            key.getValueClass().cast(value);
+            if (properties == null) {
+                properties = new HashMap<Parameter<?>,Object>(1);
             }
-            parameters.put(param.getClass(), param);
+            properties.put(key, value);
         }
     }
-    
+
     /**
      * Returns the value for the specified parameter type.
      *
@@ -1738,8 +1723,7 @@ public class Binding {
          * description.
          *
          * @param valueClass the expected type for values with this key
-         * @param description a description of this {@code Parameter}, used only 
-         *        for debugging
+         * @param description a description of this {@code Parameter}
          * @throws IllegalArgumentException if {@code valueClass} or
          *         {@code description} {@code null}
          */
