@@ -178,22 +178,31 @@ public class BindingContext {
      * @param sourceExpression El expression specifying the "property" of the source
      * @param target the target of the binding
      * @param targetPath path to the paroperty of the target
-     * @param args alternating set of key/value pairs; each even numbered
-     *             entry is of type {@code Parameter}, and the following
-     *             value is of a type specified by the {@code Parameter}
      * @return the {@code Binding}
-     *
-     * @throws NullPointerException if one of the even entries is {@code null}
-     * @throws ClassCastException if one of the even entries is not a
-     *         {@code Parameter}, or one of the odd entries is not of a type
-     *         identified by the preceeding {@code Parameter} entry
-     * @throws IllegalArgumentException if {@code args} is odd
      */
-    public Binding addBinding(
-            Object source, String sourceExpression, Object target, String targetPath,
-            Object...args) {
+    public Binding addBinding(Object source, String sourceExpression,
+                              Object target, String targetPath) {
 
-        Binding binding = new Binding(source, sourceExpression, target, targetPath, args);
+        Binding binding = new Binding(source, sourceExpression, target, targetPath);
+        addBinding(binding);
+        return binding;
+    }
+
+    /**
+     * Creates and adds {@code Binding} to this {@code BindingContext}.
+     *
+     * @param name a name for the binding
+     * @param source the source of the binding
+     * @param sourceExpression El expression specifying the "property" of the source
+     * @param target the target of the binding
+     * @param targetPath path to the paroperty of the target
+     * @return the {@code Binding}
+     */
+    public Binding addBinding(String name, Object source,
+                              String sourceExpression, Object target,
+                              String targetPath) {
+
+        Binding binding = new Binding(name, source, sourceExpression, target, targetPath);
         addBinding(binding);
         return binding;
     }

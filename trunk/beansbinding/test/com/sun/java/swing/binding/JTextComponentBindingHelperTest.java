@@ -57,8 +57,7 @@ public class JTextComponentBindingHelperTest extends TestCase {
     // PENDING: test for disable on incomplete path
     
     public void testChangeOnType() throws Throwable {
-        binding.setValue(SwingBindingSupport.TextChangeStrategyParameter, 
-                SwingBindingSupport.TextChangeStrategy.CHANGE_ON_TYPE);
+        binding.setParameter(SwingBindingSupport.TextChangeStrategyParameter.CHANGE_ON_TYPE);
         context.addBinding(binding);
         context.bind();
         assertEquals("", textField.getText());
@@ -77,8 +76,7 @@ public class JTextComponentBindingHelperTest extends TestCase {
     }
     
     public void testChangeOnActionOrFocusLost() throws Throwable {
-        binding.setValue(SwingBindingSupport.TextChangeStrategyParameter, 
-                SwingBindingSupport.TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST);
+        binding.setParameter(SwingBindingSupport.TextChangeStrategyParameter.CHANGE_ON_ACTION_OR_FOCUS_LOST);
         context.addBinding(binding);
         context.bind();
         assertEquals("", textField.getText());
@@ -105,8 +103,7 @@ public class JTextComponentBindingHelperTest extends TestCase {
     }
     
     public void testChangeOnFocusLost() throws Throwable {
-        binding.setValue(SwingBindingSupport.TextChangeStrategyParameter, 
-                SwingBindingSupport.TextChangeStrategy.CHANGE_ON_FOCUS_LOST);
+        binding.setParameter(SwingBindingSupport.TextChangeStrategyParameter.CHANGE_ON_FOCUS_LOST);
         context.addBinding(binding);
         context.bind();
         assertEquals("", textField.getText());

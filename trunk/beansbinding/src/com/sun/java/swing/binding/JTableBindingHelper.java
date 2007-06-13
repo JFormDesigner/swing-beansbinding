@@ -185,8 +185,8 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
             // PENDING: this should be done once
             if (elementsBinding != null) {
                 for (Binding binding : elementsBinding.getBindings()) {
-                    Integer column = binding.getValue(
-                            SwingBindingSupport.TableColumnParameter, null);
+                    Integer column = binding.getParameterValue(
+                            SwingBindingSupport.TableColumnParameter.class, null);
                     if (column == null) {
                         throw new IllegalArgumentException(
                                 "JTable element binding must identify the column by way of " +
@@ -198,7 +198,7 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
                     boolean isEditor = false;//binding.getValue(SwingBindingSupport.TableEditorKey, 
                             //Boolean.FALSE);
                     boolean isValue = (!isRenderer && !isEditor);
-                    Class<?> type = binding.getValue(SwingBindingSupport.TableColumnClassParameter,
+                    Class<?> type = binding.getParameterValue(SwingBindingSupport.TableColumnClassParameter.class,
                             Object.class);
                     if ((isValue && (isRenderer || isEditor)) ||
                             (isRenderer && (isValue || isEditor)) ||

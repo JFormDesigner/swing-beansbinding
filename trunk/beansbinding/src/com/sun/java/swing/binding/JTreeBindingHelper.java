@@ -85,8 +85,8 @@ final class JTreeBindingHelper extends AbstractBindingHelper implements
             throw new IllegalStateException("Already bound");
         }
         this.controller = controller;
-        emptyNodesTreatedAsLeafs = controller.getBinding().getValue(
-                SwingBindingSupport.EmptyNodeTreatedAsLeafParameter, Boolean.FALSE);
+        emptyNodesTreatedAsLeafs = controller.getBinding().getParameterValue(
+                SwingBindingSupport.EmptyNodeTreatedAsLeafParameter.class, Boolean.FALSE);
         calculateChildMapping(controller.getBinding());
         if (tree.getModel() != model) {
             tree.setModel(model);
@@ -185,8 +185,8 @@ final class JTreeBindingHelper extends AbstractBindingHelper implements
     private void calculateChildMapping(Binding binding) {
         elementMap.clear();
         for (Binding childBinding : binding.getBindings()) {
-            Class<?> type = childBinding.getValue(
-                    SwingBindingSupport.TreeNodeClassParameter, null);
+            Class<?> type = childBinding.getParameterValue(
+                    SwingBindingSupport.TreeNodeClassParameter.class, null);
             if (type == null) {
                 throw new IllegalArgumentException(
                         "Must specify a class the binding is applicable to " +
