@@ -860,8 +860,6 @@ public class Binding {
         
         // Unbind any children bindings
         if (childBindings != null) {
-            List<Binding> childBindings = new ArrayList<Binding>(
-                    this.childBindings);
             for (Binding binding : childBindings) {
                 if (binding.isBound()) {
                     binding.unbind();
