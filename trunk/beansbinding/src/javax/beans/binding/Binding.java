@@ -651,25 +651,27 @@ public class Binding {
     }
 
     /**
-     * Returns the value for the specified parameter type.
+     * Returns the value for the specified parameter.
      *
-     * @param paramType the class of the parameter for which to fetch the value
-     * @param defaultValue the value to return if this binding has no value
-     *        for the specified parameter type
-     * @return the value for the specified parameter
+     * @param key the key to obtain the value for
+     * @param defaultValue the value to return if the binding has no value
+     *        for the given key
+     * @return the value for the specified key
      *
      * @throws NullPointerException if {@code key} is {@code null}
      */
-    public final <T> T getParameterValue(Class<? extends Parameter<T>> paramType, T defaultValue) {
-        if (parameters == null) {
+    public final <T> T getValue(Parameter<T> key, T defaultValue) {
+        Class<T> valueType = key.getValueClass();
+        if (properties == null) {
             return defaultValue;
         }
-
-        Parameter<T> value = (Parameter<T>)parameters.get(paramType);
-
-        return value == null ? defaultValue : value.getValue();
+        Object value = properties.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        return valueType.cast(value);
     }
-    
+
     /**
      * Convenience method that throws an exception if bound. Methods that
      * set a property should invoke this before changing the property.
