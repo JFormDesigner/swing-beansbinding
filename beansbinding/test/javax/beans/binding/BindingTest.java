@@ -821,6 +821,31 @@ public class BindingTest extends TestCase {
         assertEquals(Binding.ValueState.VALID, binding.getSourceValueState());
     }
 
+    public void testSetContext() {
+        Binding bindingP = new Binding(source, "${value}", target, "value");
+        Binding bindingC = new Binding(source, "${value}", target, "value");
+        BindingContext context = new BindingContext();
+        bindingP.addBinding(bindingC);
+        context.addBinding(bindingP);
+        try {
+            context.addBinding(bindingC);
+            fail("ISE should have been thrown");
+        } catch (IllegalStateException ise) {
+        }
+    }
+
+    public void testParent() {
+        Binding bindingP = new Binding(source, "${value}", target, "value");
+        Binding bindingC = new Binding(source, "${value}", target, "value");
+        BindingContext context = new BindingContext();
+        context.addBinding(bindingP);
+        context.addBinding(bindingC);
+        try {
+            bindingP.addBinding(bindingC);
+            fail("ISE should have been thrown");
+        } catch (IllegalStateException ise) {
+        }
+    }
     
     private static class TestBinding extends Binding{
         TestBinding() {

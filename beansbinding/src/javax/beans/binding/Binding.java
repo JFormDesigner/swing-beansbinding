@@ -322,6 +322,7 @@ public class Binding {
      *         a binding with this name
      */
     public final void setName(String name) {
+        throwIfBound();
         this.name = name;
         // PENDING - check the context and/or parent for the same name.
         // Question: can a binding have a parent AND a context?
@@ -626,6 +627,8 @@ public class Binding {
      * @see setParameter
      */
     public final void setParameters(Parameter<?>...params) {
+        throwIfBound();
+
         for (int i = 0; i < params.length; i++) {
             setParameter(params[i]);
         }
@@ -758,6 +761,10 @@ public class Binding {
     }
 
     final void setContext(BindingContext context) {
+        throwIfBound();
+        if (getParentBinding() != null) {
+            throw new IllegalStateException("Child binding cannot be added to a context");
+        }
         this.context = context;
     }
 
@@ -1369,6 +1376,7 @@ public class Binding {
     
     /**
      * Creates and adds a {@code Binding} as a child of this {@code Binding}.
+     * Note: Child bindings are not to be added to a {@code BindingContext}.
      *
      * @param sourceExpression El expression specifying the "property" of the source
      * @param targetPath path to the property of the target
@@ -1380,6 +1388,7 @@ public class Binding {
 
     /**
      * Creates and adds a {@code Binding} as a child of this {@code Binding}.
+     * Note: Child bindings are not to be added to a {@code BindingContext}.
      *
      * @param name a name for the binding
      * @param sourceExpression El expression specifying the "property" of the source
@@ -1396,12 +1405,15 @@ public class Binding {
 
     /**
      * Adds a {@code Binding} as a child of this {@code Binding}.
+     * Note: Child bindings are not to be added to a {@code BindingContext}.
      *
      * @param binding the {@code Binding} to add as a child
      * @throws IllegalArgumentException if {@code binding} has already been
      *         added to another {@code Binding}
-     * @throws IllegalStateException if bound or if this binding already has
-     *         a child with the same name as the given binding
+     * @throws IllegalStateException if this binding is bound, the given child
+     *         binding is bound, the given child binding belongs to a context,
+     *         or if this binding already has a child with the same name as the
+     *         given binding
      * @throws NullPointerException if {@code binding} is {@code null}
      */
     public final void addBinding(Binding binding) {
@@ -1463,6 +1475,10 @@ public class Binding {
     }
     
     private void setParentBinding(Binding parentBinding) {
+        throwIfBound();
+        if (getContext() != null) {
+            throw new IllegalStateException("Binding in a context cannot be parented");
+        }
         this.parentBinding = parentBinding;
     }
     

@@ -142,17 +142,16 @@ public class BindingContext {
     }
 
     /**
-     * Adds a {@code Binding} to this {@code
-     * BindingContext}. The specified {@code Binding} must
-     * not be bound. {@code Binding}s are bound by invoking
-     * the {@code bind} method.
+     * Adds a {@code Binding} to this {@code BindingContext}.
+     * The specified {@code Binding} must not be bound or be a child binding.
+     * {@code Binding}s are bound by invoking the {@code bind} method.
      *
      * @param binding the {@code Binding} to add, must be
      *        {@code non-null}
      *
      * @throws IllegalArgumentException if {@code binding} is {@code null}
-     * @throws IllegalStateException if {@code binding} is bound, or
-     *         has already been added
+     * @throws IllegalStateException if {@code binding} is bound, has already
+     *         been added, or is a child binding
      * @see #bind
      */
     public void addBinding(Binding binding) {
@@ -167,8 +166,8 @@ public class BindingContext {
             throw new IllegalStateException(
                     "Can not add Binding to two different BindingContexts");
         }
-        unbound.add(binding);
         binding.setContext(this);
+        unbound.add(binding);
     }
     
     /**
