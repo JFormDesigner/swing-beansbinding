@@ -23,6 +23,9 @@ import static javax.beans.binding.Binding.ValueState.*;
  * @author sky
  */
 public class BindingTest extends TestCase {
+    private static final Binding.Parameter<Integer> IntKey = new Binding.Parameter<Integer>("");
+    private static final Binding.Parameter<Boolean> BooleanKey = new Binding.Parameter<Boolean>("");
+
     private TestBean source;
     private TestBean target;
     private BindingContext context;
@@ -393,7 +396,19 @@ public class BindingTest extends TestCase {
     
     // PENDING: need to test conversions errors from validation listener as
     // well.
-    
+
+    public void testValues() {
+        Binding binding = new Binding();
+        binding.setValue(IntKey, 10);
+        assertEquals((int)10, (int)binding.getValue(IntKey, 0));
+        
+        binding.setValue(BooleanKey, Boolean.FALSE);
+        assertEquals(false, (boolean)binding.getValue(BooleanKey, Boolean.TRUE));
+        
+        binding.setValue(IntKey, null);
+        assertEquals((int)0, (int)binding.getValue(IntKey, 0));
+    }
+
     public void testConvertExceptions2() {
         BindingConverterImpl converter = new BindingConverterImpl();
         converter.setThrowTargetToSourceException(true);

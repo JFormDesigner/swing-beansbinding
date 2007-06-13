@@ -213,7 +213,7 @@ public final class SwingBindingSupport {
      * @see javax.beans.binding.Binding#setValue
      */
     public static final Parameter<TextChangeStrategy> TextChangeStrategyParameter =
-            new Parameter<TextChangeStrategy>(TextChangeStrategy.class, "TextChangeStrategy");
+            new Parameter<TextChangeStrategy>("TextChangeStrategy");
     
     /**
      * A {@code Binding.Parameter} used to specify whether the target component
@@ -225,7 +225,7 @@ public final class SwingBindingSupport {
      * @see javax.beans.binding.Binding#setValue
      */
     public static final Parameter<Boolean> DisableOnIncompletePathParameter =
-            new Parameter<Boolean>(Boolean.class, "DisableOnIncompletePath");
+            new Parameter<Boolean>("DisableOnIncompletePath");
     
     /**
      * A {@code Binding.Parameter} used to specify the column the binding applies
@@ -236,7 +236,7 @@ public final class SwingBindingSupport {
      * @see javax.beans.binding.Binding#setValue
      */
     public static final Parameter<Integer> TableColumnParameter =
-            new Parameter<Integer>(Integer.class, "TableColumn");
+            new Parameter<Integer>("TableColumn");
 
     /**
      * A {@code Binding.Parameter} used to specify the class of the table column.
@@ -246,7 +246,7 @@ public final class SwingBindingSupport {
      * @see javax.beans.binding.Binding#setValue
      */
     public static final Parameter<Class> TableColumnClassParameter =
-            new Parameter<Class>(Class.class, "TableColumnClass");
+            new Parameter<Class>("TableColumnClass");
 
     // PENDING:
 //    public static final Key<Boolean> TableRendererKey =
@@ -262,7 +262,7 @@ public final class SwingBindingSupport {
      * @see javax.beans.binding.Binding#setValue
      */
     public static final Parameter<Boolean> EmptyNodeTreatedAsLeafParameter =
-            new Parameter<Boolean>(Boolean.class, "EmptyNodeTreatedAsLeaf");
+            new Parameter<Boolean>("EmptyNodeTreatedAsLeaf");
 
     /**
      * A {@code Binding.Parameter} used to specify the class a child binding
@@ -272,7 +272,7 @@ public final class SwingBindingSupport {
      * @see javax.beans.binding.Binding#setValue
      */
     public static final Parameter<Class> TreeNodeClassParameter =
-            new Parameter<Class>(Class.class, "TreeNodeClass");
+            new Parameter<Class>("TreeNodeClass");
     
     /**
      * A {@code Binding.Parameter} used to specify whether the child binding
@@ -283,7 +283,7 @@ public final class SwingBindingSupport {
      * @see javax.beans.binding.Binding#setValue
      */
         public static final Parameter<String> ComboBoxSelectedObjectPropertyParameter =
-            new Parameter<String>(String.class, "ComboBoxSelectedObjectProperty");
+            new Parameter<String>("ComboBoxSelectedObjectProperty");
 
     private SwingBindingSupport() {}
 }
