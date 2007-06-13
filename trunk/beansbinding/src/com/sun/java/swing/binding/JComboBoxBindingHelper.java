@@ -57,8 +57,8 @@ class JComboBoxBindingHelper extends AbstractBindingHelper {
         if (property == ELEMENTS_P) {
             throwIfNonNull(this.controller);
             this.controller = controller;
-            String selectedElementPath = controller.getBinding().getParameterValue(
-                    SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter.class, null);
+            String selectedElementPath = controller.getBinding().getValue(
+                    SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, null);
             if (selectedElementPath != null) {
                 selectedElementResolver = controller.createResolver();
                 selectedElementResolver.setPath(selectedElementPath);
