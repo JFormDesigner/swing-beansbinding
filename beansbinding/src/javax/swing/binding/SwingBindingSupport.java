@@ -25,11 +25,11 @@ import javax.swing.JSlider;
  *
  * The primary property to bind is the "selected" property. The following
  * illustrates creating a binding targetting a {@code JCheckBox} and specifying 
- * it should not disable if the source path is incomplete:
+ * it should not disable if the source contains an incomplete path:
  *
  * <pre>
- *   Binding binding = new Binding(source, "sourcePath", jCheckBox, "selected");
- *   binding.setParameter(SwingBindingSupport.DisableOnIncompletePathParameter.FALSE);
+ *   Binding binding = new Binding(source, sourceExpression, jCheckBox, "selected");
+ *   binding.setValue(SwingBindingSupport.DisableOnIncompletePathParameter, false);
  * </pre>
  *
  * <h3><a name="JComboBoxBinding"></a>JComboBox</h3>
@@ -45,7 +45,7 @@ import javax.swing.JSlider;
  *   // Specify that each element is to be shown using the 'description'
  *   // property. If this is not specified, the elements in the list are
  *   // used used directly.
- *   binding.addBinding("description", null);
+ *   binding.addBinding("${description}", null);
  * </pre>
  *
  * The next step is to bind to the selection. There are two ways to do this.
@@ -54,12 +54,12 @@ import javax.swing.JSlider;
  * of the elements of the {@code JComboBox}:
  *
 * <pre>
- *   Binding binding = new Binding(selection, "bugType", 
+ *   Binding binding = new Binding(selection, "${bugType}", 
  *                                 jComboBox, "selectedElement");
  *   // Specify that each element is to be shown using the 'description'
  *   // property. If this is not specified, the elements in the list are
  *   // used used directly.
- *   binding.addBinding("description", null);
+ *   binding.addBinding("${description}", null);
  * </pre>
  *
  * The second option is to bind the selection to a property of the elements
@@ -73,10 +73,10 @@ import javax.swing.JSlider;
  *   Binding binding = new Binding(bugTypes, null, jComboBox, "elements");
  *   // Specify that the "selectedElementProperty" corresponds to
  *   // selectedObject.id.
- *   binding.setParameter(new SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter("${id}"));
+ *   binding.setValue(SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, "${id}");
  *
  *   // Bind to the selection
- *   binding = new Binding(source, "id", jComboBox, "selectedElementProperty");
+ *   binding = new Binding(source, "${id}", jComboBox, "selectedElementProperty");
  * </pre>
  *
  * <h3>JList</h3>
@@ -97,7 +97,7 @@ import javax.swing.JSlider;
  *   Binding binding = new Binding(customers, null, jList, "elements");
  *   // Specify getValueAt is to return the 'firstName' property of
  *   // each element.
- *   binding.addBinding("firstName", null);
+ *   binding.addBinding("${firstName}", null);
  * </pre>
  *
  * The property delegate for {@code JList} also provides support for the
@@ -115,7 +115,7 @@ import javax.swing.JSlider;
  * source path is incomplete.
  *
  * <pre>
- *   Binding binding = new Binding(source, "sourcePath", jSlider, "value");
+ *   Binding binding = new Binding(source, sourceExpression, jSlider, "value");
  * </pre>
  *
  * <h3>JTable</h3>
@@ -136,11 +136,11 @@ import javax.swing.JSlider;
  *   // Create the binding for the List.
  *   Binding binding = new Binding(customers, null, jTable, "elements");
  *   // Specify the first column should use the "firstName" property
- *   binding.addBinding("firstName", null).setParameter(
- *                      new SwingBindingSupport.TableColumnParameter(0));
+ *   binding.addBinding("firstName", null).setValue(
+ *                      SwingBindingSupport.TableColumnParameter, 0);
  *   // Specify the second column should use the "lastName" property
- *   binding.addBinding("lastName", null).setParameter(
- *                      new SwingBindingSupport.TableColumnParameter(1));
+ *   binding.addBinding("lastName", null).setValue(
+ *                      SwingBindingSupport.TableColumnParameter, 1);
  * </pre>
  *
  * <h3>JTextComponent</h3>
@@ -153,8 +153,9 @@ import javax.swing.JSlider;
  * {@code Document} of the {@code JTextComponent} changes.
  *
  * <pre>
- *   Binding binding = new Binding(source, "sourcePath", jTextField, "text");
- *   binding.setParameter(SwingBindingSupport.TextChangeStrategyParameter.CHANGE_ON_TYPE);
+ *   Binding binding = new Binding(source, sourceExpression, jTextField, "text");
+ *   binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
+ *                    TextChangeStrategy.CHANGE_ON_TYPE);
  * </pre>
  *
  * <h3>JTree</h3>
@@ -173,8 +174,8 @@ import javax.swing.JSlider;
  *   Binding binding = new Binding(root, null, jTree, "root");
  *   // For all nodes of type Manager, use the 'reports' property to find
  *   // their children.
- *   binding.addBinding("reports", null).setParameter(
- *           new SwingBindingSupport.TreeNodeClassParameter(Manager.class));
+ *   binding.addBinding("${reports}", null).setValue(
+ *           SwingBindingSupport.TreeNodeClassParameter, Manager.class);
  * </pre>
  * @author sky
  */
@@ -209,32 +210,11 @@ public final class SwingBindingSupport {
      * text components should change. If not specified, the default value is
      *{@code CHANGE_ON_ACTION_OR_FOCUS_LOST}.
      *
-     * @see javax.beans.binding.Binding#setParameter
+     * @see javax.beans.binding.Binding#setValue
      */
-    public static final class TextChangeStrategyParameter extends Parameter<TextChangeStrategy> {
-        public TextChangeStrategyParameter(TextChangeStrategy value) {
-            super("TextChangeStrategy", value);
-        }
-
-        /**
-         * A {@code TextChangeStrategyParameter} with value of TextChangeStrategy.CHANGE_ON_TYPE
-         */
-        public static final TextChangeStrategyParameter CHANGE_ON_TYPE =
-                new TextChangeStrategyParameter(TextChangeStrategy.CHANGE_ON_TYPE);
-
-        /**
-         * A {@code TextChangeStrategyParameter} with value of TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST
-         */
-        public static final TextChangeStrategyParameter CHANGE_ON_ACTION_OR_FOCUS_LOST =
-                new TextChangeStrategyParameter(TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST);
-
-        /**
-         * A {@code TextChangeStrategyParameter} with value of TextChangeStrategy.CHANGE_ON_FOCUS_LOST
-         */
-        public static final TextChangeStrategyParameter CHANGE_ON_FOCUS_LOST =
-                new TextChangeStrategyParameter(TextChangeStrategy.CHANGE_ON_FOCUS_LOST);
-    }
-
+    public static final Parameter<TextChangeStrategy> TextChangeStrategyParameter =
+            new Parameter<TextChangeStrategy>(TextChangeStrategy.class, "TextChangeStrategy");
+    
     /**
      * A {@code Binding.Parameter} used to specify whether the target component
      * should disable itself when the source path is incomplete. If not
@@ -242,46 +222,31 @@ public final class SwingBindingSupport {
      * {@code JCheckBox}'s "selected" property, {@code JSlider}'s "value"
      * property, and {@code JTextComponent}'s "text" property.l
      *
-     * @see javax.beans.binding.Binding#setParameter
+     * @see javax.beans.binding.Binding#setValue
      */
-    public static final class DisableOnIncompletePathParameter extends Parameter<Boolean> {
-        public DisableOnIncompletePathParameter(Boolean value) {
-            super("DisableOnIncompletePath", value);
-        }
-        
-        /** {@code DisableOnIncompletePathParameter} with value of {@code Boolean.TRUE} */
-        public static final DisableOnIncompletePathParameter TRUE = new DisableOnIncompletePathParameter(Boolean.TRUE);
-
-        /** {@code DisableOnIncompletePathParameter} with value of {@code Boolean.FALSE} */
-        public static final DisableOnIncompletePathParameter FALSE = new DisableOnIncompletePathParameter(Boolean.FALSE);
-    }
-
+    public static final Parameter<Boolean> DisableOnIncompletePathParameter =
+            new Parameter<Boolean>(Boolean.class, "DisableOnIncompletePath");
+    
     /**
      * A {@code Binding.Parameter} used to specify the column the binding applies
      * to. This is used on child bindings where the target is a {@code JTable}.
      * If not specified, an {@code IllegalArgumentException} is thrown when
      * bound.
      *
-     * @see javax.beans.binding.Binding#setParameter
+     * @see javax.beans.binding.Binding#setValue
      */
-    public static final class TableColumnParameter extends Parameter<Integer> {
-        public TableColumnParameter(Integer value) {
-            super("TableColumn", value);
-        }
-    }
-    
+    public static final Parameter<Integer> TableColumnParameter =
+            new Parameter<Integer>(Integer.class, "TableColumn");
+
     /**
      * A {@code Binding.Parameter} used to specify the class of the table column.
      * This is used on child bindings where the target is a {@code JTable}.
      * If not specified, the column class is treated as {@code Object.class}.
      *
-     * @see javax.beans.binding.Binding#setParameter
+     * @see javax.beans.binding.Binding#setValue
      */
-    public static final class TableColumnClassParameter extends Parameter<Class<?>> {
-        public TableColumnClassParameter(Class<?> value) {
-            super("TableColumnClass", value);
-        }
-    }
+    public static final Parameter<Class> TableColumnClassParameter =
+            new Parameter<Class>(Class.class, "TableColumnClass");
 
     // PENDING:
 //    public static final Key<Boolean> TableRendererKey =
@@ -294,32 +259,20 @@ public final class SwingBindingSupport {
      * A {@code Binding.Parameter} used to specify whether a node with no children
      * is treated as a leaf. The default is {@code false}.
      *
-     * @see javax.beans.binding.Binding#setParameter
+     * @see javax.beans.binding.Binding#setValue
      */
-    public static final class EmptyNodeTreatedAsLeafParameter extends Parameter<Boolean> {
-        public EmptyNodeTreatedAsLeafParameter(Boolean value) {
-            super("EmptyNodeTreatedAsLeaf", value);
-        }
-        
-        /** {@code EmptyNodeTreatedAsLeafParameter} with value of {@code Boolean.TRUE} */
-        public static final EmptyNodeTreatedAsLeafParameter TRUE = new EmptyNodeTreatedAsLeafParameter(Boolean.TRUE);
-
-        /** {@code EmptyNodeTreatedAsLeafParameter} with value of {@code Boolean.FALSE} */
-        public static final EmptyNodeTreatedAsLeafParameter FALSE = new EmptyNodeTreatedAsLeafParameter(Boolean.FALSE);
-    }
+    public static final Parameter<Boolean> EmptyNodeTreatedAsLeafParameter =
+            new Parameter<Boolean>(Boolean.class, "EmptyNodeTreatedAsLeaf");
 
     /**
      * A {@code Binding.Parameter} used to specify the class a child binding
      * applies to. If not specified, an {@code IllegalArgumentException} is
      * thrown when bound.
      *
-     * @see javax.beans.binding.Binding#setParameter
+     * @see javax.beans.binding.Binding#setValue
      */
-    public static final class TreeNodeClassParameter extends Parameter<Class<?>> {
-        public TreeNodeClassParameter(Class<?> value) {
-            super("TreeNodeClass", value);
-        }
-    }
+    public static final Parameter<Class> TreeNodeClassParameter =
+            new Parameter<Class>(Class.class, "TreeNodeClass");
     
     /**
      * A {@code Binding.Parameter} used to specify whether the child binding
@@ -327,13 +280,10 @@ public final class SwingBindingSupport {
      * {@code JComboBox}. See the description of how to bind to
      * a <a href="#JComboBoxBinding">JComboBox</a> for more information.
      *
-     * @see javax.beans.binding.Binding#setParameter
+     * @see javax.beans.binding.Binding#setValue
      */
-    public static final class ComboBoxSelectedObjectPropertyParameter extends Parameter<String> {
-        public ComboBoxSelectedObjectPropertyParameter(String value) {
-            super("ComboBoxSelectedObjectProperty", value);
-        }
-    }
-        
+        public static final Parameter<String> ComboBoxSelectedObjectPropertyParameter =
+            new Parameter<String>(String.class, "ComboBoxSelectedObjectProperty");
+
     private SwingBindingSupport() {}
 }

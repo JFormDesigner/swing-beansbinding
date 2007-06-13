@@ -625,16 +625,18 @@ public class Binding {
      *   binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
      *                    TextChangeStrategy.CHANGE_ON_TYPE);
      * </pre>
+     * Returns {@code this} to allow for chaining of method calls.
      *
      * @param key the key
      * @param value the value
+     * @return {@code this}
      *
      * @throws ClassCastException if {@code value} is not of the type defined
      *         by {@code key}
      * @throws NullPointerException if {@code key} is {@code null}
      * @throws IllegalStateException if bound
      */
-    public final <T> void setValue(Parameter<T> key, T value) {
+    public final <T> Binding setValue(Parameter<T> key, T value) {
         throwIfBound();
 
         if (value == null) {
@@ -648,6 +650,8 @@ public class Binding {
             }
             parameters.put(key, value);
         }
+        
+        return this;
     }
 
     /**
