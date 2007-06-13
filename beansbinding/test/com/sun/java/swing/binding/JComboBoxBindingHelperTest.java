@@ -54,7 +54,7 @@ public class JComboBoxBindingHelperTest extends TestCase {
         elements.get(1).setValue("1");
         elements.get(2).setValue("2");
         Binding binding = new Binding(elements, null, cb, "elements");
-        binding.setParameter(new SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter("${value}"));
+        binding.setValue(SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, "${value}");
         binding.addBinding("${value}", null);
         binding.bind();
 
@@ -82,7 +82,7 @@ public class JComboBoxBindingHelperTest extends TestCase {
         elements.get(1).setValue("1");
         elements.get(2).setValue("2");
         Binding binding = new Binding(elements, null, cb, "elements");
-        binding.setParameter(new SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter("${value}"));
+        binding.setValue(SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, "${value}");
         binding.bind();
 
         TestBean selectionBean = new TestBean();
