@@ -1725,32 +1725,40 @@ public class Binding {
      * {@code Parameter} is used to provide additional information to configure
      * a specific binding. See {@link javax.swing.binding.SwingBindingSupport}
      * for examples of this.
-     * <p>
-     * A {@code Parameter} encapsulates both the parameter that is being set, and
-     * the value that it is being set to. Parameters are identified based on their
-     * class type. As such, setting a parameter on a binding replaces any existing
-     * parameter of the same type.
      *
-     * @see #setParameter
-     * @see #getParameterValue
+     * @see #setValue
+     * @see #getValue
      */
-    public static abstract class Parameter<T> {
+    public static class Parameter<T> {
+        private final Class<T> valueClass;
         private final String description;
-        private final T value;
 
         /**
-         * Creates a {@code Parameter} with the specified description and value.
+         * Creates a {@code Parameter} with the specified value {@code Class} and
+         * description.
          *
-         * @param description a description of the {@code Parameter}
-         * @param value the parameter value, or {@code null}
-         * @throws IllegalArgumentException if {@code description} is {@code null}
+         * @param valueClass the expected type for values with this key
+         * @param description a description of this {@code Parameter}, used only 
+         *        for debugging
+         * @throws IllegalArgumentException if {@code valueClass} or
+         *         {@code description} {@code null}
          */
-        public Parameter(String description, T value) {
-            if (description == null) {
-                throw new IllegalArgumentException("Description must be non-null.");
+        public Parameter(Class<T> valueClass, String description) {
+            if (valueClass == null || description == null) {
+                throw new IllegalArgumentException(
+                        "Value class and description must be non-null");
             }
+            this.valueClass = valueClass;
             this.description = description;
-            this.value = value;
+        }
+
+        /**
+         * Returns the expected type for values associated with this key.
+         *
+         * @return the expected type for values associated with this key
+         */
+        public final Class<T> getValueClass() {
+            return valueClass;
         }
 
         /**
@@ -1763,27 +1771,18 @@ public class Binding {
         }
 
         /**
-         * Returns the parameter's value.
-         *
-         * @return the parameter's value
-         */
-        public final T getValue() {
-            return value;
-        }
-
-        /**
-         * Returns a string representing the state of the {@code Parameter}.
+         * Returns a string representing the state of this {@code Parameter}.
          * This method is intended to be used only for debugging purposes, and
          * the content and format of the returned string may vary between
          * implementations. The returned string may be empty but may not
          * be <code>null</code>.
          *
-         * @return a string representation of the {@code Parameter}
+         * @return a string representation of this {@code Parameter}
          */
         public String toString() {
             return getClass() + " [" +
-                    "description=" + description +
-                    ", value=" + getValue() +
+                    " description=" + description + ", " +
+                    " valueClass=" + getValueClass() +
                     "]";
         }
     }
