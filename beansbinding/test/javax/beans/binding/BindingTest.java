@@ -844,8 +844,8 @@ public class BindingTest extends TestCase {
         context.addBinding(bindingP);
         try {
             context.addBinding(bindingC);
-            fail("ISE should have been thrown");
-        } catch (IllegalStateException ise) {
+            fail("IAE should have been thrown");
+        } catch (IllegalArgumentException ise) {
         }
     }
 
@@ -857,8 +857,8 @@ public class BindingTest extends TestCase {
         context.addBinding(bindingC);
         try {
             bindingP.addBinding(bindingC);
-            fail("ISE should have been thrown");
-        } catch (IllegalStateException ise) {
+            fail("IAE should have been thrown");
+        } catch (IllegalArgumentException ise) {
         }
     }
 
@@ -898,6 +898,48 @@ public class BindingTest extends TestCase {
         }
     }
 
+    
+    public void testSetName() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        Binding bindingC = new Binding("CHILD", source, "${value}", target, "value");
+        bindingP.addBinding(bindingC);
+        assertEquals(bindingC, bindingP.getBinding("CHILD"));
+        bindingC.setName("CHILD2");
+        assertEquals(null, bindingP.getBinding("CHILD"));
+        assertEquals(bindingC, bindingP.getBinding("CHILD2"));
+    }
+
+    public void testSetName2() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        Binding bindingC = new Binding(source, "${value}", target, "value");
+        bindingP.addBinding(bindingC);
+        assertEquals(null, bindingP.getBinding("CHILD"));
+        bindingC.setName("CHILD2");
+        assertEquals(bindingC, bindingP.getBinding("CHILD2"));
+    }
+
+    public void testSetName3() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        Binding bindingC = new Binding("CHILD", source, "${value}", target, "value");
+        bindingP.addBinding(bindingC);
+        assertEquals(bindingC, bindingP.getBinding("CHILD"));
+        bindingC.setName(null);
+        assertEquals(null, bindingP.getBinding("CHILD"));
+    }
+
+    public void testSetName4() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        Binding bindingC = new Binding("CHILD", source, "${value}", target, "value");
+        Binding bindingC2 = new Binding("CHILD2", source, "${value}", target, "value");
+        bindingP.addBinding(bindingC);
+        bindingP.addBinding(bindingC2);
+        try {
+            bindingC2.setName("CHILD");
+            fail("IAE should have been thrown");
+        } catch (IllegalArgumentException iae) {
+        }
+    }
+    
     public void testUnbindUnbound() {
         Binding binding = new Binding(source, "${value}", target, "value");
         try {

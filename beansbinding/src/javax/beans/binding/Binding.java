@@ -319,9 +319,10 @@ public class Binding {
      * May be {@code null} to indicate that the binding doesn't have a name.
      *
      * @param name a name for the binding
-     * @throws IllegalStateException if bound, or if this binding belongs
-     *         to a BindingContext or a parent binding that already contains
-     *         a binding with this name
+     * @throws IllegalStateException if bound
+     * @throws IllegalArgumentException if this binding belongs to a
+     *         {@code BindingContext} or a parent binding that already contains
+     *         a binding with the given name
      */
     public final void setName(String name) {
         throwIfBound();
@@ -330,27 +331,42 @@ public class Binding {
             return;
         }
 
-        Binding parent = getParentBinding();
-        if (parent != null) {
-            if (parent.namedChildren == null) {
-                parent.namedChildren = new HashMap<String, Binding>();
-            }
+        // at first, this implementation seems a little over-complex,
+        // but the goal is to preserve the integrity of the object,
+        // only making changes if we're not going to throw an exception
 
-            if (name == null) {
-                parent.namedChildren.remove(name);
-            } else if (parent.namedChildren.containsKey(name)) {
-                throw new IllegalStateException("Sibling exists with the same name.");
-            } else {
-                parent.namedChildren.put(name, this);
+        if (parentBinding != null) {
+            if (name != null && parentBinding.getBinding(name) != null) {
+                throw new IllegalArgumentException("Sibling exists with same name.");
             }
         }
 
         if (context != null) {
             // PENDING - check the context and/or parent for the same name.
         }
+
+        if (parentBinding != null) {
+            if (this.name != null) {
+                assert parentBinding.namedChildren != null;
+                parentBinding.namedChildren.remove(this.name);
+            }
+
+            if (name != null) {
+                parentBinding.putChild(name, this);
+            }
+        }
+
         this.name = name;
     }
 
+    private void putChild(String name, Binding binding) {
+        if (namedChildren == null) {
+            namedChildren = new HashMap<String, Binding>();
+        }
+        
+        namedChildren.put(name, binding);
+    }
+    
     /**
      * Returns the binding's name.
      *
@@ -766,16 +782,18 @@ public class Binding {
         }
         return null;
     }
-    
+
+    private void setParentBinding(Binding binding) {
+        // caller to do error checking first
+        this.parentBinding = binding;
+    }
+
     public final Binding getParentBinding() {
         return parentBinding;
     }
 
     final void setContext(BindingContext context) {
-        throwIfBound();
-        if (getParentBinding() != null) {
-            throw new IllegalStateException("Child binding cannot be added to a context");
-        }
+        // caller to do error checking first
         this.context = context;
     }
 
@@ -1402,8 +1420,8 @@ public class Binding {
      * @param sourceExpression El expression specifying the "property" of the source
      * @param targetPath path to the property of the target
      * @return the {@code Binding}
-     * @throws IllegalStateException if this binding already has a child with the
-     *         given name
+     * @throws IllegalArgumentException if this binding already has a child with
+     *         the given name
      */
     public final Binding addBinding(String name, String sourceExpression, String targetPath) {
         Binding binding = new Binding(name, sourceExpression, targetPath);
@@ -1416,30 +1434,32 @@ public class Binding {
      * Note: Child bindings are not to be added to a {@code BindingContext}.
      *
      * @param binding the {@code Binding} to add as a child
+     * @throws IllegalStateException if this binding is bound or the given child
+     *         binding is bound
      * @throws IllegalArgumentException if {@code binding} has already been
-     *         added to another {@code Binding}
-     * @throws IllegalStateException if this binding is bound, the given child
-     *         binding is bound, the given child binding belongs to a context,
-     *         or if this binding already has a child with the same name as the
-     *         given binding
+     *         added to a {@code Binding} or {@code BindingContext},
+     *         or if this binding already has a child with the same name as
+     *         the given binding
      * @throws NullPointerException if {@code binding} is {@code null}
      */
     public final void addBinding(Binding binding) {
         throwIfBound();
+        binding.throwIfBound();
+
         if (binding.getParentBinding() != null) {
-            throw new IllegalArgumentException(
-                    "Can not add a Binding to two separate Bindings");
+            throw new IllegalArgumentException("Can not add a Binding to two separate parents");
+        }
+
+        if (binding.getContext() != null) {
+            throw new IllegalArgumentException("Binding in a context cannot be parented");
         }
 
         String name = binding.getName();
         if (name != null) {
-            if (namedChildren == null) {
-                namedChildren = new HashMap<String, Binding>();
-                namedChildren.put(name, binding);
-            } else if (namedChildren.containsKey(name)) {
-                throw new IllegalStateException("Binding already contains a child with name \"" + name + "\"");
+            if (getBinding(name) != null) {
+                throw new IllegalArgumentException("Binding already contains a child with name \"" + name + "\"");
             } else {
-                namedChildren.put(name, binding);
+                putChild(name, binding);
             }
         }
 
@@ -1462,21 +1482,23 @@ public class Binding {
      * @throws NullPointerException if {@code binding} is {@code null}
      * @throws IllegalArgumentException if {@code binding} has not been added
      *         to this {@code Binding}
-     * @throws IllegalStateException if bound
+     * @throws IllegalStateException if bound, or if the child is bound
      */
     public final void removeBinding(Binding binding) {
         throwIfBound();
+        binding.throwIfBound();
+
         if (binding.getParentBinding() != this) {
-            throw new IllegalArgumentException(
-                    "Binding is not a child of this Binding");
+            throw new IllegalArgumentException("Binding is not a child of this Binding");
         }
+
+        binding.setParentBinding(null);
 
         String name = binding.getName();
         if (name != null) {
             namedChildren.remove(name);
         }
 
-        binding.setParentBinding(null);
         List<Binding> bindings = new ArrayList<Binding>(this.childBindings);
         bindings.remove(binding);
         childBindings = Collections.unmodifiableList(bindings);
@@ -1518,14 +1540,6 @@ public class Binding {
         if (binding.isBound()) {
             binding.unbind();
         }
-    }
-    
-    private void setParentBinding(Binding parentBinding) {
-        throwIfBound();
-        if (getContext() != null) {
-            throw new IllegalStateException("Binding in a context cannot be parented");
-        }
-        this.parentBinding = parentBinding;
     }
     
     private void unbindChildOnCommit(Binding binding) {
@@ -1737,8 +1751,8 @@ public class Binding {
          * @throws IllegalArgumentException if the specified
          *         {@code Binding} is not a child of the Binding returned by
          *         {@code getBinding()}
-         * @throws IllegalStateException if already bound, or
-         *         the source or target is {@code null}
+         * @throws IllegalStateException if the given binding is already bound,
+         *         or the source or target is {@code null}
          * @throws PropertyResolverException if {@code PropertyResolver} throws an
          *         exception; refer to {@code PropertyResolver} for the conditions
          *         under which an exception is thrown
