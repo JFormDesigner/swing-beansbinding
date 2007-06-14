@@ -235,6 +235,7 @@ public class Binding {
     private ValueState targetValueState;
     private ValueState sourceValueState;
     private List<Binding> childBindings;
+    private Map<String, Binding> namedChildren;
     private boolean keepUncommitted;
     private BindingTarget bindingTarget;
     private BindingTargetProvider bindingProvider;
@@ -1409,7 +1410,21 @@ public class Binding {
             throw new IllegalArgumentException(
                     "Can not add a Binding to two separate Bindings");
         }
+
+        String name = binding.getName();
+        if (name != null) {
+            if (namedChildren == null) {
+                namedChildren = new HashMap<String, Binding>();
+                namedChildren.put(name, binding);
+            } else if (namedChildren.containsKey(name)) {
+                throw new IllegalStateException("Binding already contains a child with name \"" + name + "\"");
+            } else {
+                namedChildren.put(name, binding);
+            }
+        }
+
         binding.setParentBinding(this);
+
         List<Binding> childBindings;
         if (this.childBindings == null) {
             childBindings = new ArrayList<Binding>(1);
@@ -1435,12 +1450,36 @@ public class Binding {
             throw new IllegalArgumentException(
                     "Binding is not a child of this Binding");
         }
+
+        String name = binding.getName();
+        if (name != null) {
+            namedChildren.remove(name);
+        }
+
         binding.setParentBinding(null);
         List<Binding> bindings = new ArrayList<Binding>(this.childBindings);
         bindings.remove(binding);
         childBindings = Collections.unmodifiableList(bindings);
     }
-    
+
+    /**
+     * Returns the child binding with the given name, or {@code null}
+     * if there is no such binding. Bindings without a name can not
+     * be accessed by this method; it throws
+     * {@code IllegalArgumentException} for a {@code null} name.
+     *
+     * @param name name of the binding to fetch
+     * @return the child binding with the given name, or {@code null}
+     * @throws IllegalArgumentException for a {@code null} name
+     */
+    public final Binding getBinding(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("cannot fetch unnamed bindings");
+        }
+
+        return namedChildren == null ? null : namedChildren.get(name);
+    }
+
     /**
      * Returns a list of the child {@code Binding}s of this {@code Binding}.
      * The returned list is unmodifiable.

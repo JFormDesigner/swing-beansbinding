@@ -861,6 +861,42 @@ public class BindingTest extends TestCase {
         } catch (IllegalStateException ise) {
         }
     }
+
+    public void testFetchByName1() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        Binding child = bindingP.addBinding("CHILD", "${value}", "value");
+        Binding fetch = bindingP.getBinding("CHILD");
+        assertEquals(child, fetch);
+    }
+
+    public void testFetchByName2() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        bindingP.addBinding("FOO", "${value}", "value");
+        Binding fetch = bindingP.getBinding("CHILD");
+        assertEquals(null, fetch);
+    }
+
+    public void testFetchByName3() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        bindingP.addBinding("${value}", "value");
+        Binding fetch = bindingP.getBinding("CHILD");
+        assertEquals(null, fetch);
+    }
+
+    public void testFetchByName4() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        Binding fetch = bindingP.getBinding("CHILD");
+        assertEquals(null, fetch);
+    }
+
+    public void testFetchByName5() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        try {
+            bindingP.getBinding(null);
+            fail("IAE should have been thrown");
+        } catch (IllegalArgumentException ise) {
+        }
+    }
     
     private static class TestBinding extends Binding{
         TestBinding() {
