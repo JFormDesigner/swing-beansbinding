@@ -54,8 +54,9 @@ import static javax.el.Expression.Result.Type.*;
  * {@code getManager().getFirstName()}. Using EL for the source provides more
  * power than using simple reflection. You can reference multiple properties
  * using an expression (for example: {@code "${lastName}, ${firstName}"})
- * and even use functions. Please refer to the EL documentation for more
- * information.
+ * and even use functions. For the purposes of this documentation, we'll refer
+ * to this as the source "property". Please refer to the EL documentation for
+ * more information on using EL.
  * <p>
  * The target of a binding uses simple dot-separation syntax to identify the path
  * to a property, and is resolved using reflection. To resolve the target property,
@@ -424,8 +425,7 @@ public class Binding {
     }
     
     /**
-     * Returns the path to the property of the target to bind to
-     * as a {@code PropertyPath}.
+     * Returns the path to the property of the target to bind to.
      *
      * @return path to the property of the target to bind to
      */

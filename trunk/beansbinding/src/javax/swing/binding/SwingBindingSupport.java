@@ -40,7 +40,7 @@ import javax.swing.JSlider;
  *
  * <pre>
  *   List<BugTypes> bugTypes;
- *   // Create the binding specifying the 
+ *   // Create the binding from the List to the JComboBox
  *   Binding binding = new Binding(bugTypes, null, jComboBox, "elements");
  *   // Specify that each element is to be shown using the 'description'
  *   // property. If this is not specified, the elements in the list are
@@ -69,7 +69,7 @@ import javax.swing.JSlider;
  *
  * <pre>
  *   List<BugTypes> bugTypes;
- *   // Create the binding specifying the 
+ *   // Create the binding from the List to the JComboBox
  *   Binding binding = new Binding(bugTypes, null, jComboBox, "elements");
  *   // Specify that the "selectedElementProperty" corresponds to
  *   // selectedObject.id.
@@ -93,7 +93,7 @@ import javax.swing.JSlider;
  *
  * <pre>
  *   ObservableList<Customer> customers;
- *   // Create the binding for the List.
+ *   // Create the binding from the List to the JList.
  *   Binding binding = new Binding(customers, null, jList, "elements");
  *   // Specify getValueAt is to return the 'firstName' property of
  *   // each element.
@@ -133,13 +133,13 @@ import javax.swing.JSlider;
  *
  * <pre>
  *   ObservableList<Customer> customers;
- *   // Create the binding for the List.
+ *   // Create the binding from the List to the JTable.
  *   Binding binding = new Binding(customers, null, jTable, "elements");
  *   // Specify the first column should use the "firstName" property
- *   binding.addBinding("firstName", null).setValue(
+ *   binding.addBinding("${firstName}", null).setValue(
  *                      SwingBindingSupport.TableColumnParameter, 0);
  *   // Specify the second column should use the "lastName" property
- *   binding.addBinding("lastName", null).setValue(
+ *   binding.addBinding("${lastName}", null).setValue(
  *                      SwingBindingSupport.TableColumnParameter, 1);
  * </pre>
  *
