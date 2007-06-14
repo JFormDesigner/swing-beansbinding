@@ -852,15 +852,14 @@ public class Binding {
     /**
      * Unrealizes this binding.
      *
-     * @throws IllegalStateException if already bound
+     * @throws IllegalStateException if binding is not bound
      * @throws PropertyResolverException if {@code PropertyResolver} throws an
      *         exception; refer to {@code PropertyResolver} for the conditions
      *         under which an exception is thrown
      */
     public final void unbind() {
-        if (!isBound()) {
-            throw new IllegalStateException("Binding is not bound");
-        }
+        throwIfNotBound();
+
         unbindBindingTarget();
         bound = false;
         sourceResolver.unbind();
