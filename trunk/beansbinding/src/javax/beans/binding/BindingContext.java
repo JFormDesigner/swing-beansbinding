@@ -149,9 +149,10 @@ public class BindingContext {
      * @param binding the {@code Binding} to add, must be
      *        {@code non-null}
      *
-     * @throws IllegalArgumentException if {@code binding} is {@code null}
-     * @throws IllegalStateException if {@code binding} is bound, has already
-     *         been added, or is a child binding
+     * @throws IllegalArgumentException if {@code binding} is {@code null},
+     *         has already been added to a context, is a child binding,
+     *         or has the same name as an existing binding in the context
+     * @throws IllegalStateException if {@code binding} is bound
      * @see #bind
      */
     public void addBinding(Binding binding) {
@@ -159,12 +160,13 @@ public class BindingContext {
             throw new IllegalArgumentException("Binding must be non-null");
         }
         if (binding.isBound()) {
-            throw new IllegalStateException(
-                    "Can not add bound Binding");
+            throw new IllegalStateException("Can not add bound Binding");
         }
         if (binding.getContext() != null) {
-            throw new IllegalStateException(
-                    "Can not add Binding to two different BindingContexts");
+            throw new IllegalArgumentException("Can not add Binding to two different BindingContexts");
+        }
+        if (binding.getParentBinding() != null) {
+            throw new IllegalArgumentException("Child binding cannot be added to a context");
         }
         binding.setContext(this);
         unbound.add(binding);
@@ -196,6 +198,8 @@ public class BindingContext {
      * @param target the target of the binding
      * @param targetPath path to the paroperty of the target
      * @return the {@code Binding}
+     * @throws IllegalArgumentException if the context already has a binding
+     *         with the given name
      */
     public Binding addBinding(String name, Object source,
                               String sourceExpression, Object target,
@@ -211,15 +215,16 @@ public class BindingContext {
      *
      * @param binding the {@code Binding} to remove
      * @throws NullPointerException if {@code binding} is {@code null}
-     * @throws IllegalStateException if {@code binding} is {@code bound},
-     *         or has not been added to this context
+     * @throws IllegalStateException if {@code binding} is {@code bound}
+     * @throws IllegalArgumentException if {@code binding} is not in this
+     *         context
      */
     public void removeBinding(Binding binding) {
         if (binding.isBound()) {
             throw new IllegalStateException("Must unbind before removing");
         }
         if (!unbound.contains(binding)) {
-            throw new IllegalStateException("Unknown Binding");
+            throw new IllegalArgumentException("Unknown Binding");
         }
         binding.setContext(null);
         unbound.remove(binding);
