@@ -325,9 +325,30 @@ public class Binding {
      */
     public final void setName(String name) {
         throwIfBound();
+
+        if (this.name == name || (this.name != null && this.name.equals(name))) {
+            return;
+        }
+
+        Binding parent = getParentBinding();
+        if (parent != null) {
+            if (parent.namedChildren == null) {
+                parent.namedChildren = new HashMap<String, Binding>();
+            }
+
+            if (name == null) {
+                parent.namedChildren.remove(name);
+            } else if (parent.namedChildren.containsKey(name)) {
+                throw new IllegalStateException("Sibling exists with the same name.");
+            } else {
+                parent.namedChildren.put(name, this);
+            }
+        }
+
+        if (context != null) {
+            // PENDING - check the context and/or parent for the same name.
+        }
         this.name = name;
-        // PENDING - check the context and/or parent for the same name.
-        // Question: can a binding have a parent AND a context?
     }
 
     /**
@@ -746,7 +767,7 @@ public class Binding {
         return null;
     }
     
-    Binding getParentBinding() {
+    public final Binding getParentBinding() {
         return parentBinding;
     }
 

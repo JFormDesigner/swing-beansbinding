@@ -211,9 +211,8 @@ public class BindingContext {
      *
      * @param binding the {@code Binding} to remove
      * @throws NullPointerException if {@code binding} is {@code null}
-     * @throws IllegalStateException if {@code binding} is {@code bound}
-     * @throws IllegalStateException if {@code binding} has already been
-     *         added
+     * @throws IllegalStateException if {@code binding} is {@code bound},
+     *         or has not been added to this context
      */
     public void removeBinding(Binding binding) {
         if (binding.isBound()) {
