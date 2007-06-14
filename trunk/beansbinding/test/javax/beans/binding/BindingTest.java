@@ -897,6 +897,15 @@ public class BindingTest extends TestCase {
         } catch (IllegalArgumentException ise) {
         }
     }
+
+    public void testUnbindUnbound() {
+        Binding binding = new Binding(source, "${value}", target, "value");
+        try {
+            binding.unbind();
+            fail("ISE should have been thrown");
+        } catch (IllegalStateException ise) {
+        }
+    }
     
     private static class TestBinding extends Binding{
         TestBinding() {
