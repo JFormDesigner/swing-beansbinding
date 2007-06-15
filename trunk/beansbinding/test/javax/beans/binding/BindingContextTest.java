@@ -226,6 +226,54 @@ public class BindingContextTest extends TestCase {
         } catch (IllegalArgumentException iae) {
         }
     }
+
+    public void testGetBindings() {
+        BindingContext context = new BindingContext();
+        List<Binding> bindings = context.getBindings();
+        assertEquals(0, context.getBindings().size());
+    }
+
+    public void testGetBindings1() {
+        BindingContext context = new BindingContext();
+        context.addBinding("NAME", source, "${value}", target, "value");
+        assertEquals(1, context.getBindings().size());
+    }
+
+    public void testGetBindings2() {
+        BindingContext context = new BindingContext();
+        context.addBinding("NAME", source, "${value}", target, "value");
+        context.addBinding("NAME2", source, "${value}", target, "value");
+        assertEquals(2, context.getBindings().size());
+    }
+
+    public void testGetBindings3() {
+        BindingContext context = new BindingContext();
+        Binding one = context.addBinding("NAME", source, "${value}", target, "value");
+        Binding two = context.addBinding("NAME2", source, "${value}", target, "value");
+        one.bind();
+        assertEquals(2, context.getBindings().size());
+    }
+
+    public void testGetBindings4() {
+        BindingContext context = new BindingContext();
+        Binding one = context.addBinding("NAME", source, "${value}", target, "value");
+        Binding two = context.addBinding("NAME2", source, "${value}", target, "value");
+        one.bind();
+        two.bind();
+        one.unbind();
+        assertEquals(2, context.getBindings().size());
+    }
+
+    public void testGetBindings5() {
+        BindingContext context = new BindingContext();
+        Binding one = context.addBinding("NAME", source, "${value}", target, "value");
+        Binding two = context.addBinding("NAME2", source, "${value}", target, "value");
+        one.bind();
+        context.bind();
+        assertEquals(2, context.getBindings().size());
+        context.unbind();
+        assertEquals(2, context.getBindings().size());
+    }
     
     private void assertPropertyChanges(
             List<EventListenerRecorder.InvocationRecord> records, 
