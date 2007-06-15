@@ -204,13 +204,20 @@ abstract class ListBindingManager implements ObservableListListener {
         private final boolean isValue;
         private final Class<?> targetType;
         private ELPropertyResolver resolver;
+        private boolean editable;
 
         protected ColumnDescription(Binding binding, int column,
                 boolean isValue, Class<?> targetType) {
+            this(binding, column, isValue, targetType, true);
+        }
+
+        protected ColumnDescription(Binding binding, int column,
+                boolean isValue, Class<?> targetType, boolean editable) {
             this.binding = binding;
             this.column = column;
             this.isValue = isValue;
             this.targetType = targetType;
+            this.editable = editable;
         }
         
         // NOTE: This may be null!
@@ -243,6 +250,10 @@ abstract class ListBindingManager implements ObservableListListener {
 
         public Class<?> getTargetType() {
             return targetType;
+        }
+
+        public boolean isEditable() {
+            return editable;
         }
         
         public String toString() {

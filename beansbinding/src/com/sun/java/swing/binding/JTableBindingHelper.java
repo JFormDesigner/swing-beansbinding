@@ -184,6 +184,9 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
                 List<ListBindingManager.ColumnDescription> columns) {
             // PENDING: this should be done once
             if (elementsBinding != null) {
+                Boolean tableEditable =
+                        elementsBinding.getValue(SwingBindingSupport.EditableParameter, true);
+
                 for (Binding binding : elementsBinding.getBindings()) {
                     Integer column = binding.getValue(
                             SwingBindingSupport.TableColumnParameter, null);
@@ -200,6 +203,14 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
                     boolean isValue = (!isRenderer && !isEditor);
                     Class<?> type = binding.getValue(SwingBindingSupport.TableColumnClassParameter,
                             Object.class);
+
+                    // PENDING: this should be false if no writable property
+                    Boolean columnEditable =
+                            binding.getValue(SwingBindingSupport.EditableParameter, null);
+                    if (columnEditable == null) {
+                        columnEditable = tableEditable;
+                    }
+
                     if ((isValue && (isRenderer || isEditor)) ||
                             (isRenderer && (isValue || isEditor)) ||
                             (isEditor) && (isValue || isRenderer) ||
@@ -213,7 +224,7 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
                     // PENDING: renderer and editor binding
                     if (isValue) {
                         columns.add(new ColumnDescription(
-                                binding, column, true, type));
+                                binding, column, true, type, columnEditable));
                     }
                 }
             }
@@ -335,6 +346,12 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
+            ColumnDescription cd = getValueColumnDescription(columnIndex);
+            if (cd != null) {
+                // PENDING: this should return false if no writable property
+                return cd.isEditable();
+            }
+
             // PENDING: this should return false if no writable property
             return true;
         }

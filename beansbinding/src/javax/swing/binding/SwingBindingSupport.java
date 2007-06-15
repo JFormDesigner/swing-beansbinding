@@ -248,6 +248,17 @@ public final class SwingBindingSupport {
     public static final Parameter<Class> TableColumnClassParameter =
             new Parameter<Class>("TableColumnClass");
 
+    /**
+     * A {@code Binding.Parameter} used to specify whether or not the target
+     * component is editable. Currently used for {@code JTable} and
+     * {@code JTable} column bindings. If not specified, the component is
+     * editable.
+     *
+     * @see javax.beans.binding.Binding#setValue
+     */
+    public static final Parameter<Boolean> EditableParameter =
+            new Parameter<Boolean>("Editable");
+
     // PENDING:
 //    public static final Key<Boolean> TableRendererKey =
 //            new Key<Boolean>(Boolean.class, "TableRenderer");
