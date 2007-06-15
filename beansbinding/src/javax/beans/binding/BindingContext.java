@@ -66,6 +66,7 @@ import javax.el.VariableMapper;
 public class BindingContext {
     private final List<Binding> bound;
     private final List<Binding> unbound;
+    Map<String, Binding> namedBindings;
     private final PropertyChangeSupport changeSupport;
     private final List<BindingListener> bindingListeners;
     private boolean uncommittedValues;
@@ -141,6 +142,32 @@ public class BindingContext {
         return hasEditedTargetValues;
     }
 
+    void putNamed(String name, Binding binding) {
+        if (namedBindings == null) {
+            namedBindings = new HashMap<String, Binding>();
+        }
+        
+        namedBindings.put(name, binding);
+    }
+
+    /**
+     * Returns the binding with the given name, or {@code null}
+     * if there is no such binding. Bindings without a name can not
+     * be accessed by this method; it throws
+     * {@code IllegalArgumentException} for a {@code null} name.
+     *
+     * @param name name of the binding to fetch
+     * @return the binding with the given name, or {@code null}
+     * @throws IllegalArgumentException for a {@code null} name
+     */
+    public final Binding getBinding(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException("cannot fetch unnamed bindings");
+        }
+
+        return namedBindings == null ? null : namedBindings.get(name);
+    }
+
     /**
      * Adds a {@code Binding} to this {@code BindingContext}.
      * The specified {@code Binding} must not be bound or be a child binding.
@@ -170,6 +197,16 @@ public class BindingContext {
         if (binding.getParentBinding() != null) {
             throw new IllegalArgumentException("Child binding cannot be added to a context");
         }
+
+        String name = binding.getName();
+        if (name != null) {
+            if (getBinding(name) != null) {
+                throw new IllegalArgumentException("Context already contains a binding with name \"" + name + "\"");
+            } else {
+                putNamed(name, binding);
+            }
+        }
+
         binding.setContext(this);
         unbound.add(binding);
     }
@@ -232,6 +269,13 @@ public class BindingContext {
         if (!unbound.contains(binding)) {
             throw new IllegalArgumentException("Unknown Binding");
         }
+
+        String name = binding.getName();
+        if (name != null) {
+            assert namedBindings != null;
+            namedBindings.remove(name);
+        }
+        
         binding.setContext(null);
         unbound.remove(binding);
     }

@@ -342,7 +342,9 @@ public class Binding {
         }
 
         if (context != null) {
-            // PENDING - check the context and/or parent for the same name.
+            if (name != null && context.getBinding(name) != null) {
+                throw new IllegalArgumentException("BindingContext contains binding with same name.");
+            }
         }
 
         if (parentBinding != null) {
@@ -352,14 +354,25 @@ public class Binding {
             }
 
             if (name != null) {
-                parentBinding.putChild(name, this);
+                parentBinding.putNamed(name, this);
+            }
+        }
+
+        if (context != null) {
+            if (this.name != null) {
+                assert context.namedBindings != null;
+                context.namedBindings.remove(this.name);
+            }
+
+            if (name != null) {
+                context.putNamed(name, this);
             }
         }
 
         this.name = name;
     }
 
-    private void putChild(String name, Binding binding) {
+    private void putNamed(String name, Binding binding) {
         if (namedChildren == null) {
             namedChildren = new HashMap<String, Binding>();
         }
@@ -1459,7 +1472,7 @@ public class Binding {
             if (getBinding(name) != null) {
                 throw new IllegalArgumentException("Binding already contains a child with name \"" + name + "\"");
             } else {
-                putChild(name, binding);
+                putNamed(name, binding);
             }
         }
 
@@ -1496,6 +1509,7 @@ public class Binding {
 
         String name = binding.getName();
         if (name != null) {
+            assert namedChildren != null;
             namedChildren.remove(name);
         }
 
