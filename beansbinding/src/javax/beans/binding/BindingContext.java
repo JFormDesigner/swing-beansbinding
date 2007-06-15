@@ -145,6 +145,8 @@ public class BindingContext {
      * Adds a {@code Binding} to this {@code BindingContext}.
      * The specified {@code Binding} must not be bound or be a child binding.
      * {@code Binding}s are bound by invoking the {@code bind} method.
+     * Note: Once added to a context, one may not call {@code bind} directly
+     * on the added binding.
      *
      * @param binding the {@code Binding} to add, must be
      *        {@code non-null}
@@ -174,6 +176,8 @@ public class BindingContext {
     
     /**
      * Creates and adds {@code Binding} to this {@code BindingContext}.
+     * Note: Once added to a context, one may not call {@code bind} directly
+     * on the added binding.
      *
      * @param source the source of the binding
      * @param sourceExpression El expression specifying the "property" of the source
@@ -191,6 +195,8 @@ public class BindingContext {
 
     /**
      * Creates and adds {@code Binding} to this {@code BindingContext}.
+     * Note: Once added to a context, one may not call {@code bind} directly
+     * on the added binding.
      *
      * @param name a name for the binding
      * @param source the source of the binding
