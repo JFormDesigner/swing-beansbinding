@@ -898,7 +898,14 @@ public class BindingTest extends TestCase {
         }
     }
 
-    
+    public void testFetchByName6() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        Binding child = bindingP.addBinding("CHILD", "${value}", "value");
+        bindingP.removeBinding(child);
+        Binding fetch = bindingP.getBinding("CHILD");
+        assertEquals(null, fetch);
+    }
+
     public void testSetName() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
         Binding bindingC = new Binding("CHILD", source, "${value}", target, "value");

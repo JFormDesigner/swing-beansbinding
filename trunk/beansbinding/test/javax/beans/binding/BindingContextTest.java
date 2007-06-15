@@ -142,6 +142,91 @@ public class BindingContextTest extends TestCase {
         assertTrue(context.getHasInvalidValues());
     }
 
+    public void testFetchByName1() {
+        BindingContext context = new BindingContext();
+        Binding binding = context.addBinding("BINDING", source, "${value}", target, "value");
+        Binding fetch = context.getBinding("BINDING");
+        assertEquals(binding, fetch);
+    }
+
+    public void testFetchByName2() {
+        BindingContext context = new BindingContext();
+        Binding binding = context.addBinding("FOO", source, "${value}", target, "value");
+        Binding fetch = context.getBinding("BINDING");
+        assertEquals(null, fetch);
+    }
+
+    public void testFetchByName3() {
+        BindingContext context = new BindingContext();
+        Binding binding = context.addBinding(source, "${value}", target, "value");
+        Binding fetch = context.getBinding("BINDING");
+        assertEquals(null, fetch);
+    }
+
+    public void testFetchByName4() {
+        BindingContext context = new BindingContext();
+        Binding fetch = context.getBinding("BINDING");
+        assertEquals(null, fetch);
+    }
+
+    public void testFetchByName5() {
+        BindingContext context = new BindingContext();
+        try {
+            context.getBinding(null);
+            fail("IAE should have been thrown");
+        } catch (IllegalArgumentException ise) {
+        }
+    }
+
+    public void testFetchByName6() {
+        Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
+        Binding child = bindingP.addBinding("CHILD", "${value}", "value");
+        bindingP.removeBinding(child);
+        Binding fetch = bindingP.getBinding("CHILD");
+        assertEquals(null, fetch);
+    }
+
+    public void testSetName() {
+        BindingContext context = new BindingContext();
+        Binding binding = new Binding("BINDING", source, "{$value}", target, "value");
+        context.addBinding(binding);
+        assertEquals(binding, context.getBinding("BINDING"));
+        binding.setName("BINDING2");
+        assertEquals(null, context.getBinding("BINDING"));
+        assertEquals(binding, context.getBinding("BINDING2"));
+    }
+
+    public void testSetName2() {
+        BindingContext context = new BindingContext();
+        Binding binding = new Binding(source, "{$value}", target, "value");
+        context.addBinding(binding);
+        assertEquals(null, context.getBinding("BINDING"));
+        binding.setName("BINDING2");
+        assertEquals(binding, context.getBinding("BINDING2"));
+    }
+
+    public void testSetName3() {
+        BindingContext context = new BindingContext();
+        Binding binding = new Binding("BINDING", source, "{$value}", target, "value");
+        context.addBinding(binding);
+        assertEquals(binding, context.getBinding("BINDING"));
+        binding.setName(null);
+        assertEquals(null, context.getBinding("BINDING"));
+    }
+
+    public void testSetName4() {
+        BindingContext context = new BindingContext();
+        Binding binding = new Binding("BINDING", source, "{$value}", target, "value");
+        Binding binding2 = new Binding("BINDING2", source, "{$value}", target, "value");
+        context.addBinding(binding);
+        context.addBinding(binding2);
+        try {
+            binding2.setName("BINDING");
+            fail("IAE should have been thrown");
+        } catch (IllegalArgumentException iae) {
+        }
+    }
+    
     private void assertPropertyChanges(
             List<EventListenerRecorder.InvocationRecord> records, 
             Object...args) {
