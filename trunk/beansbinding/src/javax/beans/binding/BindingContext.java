@@ -172,8 +172,6 @@ public class BindingContext {
      * Adds a {@code Binding} to this {@code BindingContext}.
      * The specified {@code Binding} must not be bound or be a child binding.
      * {@code Binding}s are bound by invoking the {@code bind} method.
-     * Note: Once added to a context, one may not call {@code bind} directly
-     * on the added binding.
      *
      * @param binding the {@code Binding} to add, must be
      *        {@code non-null}
@@ -213,8 +211,6 @@ public class BindingContext {
     
     /**
      * Creates and adds {@code Binding} to this {@code BindingContext}.
-     * Note: Once added to a context, one may not call {@code bind} directly
-     * on the added binding.
      *
      * @param source the source of the binding
      * @param sourceExpression El expression specifying the "property" of the source
@@ -232,8 +228,6 @@ public class BindingContext {
 
     /**
      * Creates and adds {@code Binding} to this {@code BindingContext}.
-     * Note: Once added to a context, one may not call {@code bind} directly
-     * on the added binding.
      *
      * @param name a name for the binding
      * @param source the source of the binding
@@ -284,8 +278,6 @@ public class BindingContext {
      * Binds the set of unbound {@code Binding}s that have been
      * added to this {@code BindingContext}.
      *
-     * @throws IllegalStateException if a binding added via
-     *         {@code addBinding} has been bound
      * @throws PropertyResolverException if {@code PropertyResolver} throws an
      *         exception; refer to {@code PropertyResolver} for the conditions
      *         under which an exception is thrown
@@ -294,13 +286,6 @@ public class BindingContext {
      */
     public void bind() {
         List<Binding> toBind = new ArrayList<Binding>(unbound);
-        // Make sure none of the bindings are already bound.
-        for (Binding binding : toBind) {
-            binding.throwIfBound();
-        }
-        
-        // None of them are bound, so bind them.
-        unbound.clear();
         for (Binding binding : toBind) {
             binding.bind();
         }
@@ -316,7 +301,6 @@ public class BindingContext {
      */
     public void unbind() {
         List<Binding> toUnbind = new ArrayList<Binding>(bound);
-        bound.clear();
         for (Binding binding : toUnbind) {
             binding.unbind();
         }
@@ -581,6 +565,7 @@ public class BindingContext {
     }
 
     void bindingBecameBound(Binding binding) {
+        unbound.remove(binding);
         bound.add(binding);
         // No need to updateState here, that'll be triggered when the Binding
         // updates the values.
