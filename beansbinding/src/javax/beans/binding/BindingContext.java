@@ -169,6 +169,18 @@ public class BindingContext {
     }
 
     /**
+     * Returns a list of the {@code Binding}s in this {@code BindingContext}.
+     * The returned list is unmodifiable.
+     *
+     * @return a list of the {@code Binding}s in this {@code BindingContext}
+     */
+    public final List<Binding> getBindings() {
+        ArrayList list = new ArrayList(bound);
+        list.addAll(unbound);
+        return Collections.unmodifiableList(list);
+    }
+
+    /**
      * Adds a {@code Binding} to this {@code BindingContext}.
      * The specified {@code Binding} must not be bound or be a child binding.
      * {@code Binding}s are bound by invoking the {@code bind} method.
