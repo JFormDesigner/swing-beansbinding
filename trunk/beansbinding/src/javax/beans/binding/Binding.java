@@ -17,6 +17,8 @@ import java.util.List;
 import javax.el.ELContext;
 import javax.el.Expression;
 import static javax.el.Expression.Result.Type.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * {@code Binding} represents a binding between one or more properties of a
@@ -127,6 +129,7 @@ import static javax.el.Expression.Result.Type.*;
  *
  * @author Scott Violet
  * @author Shannon Hickey
+ * @author Jan Stola
  */
 public class Binding {
     //
@@ -513,6 +516,9 @@ public class Binding {
      * Sets the {@code BindingConverter} used to convert values.
      * {@code BindingConverter} is only used to convert {@code non-null}
      * values.
+     * <p>
+     * {@code Binding} automatically converts between some of the known types
+     * if no converter is specified.
      *
      * @param converter the {@code BindingConverter}
      * @throws IllegalStateException if bound
@@ -750,7 +756,7 @@ public class Binding {
             Object sourceValue, Class<?> targetType) {
         BindingConverter converter = getConverter();
         if (converter == null) {
-            converter = getConverter(sourceType, targetType);
+            converter = BindingConverter.getConverter(sourceType, targetType);
         }
         return converter;
     }
@@ -767,33 +773,9 @@ public class Binding {
             Object targetValue, Class<?> sourceType) {
         BindingConverter converter = getConverter();
         if (converter == null) {
-            converter = getConverter(sourceType, targetType);
+            converter = BindingConverter.getConverter(sourceType, targetType);
         }
         return converter;
-    }
-    
-    private final boolean isIntClass(Class<?> type) {
-        return (type == int.class || type == Integer.class);
-    }
-    
-    private final boolean isBooleanClass(Class<?> type) {
-        return (type == boolean.class || type == Boolean.class);
-    }
-    
-    private BindingConverter getConverter(Class<?> sourceType, Class<?> targetType) {
-        // PENDING: this is incomplete
-        if (sourceType == String.class && isIntClass(targetType)) {
-            return BindingConverter.STRING_TO_INT_CONVERTER;
-        } else if (isIntClass(sourceType) && targetType == String.class) {
-            return BindingConverter.INT_TO_STRING_CONVERTER;
-        } else if (isIntClass(sourceType) && isBooleanClass(targetType)) {
-            return BindingConverter.INT_TO_BOOLEAN_CONVERTER;
-        } else if (isBooleanClass(sourceType) && isIntClass(targetType)) {
-            return BindingConverter.BOOLEAN_TO_INT_CONVERTER;
-        } else if (isIntClass(targetType)) {
-            return BindingConverter.OBJECT_TO_INT_CONVERTER;
-        }
-        return null;
     }
 
     private void setParentBinding(Binding binding) {
