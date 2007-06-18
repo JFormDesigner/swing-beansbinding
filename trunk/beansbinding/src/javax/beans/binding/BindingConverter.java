@@ -71,6 +71,8 @@ public abstract class BindingConverter {
     static final BindingConverter BIGDECIMAL_TO_STRING_CONVERTER = new BigDecimalToStringConverter();
     static final BindingConverter STRING_TO_BIGDECIMAL_CONVERTER = new ReversedConverter(BIGDECIMAL_TO_STRING_CONVERTER);
 
+    static final BindingConverter OBJECT_TO_STRING_CONVERTER = new ObjectToStringConverter();
+
     /**
      * Converts a value from the source to the target.
      *
@@ -208,7 +210,7 @@ public abstract class BindingConverter {
 
         public Object targetToSource(Object value) {
             String s = ((String)value);
-            // PENDING(shannonh) - don't know that I like this
+            // PENDING(shannonh) - don't know if I like this
             return (s.length() == 0) ? '?' : s.charAt(0);
         }
     }
@@ -236,6 +238,12 @@ public abstract class BindingConverter {
                 return 1;
             }
             return 0;
+        }
+    }
+
+    private final static class ObjectToStringConverter extends BindingConverter {
+        public Object sourceToTarget(Object value) {
+            return value.toString();
         }
     }
 
@@ -274,52 +282,54 @@ public abstract class BindingConverter {
     static BindingConverter getConverter(Class<?> sourceType, Class<?> targetType) {
         if (targetType == String.class) {
             if (isByteClass(sourceType)) {
-                return BindingConverter.BYTE_TO_STRING_CONVERTER;
+                return BYTE_TO_STRING_CONVERTER;
             } else if (isShortClass(sourceType)) {
-                return BindingConverter.SHORT_TO_STRING_CONVERTER;
+                return SHORT_TO_STRING_CONVERTER;
             } else if (isIntClass(sourceType)) {
-                return BindingConverter.INT_TO_STRING_CONVERTER;
+                return INT_TO_STRING_CONVERTER;
             } else if (isLongClass(sourceType)) {
-                return BindingConverter.LONG_TO_STRING_CONVERTER;
+                return LONG_TO_STRING_CONVERTER;
             } else if (isFloatClass(sourceType)) {
-                return BindingConverter.FLOAT_TO_STRING_CONVERTER;
+                return FLOAT_TO_STRING_CONVERTER;
             } else if (isDoubleClass(sourceType)) {
-                return BindingConverter.DOUBLE_TO_STRING_CONVERTER;
+                return DOUBLE_TO_STRING_CONVERTER;
             } else if (isBooleanClass(sourceType)) {
-                return BindingConverter.BOOLEAN_TO_STRING_CONVERTER;
+                return BOOLEAN_TO_STRING_CONVERTER;
             } else if (isCharClass(sourceType)) {
-                return BindingConverter.CHAR_TO_STRING_CONVERTER;
+                return CHAR_TO_STRING_CONVERTER;
             } else if (sourceType == BigInteger.class) {
-                return BindingConverter.BIGINTEGER_TO_STRING_CONVERTER;
+                return BIGINTEGER_TO_STRING_CONVERTER;
             } else if (sourceType == BigDecimal.class) {
-                return BindingConverter.BIGDECIMAL_TO_STRING_CONVERTER;
+                return BIGDECIMAL_TO_STRING_CONVERTER;
+            } else {
+                return OBJECT_TO_STRING_CONVERTER;
             }
         } else if (sourceType == String.class) {
             if (isByteClass(targetType)) {
-                return BindingConverter.STRING_TO_BYTE_CONVERTER;
+                return STRING_TO_BYTE_CONVERTER;
             } else if (isShortClass(targetType)) {
-                return BindingConverter.STRING_TO_SHORT_CONVERTER;
+                return STRING_TO_SHORT_CONVERTER;
             } else if (isIntClass(targetType)) {
-                return BindingConverter.STRING_TO_INT_CONVERTER;
+                return STRING_TO_INT_CONVERTER;
             } else if (isLongClass(targetType)) {
-                return BindingConverter.STRING_TO_LONG_CONVERTER;
+                return STRING_TO_LONG_CONVERTER;
             } else if (isFloatClass(targetType)) {
-                return BindingConverter.STRING_TO_FLOAT_CONVERTER;
+                return STRING_TO_FLOAT_CONVERTER;
             } else if (isDoubleClass(targetType)) {
-                return BindingConverter.STRING_TO_DOUBLE_CONVERTER;
+                return STRING_TO_DOUBLE_CONVERTER;
             } else if (isBooleanClass(targetType)) {
-                return BindingConverter.STRING_TO_BOOLEAN_CONVERTER;
+                return STRING_TO_BOOLEAN_CONVERTER;
             } else if (isCharClass(targetType)) {
-                return BindingConverter.STRING_TO_CHAR_CONVERTER;
+                return STRING_TO_CHAR_CONVERTER;
             } else if (targetType == BigInteger.class) {
-                return BindingConverter.STRING_TO_BIGINTEGER_CONVERTER;
+                return STRING_TO_BIGINTEGER_CONVERTER;
             } else if (targetType == BigDecimal.class) {
-                return BindingConverter.STRING_TO_BIGDECIMAL_CONVERTER;
+                return STRING_TO_BIGDECIMAL_CONVERTER;
             }
         } else if (isIntClass(sourceType) && isBooleanClass(targetType)) {
-            return BindingConverter.INT_TO_BOOLEAN_CONVERTER;
+            return INT_TO_BOOLEAN_CONVERTER;
         } else if (isBooleanClass(sourceType) && isIntClass(targetType)) {
-            return BindingConverter.BOOLEAN_TO_INT_CONVERTER;
+            return BOOLEAN_TO_INT_CONVERTER;
         }
 
         return null;
