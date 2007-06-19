@@ -280,6 +280,10 @@ public abstract class BindingConverter {
     }
 
     static BindingConverter getConverter(Class<?> sourceType, Class<?> targetType) {
+        if (sourceType == targetType) {
+            return null;
+        }
+
         if (targetType == String.class) {
             if (isByteClass(sourceType)) {
                 return BYTE_TO_STRING_CONVERTER;
@@ -301,7 +305,7 @@ public abstract class BindingConverter {
                 return BIGINTEGER_TO_STRING_CONVERTER;
             } else if (sourceType == BigDecimal.class) {
                 return BIGDECIMAL_TO_STRING_CONVERTER;
-            } else {
+            } else if (sourceType == Object.class) {
                 return OBJECT_TO_STRING_CONVERTER;
             }
         } else if (sourceType == String.class) {
