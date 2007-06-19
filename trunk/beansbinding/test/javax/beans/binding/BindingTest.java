@@ -494,20 +494,6 @@ public class BindingTest extends TestCase {
         }
     }
     
-    public void testObjectToIntConverter() {
-        Binding binding = new Binding(
-                source, "${value}", target, "bigIntProperty");
-        source.setValue("0");
-        binding.bind();
-        assertEquals(Integer.valueOf(0), target.getBigIntProperty());
-
-        target.setBigIntProperty(10);
-        assertEquals(new Integer(10), source.getValue());
-
-        source.setValue("5");
-        assertEquals(Integer.valueOf(5), target.getBigIntProperty());
-    }
-    
     public void testPrimitiveSwap() {
         Binding binding = new Binding(
                 source, "${value}", target, "intProperty");
