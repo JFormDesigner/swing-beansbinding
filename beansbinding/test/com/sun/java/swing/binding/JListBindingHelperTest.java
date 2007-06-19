@@ -70,7 +70,7 @@ public class JListBindingHelperTest extends TestCase {
     }
     
     public void testModelValueBinding() {
-        lbd.addBinding(new Binding("${value}", null));
+        lbd.addChildBinding(new Binding("${value}", null));
         context.addBinding(lbd);
         values.get(0).setValue("x");
         values.get(1).setValue("y");
@@ -90,7 +90,7 @@ public class JListBindingHelperTest extends TestCase {
     public void testObservableList() {
         values = BindingCollections.observableList(values);
         lbd = new Binding(values, null, jlist, "elements");
-        lbd.addBinding(new Binding("${value}", null));
+        lbd.addChildBinding(new Binding("${value}", null));
         context.addBinding(lbd);
         context.bind();
         EventListenerRecorder<ListDataListener> r = new 

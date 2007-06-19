@@ -87,7 +87,7 @@ public class JTreeBindingHelperTest extends TestCase {
     }
     
     public void testSelection() {
-        lbd.addBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
+        lbd.addChildBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
         context.addBinding(lbd);
         
         TestBean selectionBean = new TestBean();
@@ -127,14 +127,14 @@ public class JTreeBindingHelperTest extends TestCase {
     
     public void testEmptyNode() {
         lbd.setValue(SwingBindingSupport.EmptyNodeTreatedAsLeafParameter, true);
-        lbd.addBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
+        lbd.addChildBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
         lbd.bind();
         TreeModel tm = tree.getModel();
         assertTrue(tm.isLeaf(root));
     }
     
     public void testNotification() {
-        lbd.addBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
+        lbd.addChildBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
         context.addBinding(lbd);
         context.bind();
         TreeModel tm = tree.getModel();
@@ -175,7 +175,7 @@ public class JTreeBindingHelperTest extends TestCase {
     }
 
     public void testRootChildren() {
-        lbd.addBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
+        lbd.addChildBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
         context.addBinding(lbd);
         context.bind();
         TreeModel tm = tree.getModel();

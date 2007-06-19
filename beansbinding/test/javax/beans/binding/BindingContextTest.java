@@ -180,9 +180,9 @@ public class BindingContextTest extends TestCase {
 
     public void testFetchByName6() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
-        Binding child = bindingP.addBinding("CHILD", "${value}", "value");
-        bindingP.removeBinding(child);
-        Binding fetch = bindingP.getBinding("CHILD");
+        Binding child = bindingP.addChildBinding("CHILD", "${value}", "value");
+        bindingP.removeChildBinding(child);
+        Binding fetch = bindingP.getChildBinding("CHILD");
         assertEquals(null, fetch);
     }
 
