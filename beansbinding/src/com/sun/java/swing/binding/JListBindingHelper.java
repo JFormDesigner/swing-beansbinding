@@ -164,7 +164,7 @@ class JListBindingHelper extends AbstractListTableBindingSupport {
             if (binding != null) {
                 Binding elementsBinding = binding;
                 rendererBindings = null;//new ArrayList<RendererBinding>(1);
-                for (Binding childBinding : elementsBinding.getBindings()) {
+                for (Binding childBinding : elementsBinding.getChildBindings()) {
                     String targetPath = childBinding.getTargetPath();
                     if (targetPath == null) {
                         columns.add(new ColumnDescription(

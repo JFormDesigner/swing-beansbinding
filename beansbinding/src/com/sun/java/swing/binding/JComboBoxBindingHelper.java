@@ -198,7 +198,7 @@ class JComboBoxBindingHelper extends AbstractBindingHelper {
         protected void createColumnDescriptions(
                 List<ListBindingManager.ColumnDescription> columns) {
             valueBinding = null;
-            for (Binding childBinding : getController().getBinding().getBindings()) {
+            for (Binding childBinding : getController().getBinding().getChildBindings()) {
                 // PENDING: this only supports one, so it should throw
                 // otherwise.
                 valueBinding = childBinding;

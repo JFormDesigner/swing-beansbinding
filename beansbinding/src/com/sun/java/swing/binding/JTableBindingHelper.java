@@ -187,7 +187,7 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
                 Boolean tableEditable =
                         elementsBinding.getValue(SwingBindingSupport.EditableParameter, true);
 
-                for (Binding binding : elementsBinding.getBindings()) {
+                for (Binding binding : elementsBinding.getChildBindings()) {
                     Integer column = binding.getValue(
                             SwingBindingSupport.TableColumnParameter, null);
                     if (column == null) {
