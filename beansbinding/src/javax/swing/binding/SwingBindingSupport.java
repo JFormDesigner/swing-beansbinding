@@ -45,7 +45,7 @@ import javax.swing.JSlider;
  *   // Specify that each element is to be shown using the 'description'
  *   // property. If this is not specified, the elements in the list are
  *   // used used directly.
- *   binding.addBinding("${description}", null);
+ *   binding.addChildBinding("${description}", null);
  * </pre>
  *
  * The next step is to bind to the selection. There are two ways to do this.
@@ -59,7 +59,7 @@ import javax.swing.JSlider;
  *   // Specify that each element is to be shown using the 'description'
  *   // property. If this is not specified, the elements in the list are
  *   // used used directly.
- *   binding.addBinding("${description}", null);
+ *   binding.addChildBinding("${description}", null);
  * </pre>
  *
  * The second option is to bind the selection to a property of the elements
@@ -97,7 +97,7 @@ import javax.swing.JSlider;
  *   Binding binding = new Binding(customers, null, jList, "elements");
  *   // Specify getValueAt is to return the 'firstName' property of
  *   // each element.
- *   binding.addBinding("${firstName}", null);
+ *   binding.addChildBinding("${firstName}", null);
  * </pre>
  *
  * The property delegate for {@code JList} also provides support for the
@@ -136,10 +136,10 @@ import javax.swing.JSlider;
  *   // Create the binding from the List to the JTable.
  *   Binding binding = new Binding(customers, null, jTable, "elements");
  *   // Specify the first column should use the "firstName" property
- *   binding.addBinding("${firstName}", null).setValue(
+ *   binding.addChildBinding("${firstName}", null).setValue(
  *                      SwingBindingSupport.TableColumnParameter, 0);
  *   // Specify the second column should use the "lastName" property
- *   binding.addBinding("${lastName}", null).setValue(
+ *   binding.addChildBinding("${lastName}", null).setValue(
  *                      SwingBindingSupport.TableColumnParameter, 1);
  * </pre>
  *
@@ -174,7 +174,7 @@ import javax.swing.JSlider;
  *   Binding binding = new Binding(root, null, jTree, "root");
  *   // For all nodes of type Manager, use the 'reports' property to find
  *   // their children.
- *   binding.addBinding("${reports}", null).setValue(
+ *   binding.addChildBinding("${reports}", null).setValue(
  *           SwingBindingSupport.TreeNodeClassParameter, Manager.class);
  * </pre>
  * @author sky
