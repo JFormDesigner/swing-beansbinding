@@ -465,30 +465,30 @@ public class BindingTest extends TestCase {
     public void testAddBinding() {
         Binding binding = new Binding();
         Binding child = new Binding();
-        binding.addBinding(child);
+        binding.addChildBinding(child);
         try {
-            binding.addBinding(child);
+            binding.addChildBinding(child);
             fail("IAE should have been thrown");
         } catch (IllegalArgumentException iae) {
         }
         
-        assertEquals(Arrays.asList(child), binding.getBindings());
+        assertEquals(Arrays.asList(child), binding.getChildBindings());
         
-        binding.removeBinding(child);
+        binding.removeChildBinding(child);
         
-        assertEquals(0, binding.getBindings().size());
+        assertEquals(0, binding.getChildBindings().size());
         
         try {
-            binding.removeBinding(child);
+            binding.removeChildBinding(child);
             fail("IAE should have been thrown");
         } catch (IllegalArgumentException iae) {
         }
         
-        binding.addBinding(child);
+        binding.addChildBinding(child);
         
         Binding binding2 = new Binding();
         try {
-            binding2.addBinding(child);
+            binding2.addChildBinding(child);
             fail("IAE should have been thrown");
         } catch (IllegalArgumentException iae) {
         }
@@ -587,7 +587,7 @@ public class BindingTest extends TestCase {
     public void testListBindingRemoveOnCommit() {
         Binding binding = new Binding(source, "${value}", target, "foo");
         Binding subBinding = new Binding("${value}", "value");
-        binding.addBinding(subBinding);
+        binding.addChildBinding(subBinding);
         binding.bind();
         TestBeanPropertyDelegate targetDelegate = (TestBeanPropertyDelegate)
                 PropertyDelegateFactory.getPropertyDelegate(target, "foo");
@@ -610,7 +610,7 @@ public class BindingTest extends TestCase {
     public void testListBinding() {
         Binding binding = new Binding(source, "${value}", target, "foo");
         Binding subBinding = new Binding("${value}", "value");
-        binding.addBinding(subBinding);
+        binding.addChildBinding(subBinding);
         binding.bind();
         TestBeanPropertyDelegate targetDelegate = (TestBeanPropertyDelegate)
                 PropertyDelegateFactory.getPropertyDelegate(target, "foo");
@@ -840,7 +840,7 @@ public class BindingTest extends TestCase {
         Binding bindingP = new Binding(source, "${value}", target, "value");
         Binding bindingC = new Binding(source, "${value}", target, "value");
         BindingContext context = new BindingContext();
-        bindingP.addBinding(bindingC);
+        bindingP.addChildBinding(bindingC);
         context.addBinding(bindingP);
         try {
             context.addBinding(bindingC);
@@ -856,7 +856,7 @@ public class BindingTest extends TestCase {
         context.addBinding(bindingP);
         context.addBinding(bindingC);
         try {
-            bindingP.addBinding(bindingC);
+            bindingP.addChildBinding(bindingC);
             fail("IAE should have been thrown");
         } catch (IllegalArgumentException ise) {
         }
@@ -864,35 +864,35 @@ public class BindingTest extends TestCase {
 
     public void testFetchByName1() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
-        Binding child = bindingP.addBinding("CHILD", "${value}", "value");
-        Binding fetch = bindingP.getBinding("CHILD");
+        Binding child = bindingP.addChildBinding("CHILD", "${value}", "value");
+        Binding fetch = bindingP.getChildBinding("CHILD");
         assertEquals(child, fetch);
     }
 
     public void testFetchByName2() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
-        bindingP.addBinding("FOO", "${value}", "value");
-        Binding fetch = bindingP.getBinding("CHILD");
+        bindingP.addChildBinding("FOO", "${value}", "value");
+        Binding fetch = bindingP.getChildBinding("CHILD");
         assertEquals(null, fetch);
     }
 
     public void testFetchByName3() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
-        bindingP.addBinding("${value}", "value");
-        Binding fetch = bindingP.getBinding("CHILD");
+        bindingP.addChildBinding("${value}", "value");
+        Binding fetch = bindingP.getChildBinding("CHILD");
         assertEquals(null, fetch);
     }
 
     public void testFetchByName4() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
-        Binding fetch = bindingP.getBinding("CHILD");
+        Binding fetch = bindingP.getChildBinding("CHILD");
         assertEquals(null, fetch);
     }
 
     public void testFetchByName5() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
         try {
-            bindingP.getBinding(null);
+            bindingP.getChildBinding(null);
             fail("IAE should have been thrown");
         } catch (IllegalArgumentException ise) {
         }
@@ -900,46 +900,46 @@ public class BindingTest extends TestCase {
 
     public void testFetchByName6() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
-        Binding child = bindingP.addBinding("CHILD", "${value}", "value");
-        bindingP.removeBinding(child);
-        Binding fetch = bindingP.getBinding("CHILD");
+        Binding child = bindingP.addChildBinding("CHILD", "${value}", "value");
+        bindingP.removeChildBinding(child);
+        Binding fetch = bindingP.getChildBinding("CHILD");
         assertEquals(null, fetch);
     }
 
     public void testSetName() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
         Binding bindingC = new Binding("CHILD", source, "${value}", target, "value");
-        bindingP.addBinding(bindingC);
-        assertEquals(bindingC, bindingP.getBinding("CHILD"));
+        bindingP.addChildBinding(bindingC);
+        assertEquals(bindingC, bindingP.getChildBinding("CHILD"));
         bindingC.setName("CHILD2");
-        assertEquals(null, bindingP.getBinding("CHILD"));
-        assertEquals(bindingC, bindingP.getBinding("CHILD2"));
+        assertEquals(null, bindingP.getChildBinding("CHILD"));
+        assertEquals(bindingC, bindingP.getChildBinding("CHILD2"));
     }
 
     public void testSetName2() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
         Binding bindingC = new Binding(source, "${value}", target, "value");
-        bindingP.addBinding(bindingC);
-        assertEquals(null, bindingP.getBinding("CHILD"));
+        bindingP.addChildBinding(bindingC);
+        assertEquals(null, bindingP.getChildBinding("CHILD"));
         bindingC.setName("CHILD2");
-        assertEquals(bindingC, bindingP.getBinding("CHILD2"));
+        assertEquals(bindingC, bindingP.getChildBinding("CHILD2"));
     }
 
     public void testSetName3() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
         Binding bindingC = new Binding("CHILD", source, "${value}", target, "value");
-        bindingP.addBinding(bindingC);
-        assertEquals(bindingC, bindingP.getBinding("CHILD"));
+        bindingP.addChildBinding(bindingC);
+        assertEquals(bindingC, bindingP.getChildBinding("CHILD"));
         bindingC.setName(null);
-        assertEquals(null, bindingP.getBinding("CHILD"));
+        assertEquals(null, bindingP.getChildBinding("CHILD"));
     }
 
     public void testSetName4() {
         Binding bindingP = new Binding("PARENT", source, "${value}", target, "value");
         Binding bindingC = new Binding("CHILD", source, "${value}", target, "value");
         Binding bindingC2 = new Binding("CHILD2", source, "${value}", target, "value");
-        bindingP.addBinding(bindingC);
-        bindingP.addBinding(bindingC2);
+        bindingP.addChildBinding(bindingC);
+        bindingP.addChildBinding(bindingC2);
         try {
             bindingC2.setName("CHILD");
             fail("IAE should have been thrown");

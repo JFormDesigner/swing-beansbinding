@@ -55,7 +55,7 @@ public class JComboBoxBindingHelperTest extends TestCase {
         elements.get(2).setValue("2");
         Binding binding = new Binding(elements, null, cb, "elements");
         binding.setValue(SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, "${value}");
-        binding.addBinding("${value}", null);
+        binding.addChildBinding("${value}", null);
         binding.bind();
 
         TestBean selectionBean = new TestBean();
@@ -109,7 +109,7 @@ public class JComboBoxBindingHelperTest extends TestCase {
         elements.get(1).setValue("1");
         elements.get(2).setValue("2");
         Binding binding = new Binding(elements, null, cb, "elements");
-        binding.addBinding("${value}", null);
+        binding.addChildBinding("${value}", null);
         binding.bind();
         
         TestBean selectionBean = new TestBean();
@@ -164,7 +164,7 @@ public class JComboBoxBindingHelperTest extends TestCase {
         elements.get(1).setValue("1");
         elements.get(2).setValue("2");
         Binding binding = new Binding(elements, null, cb, "elements");
-        binding.addBinding("${value}", null);
+        binding.addChildBinding("${value}", null);
         binding.bind();
         for (int i = 0; i < elements.size(); i++) {
             assertEquals(elements.get(i).getValue(), cb.getModel().getElementAt(i));
