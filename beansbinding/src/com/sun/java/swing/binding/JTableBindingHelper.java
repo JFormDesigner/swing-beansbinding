@@ -28,12 +28,14 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  *
  * @author sky
+ * @author Shannon Hickey
+ * @author Jan Stola
  */
-// PENDING: this needs to deal with sorting transformation
 class JTableBindingHelper extends AbstractListTableBindingSupport {
     private final JTable table;
     private final PropertyDelegate delegate;
@@ -44,6 +46,9 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
     private BindingController elementsBindingController;
     private EditingBindingTarget editingBindingTarget;
     private List<Object> selectedElements;
+
+    private static boolean IS_JAVA_15 =
+        System.getProperty("java.version").startsWith("1.5");
 
     public JTableBindingHelper(JTable table) {
         this.table = table;
@@ -86,11 +91,57 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
     protected List<?> getElements() {
         return (model == null) ? null : model.getElements();
     }
-    
+
+    protected int viewToModel(int index) {
+        // deal with sorting & filtering in 6.0 and up
+        if (!IS_JAVA_15) {
+            try {
+                java.lang.reflect.Method m = table.getClass().getMethod("convertRowIndexToModel", int.class);
+                index = (Integer)m.invoke(table, index);
+            } catch (NoSuchMethodException nsme) {
+                throw new AssertionError(nsme);
+            } catch (IllegalAccessException iae) {
+                throw new AssertionError(iae);
+            } catch (InvocationTargetException ite) {
+                Throwable cause = ite.getCause();
+                if (cause instanceof Error) {
+                    throw (Error)cause;
+                } else {
+                    throw new RuntimeException(cause);
+                }
+            }
+        }
+
+        return index;
+    }
+
+    protected int modelToView(int index) {
+        // deal with sorting & filtering in 6.0 and up
+        if (!IS_JAVA_15) {
+            try {
+                java.lang.reflect.Method m = table.getClass().getMethod("convertRowIndexToView", int.class);
+                index = (Integer)m.invoke(table, index);
+            } catch (NoSuchMethodException nsme) {
+                throw new AssertionError(nsme);
+            } catch (IllegalAccessException iae) {
+                throw new AssertionError(iae);
+            } catch (InvocationTargetException ite) {
+                Throwable cause = ite.getCause();
+                if (cause instanceof Error) {
+                    throw (Error)cause;
+                } else {
+                    throw new RuntimeException(cause);
+                }
+            }
+        }
+
+        return index;
+    }
+
     protected Object getSelectedElement() {
         int index = table.getSelectedRow();
         if (index != -1) {
-            return model.getElement(index);
+            return model.getElement(viewToModel(index));
         }
         return null;
     }
