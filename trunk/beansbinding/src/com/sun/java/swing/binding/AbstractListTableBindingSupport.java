@@ -104,7 +104,7 @@ abstract class AbstractListTableBindingSupport extends AbstractBindingHelper
     }
 
     protected Object getElement(int i) {
-        return getElements().get(i);
+        return getElements().get(viewToModel(i));
     }
 
     protected abstract void setElements(List<?> elements);
@@ -125,6 +125,7 @@ abstract class AbstractListTableBindingSupport extends AbstractBindingHelper
             for (Object elem : newSelection) {
                 int index = getElements().indexOf(elem);
                 if (index != -1) {
+                    index = modelToView(index);
                     selectionModel.addSelectionInterval(index, index);
                 }
             }
@@ -139,6 +140,14 @@ abstract class AbstractListTableBindingSupport extends AbstractBindingHelper
 
     }
 
+    protected int viewToModel(int index) {
+        return index;
+    }
+
+    protected int modelToView(int index) {
+        return index;
+    }
+    
     protected abstract ListSelectionModel getSelectionModel();
 
     protected abstract PropertyDelegate getDelegate();
