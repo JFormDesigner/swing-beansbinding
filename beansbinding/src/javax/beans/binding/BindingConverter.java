@@ -71,8 +71,6 @@ public abstract class BindingConverter {
     static final BindingConverter BIGDECIMAL_TO_STRING_CONVERTER = new BigDecimalToStringConverter();
     static final BindingConverter STRING_TO_BIGDECIMAL_CONVERTER = new ReversedConverter(BIGDECIMAL_TO_STRING_CONVERTER);
 
-    static final BindingConverter OBJECT_TO_STRING_CONVERTER = new ObjectToStringConverter();
-
     /**
      * Converts a value from the source to the target.
      *
@@ -305,8 +303,6 @@ public abstract class BindingConverter {
                 return BIGINTEGER_TO_STRING_CONVERTER;
             } else if (sourceType == BigDecimal.class) {
                 return BIGDECIMAL_TO_STRING_CONVERTER;
-            } else if (sourceType == Object.class) {
-                return OBJECT_TO_STRING_CONVERTER;
             }
         } else if (sourceType == String.class) {
             if (isByteClass(targetType)) {
