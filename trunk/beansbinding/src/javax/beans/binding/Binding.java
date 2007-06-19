@@ -339,7 +339,7 @@ public class Binding {
         // only making changes if we're not going to throw an exception
 
         if (parentBinding != null) {
-            if (name != null && parentBinding.getBinding(name) != null) {
+            if (name != null && parentBinding.getChildBinding(name) != null) {
                 throw new IllegalArgumentException("Sibling exists with same name.");
             }
         }
@@ -357,7 +357,7 @@ public class Binding {
             }
 
             if (name != null) {
-                parentBinding.putNamed(name, this);
+                parentBinding.putNamedChild(name, this);
             }
         }
 
@@ -375,7 +375,7 @@ public class Binding {
         this.name = name;
     }
 
-    private void putNamed(String name, Binding binding) {
+    private void putNamedChild(String name, Binding binding) {
         if (namedChildren == null) {
             namedChildren = new HashMap<String, Binding>();
         }
@@ -1403,8 +1403,8 @@ public class Binding {
      * @param targetPath path to the property of the target
      * @return the {@code Binding}
      */
-    public final Binding addBinding(String sourceExpression, String targetPath) {
-        return addBinding(null, sourceExpression, targetPath);
+    public final Binding addChildBinding(String sourceExpression, String targetPath) {
+        return addChildBinding(null, sourceExpression, targetPath);
     }
 
     /**
@@ -1418,9 +1418,9 @@ public class Binding {
      * @throws IllegalArgumentException if this binding already has a child with
      *         the given name
      */
-    public final Binding addBinding(String name, String sourceExpression, String targetPath) {
+    public final Binding addChildBinding(String name, String sourceExpression, String targetPath) {
         Binding binding = new Binding(name, sourceExpression, targetPath);
-        addBinding(binding);
+        addChildBinding(binding);
         return binding;
     }
 
@@ -1437,7 +1437,7 @@ public class Binding {
      *         the given binding
      * @throws NullPointerException if {@code binding} is {@code null}
      */
-    public final void addBinding(Binding binding) {
+    public final void addChildBinding(Binding binding) {
         throwIfBound();
         binding.throwIfBound();
 
@@ -1451,10 +1451,10 @@ public class Binding {
 
         String name = binding.getName();
         if (name != null) {
-            if (getBinding(name) != null) {
+            if (getChildBinding(name) != null) {
                 throw new IllegalArgumentException("Binding already contains a child with name \"" + name + "\"");
             } else {
-                putNamed(name, binding);
+                putNamedChild(name, binding);
             }
         }
 
@@ -1479,7 +1479,7 @@ public class Binding {
      *         to this {@code Binding}
      * @throws IllegalStateException if bound, or if the child is bound
      */
-    public final void removeBinding(Binding binding) {
+    public final void removeChildBinding(Binding binding) {
         throwIfBound();
         binding.throwIfBound();
 
@@ -1510,7 +1510,7 @@ public class Binding {
      * @return the child binding with the given name, or {@code null}
      * @throws IllegalArgumentException for a {@code null} name
      */
-    public final Binding getBinding(String name) {
+    public final Binding getChildBinding(String name) {
         if (name == null) {
             throw new IllegalArgumentException("cannot fetch unnamed bindings");
         }
@@ -1524,7 +1524,7 @@ public class Binding {
      *
      * @return a list of the child {@code Binding}s
      */
-    public final List<Binding> getBindings() {
+    public final List<Binding> getChildBindings() {
         if (this.childBindings == null) {
             return Collections.emptyList();
         }

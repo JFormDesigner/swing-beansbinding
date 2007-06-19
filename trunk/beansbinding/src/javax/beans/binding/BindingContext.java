@@ -379,7 +379,7 @@ public class BindingContext {
             // PENDING: need to set a property so that don't try and update state
             // while doing this
             commitUncommittedValues(binding);
-            childBindings = binding.getBindings();
+            childBindings = binding.getChildBindings();
             for (Binding childBinding : childBindings) {
                 commitUncommittedValues(childBinding);
             }
@@ -602,7 +602,7 @@ public class BindingContext {
             if (updateState0(binding, state)) {
                 break;
             }
-            childBindings = binding.getBindings();
+            childBindings = binding.getChildBindings();
             for (Binding childBinding : childBindings) {
                 if (updateState0(childBinding, state)) {
                     break;

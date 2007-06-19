@@ -184,7 +184,7 @@ final class JTreeBindingHelper extends AbstractBindingHelper implements
 
     private void calculateChildMapping(Binding binding) {
         elementMap.clear();
-        for (Binding childBinding : binding.getBindings()) {
+        for (Binding childBinding : binding.getChildBindings()) {
             Class<?> type = childBinding.getValue(
                     SwingBindingSupport.TreeNodeClassParameter, null);
             if (type == null) {
