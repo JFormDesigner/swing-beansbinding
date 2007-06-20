@@ -1,5 +1,59 @@
 Release notes for Beans Binding (http://beansbinding.dev.java.net)
 
+0.6 Release (2007/06/20)
+------------------------
+Notes on this release are broken into the following sections:
+  API Changes/Additions, Issues Resolved, Other
+
+*** API Changes/Additions ***
+
+  1) Binding.addBinding/removeBinding/getBindings have been renamed to the more
+     descriptive Binding.addChildBinding/removeChildBinding/getChildBindings
+
+  2) To enforce compile-time type safety, the Object varargs parameter has been
+     removed from all constructors and methods in Binding and BindingContext.
+     You must now call setValue directly. To allow for method chaining, setValue
+     now returns the Binding. As an example, replace this Binding:
+
+     Binding b = new Binding(source, "${property}", target, "property",
+                             Parameter1, param1Value, Parameter2, param2Value);
+
+     with this:
+
+     Binding b = new Binding(source, "${property}", target, "property");
+     b.setValue(Parameter1, param1Value).setValue(Parameter2, param2Value);
+
+  3) Some Binding and BindingContext methods were updated to throw the more
+     appropriate IllegalArgumentException (rather than IllegalStateException)
+     for certain conditions.
+
+  4) Binding now has a name property. The ability to name a binding assists in
+     debugging. Its main goal, however, is to make it possible to fetch
+     bindings by name. This will show its full utility with future changes
+     making it easier to validate and then commit or revert bindings as a group.
+
+     To support naming a Binding, the following API additions have been
+     made to Binding:
+       - Constructors that take a String name parameter
+       - void setName(String name)
+       - String getName()
+       - addChildBinding methods that take a String name parameter
+       - Binding getChildBinding(String name)
+     In addition, the following additions have been made to BindingContext:
+       - addBinding methods that take a String name parameter
+       - Binding getBinding(String name)
+
+*** Issues Resolved ***
+
+  2: Need converters between various types and String
+  5: JTable binding support doesn't support sorting and filtering
+
+*** Other ***
+
+  The JavaDoc in Binding and SwingBindingSupport has been updated to reflect the
+  change to use EL for the source "property".
+
+
 0.5 Release (2007/04/02)
 ------------------------
 Initial public release.
