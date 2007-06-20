@@ -43,6 +43,24 @@ Notes on this release are broken into the following sections:
        - addBinding methods that take a String name parameter
        - Binding getBinding(String name)
 
+  5) Added a Parameter to control the editability of a JTable when it is the
+     target of a binding. A new EditableParameter has been added to
+     SwingBindingSupport to control this. It can be used on a top-level
+     binding to control the editability of the entire JTable, and/or on the
+     binding's individual child bindings to control editability of individual
+     columns. For example, to make all columns non-editable, except for
+     the first:
+
+     Binding b = new Binding(list, null, table, "elements");
+     // whole table is non-editable
+     b.setValue(SwingBindingSupport.EditableParameter, false);
+     b.addBinding("${firstName}, null)
+         .setValue(SwingBindingSupport.TableColumnParameter, 0)
+         // this column IS editable
+         .setValue(SwingBindingSupport.EditableParameter, false);
+     b.addBinding("${lastName}, null)
+         .setParameter(SwingBindingSupport.TableColumnParameter, 2);
+
 *** Issues Resolved ***
 
   2: Need converters between various types and String
