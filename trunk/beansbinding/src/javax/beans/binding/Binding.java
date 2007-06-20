@@ -23,7 +23,8 @@ import java.math.BigInteger;
 /**
  * {@code Binding} represents a binding between one or more properties of a
  * source object and a single property of a target object. Once bound, a binding
- * keeps those properties in sync as specified by the binding's update strategy.
+ * keeps both ends of the binding in sync as specified by the binding's update
+ * strategy.
  * <p>
  * The following example illustrates binding the {@code "name"} property
  * of a {@code Customer} to the {@code "text"} property of a {@code JTextField}:
@@ -64,6 +65,10 @@ import java.math.BigInteger;
  * to a property, and is resolved using reflection. To resolve the target property,
  * {@code Binding} makes use of {@code PropertyResolver}. Refer to its
  * documentation for more information on the syntax.
+ * <p>
+ * Note that if the source expression represents more than just the path to
+ * a single property, then the binding must be one-way only. It's not possible
+ * to reverse the expression in order to affect multiple properties.
  * <p>
  * Often it is not possible to fully evaluate a path to a property; this is
  * referred to as an incomplete path. For example, when
