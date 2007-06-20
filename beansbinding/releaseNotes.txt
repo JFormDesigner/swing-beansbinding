@@ -10,7 +10,10 @@ Notes on this release are broken into the following sections:
   1) Binding.addBinding/removeBinding/getBindings have been renamed to the more
      descriptive Binding.addChildBinding/removeChildBinding/getChildBindings
 
-  2) To enforce compile-time type safety, the Object varargs parameter has been
+  2) Binding.setSourcePath/getSourcePath have been renamed to the more
+     appropriate Binding.setSourceExpression/getSourceExpression
+
+  3) To enforce compile-time type safety, the Object varargs parameter has been
      removed from all constructors and methods in Binding and BindingContext.
      You must now call setValue directly. To allow for method chaining, setValue
      now returns the Binding. As an example, replace this Binding:
@@ -23,11 +26,11 @@ Notes on this release are broken into the following sections:
      Binding b = new Binding(source, "${property}", target, "property");
      b.setValue(Parameter1, param1Value).setValue(Parameter2, param2Value);
 
-  3) Some Binding and BindingContext methods were updated to throw the more
+  4) Some Binding and BindingContext methods were updated to throw the more
      appropriate IllegalArgumentException (rather than IllegalStateException)
      for certain conditions.
 
-  4) Binding now has a name property. The ability to name a binding assists in
+  5) Binding now has a name property. The ability to name a binding assists in
      debugging. Its main goal, however, is to make it possible to fetch
      bindings by name. This will show its full utility with future changes
      making it easier to validate and then commit or revert bindings as a group.
@@ -43,7 +46,7 @@ Notes on this release are broken into the following sections:
        - addBinding methods that take a String name parameter
        - Binding getBinding(String name)
 
-  5) Added a Parameter to control the editability of a JTable when it is the
+  6) Added a Parameter to control the editability of a JTable when it is the
      target of a binding. A new EditableParameter has been added to
      SwingBindingSupport to control this. It can be used on a top-level
      binding to control the editability of the entire JTable, and/or on the

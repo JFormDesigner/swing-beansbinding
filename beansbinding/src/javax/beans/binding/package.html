@@ -10,23 +10,26 @@
     <title></title>
   </head>
   <body>
-  The classes in this package, and subpackages, provide a way to bind
-  two properties of two objects together. This is done using the
-  {@code Binding} class. A {@code Binding} is initially unrealized (no
-  listeners have been installed).  To realize the binding, invoke the
-  {@code bind} method.
+  The classes in this package, and subpackages, provide a way to create
+  a binding between one or more properties of a source object and a single
+  property of a target object. This is done using the {@code Binding} class.
+  A {@code Binding} is initially unrealized (no listeners have been installed).
+  To realize a binding, invoke the {@code bind} method. Once bound, a binding
+  keeps both ends of the binding in sync as specified by the binding's update
+  strategy.
   <p>
-  The following example illustrates the bare minimum required
-  to bind two properties of two objects together.
+  The following example illustrates the bare minimum required to create such
+  a binding:
   <pre>
-    Binding binding = new Binding(source, "sourcePath", target, "targetPath");
+    Binding binding = new Binding(source, "sourceExpression", target, "targetPath");
     binding.bind();
   </pre>
-  Once bound, any changes to {@code source}'s {@code sourcePath}
-  property are applied to {@code target}'s {@code targetPath}
-  property. Similarly any changes to {@code target}'s {@code
-  targetPath} property are applied to {@code source}'s {@code
-  sourcePath} property.
+  Once bound, any changes to properties represented in the {@code source}'s
+  {@code sourceExpression} cause the value represented by the expression to be
+  applied to {@code target}'s {@code targetPath} property. Similarly, any changes
+  to {@code target}'s {@code targetPath} property&mdash;and only if the
+  {@code sourceExpression} represents a single property&mdash;are applied
+  back to the source property based on the binding's update strategy.
   <p>
   Before a value is applied to either the target, or source, it passes
   through a {@code BindingConverter}. Before a value is set on the
