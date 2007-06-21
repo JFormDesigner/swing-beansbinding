@@ -62,7 +62,7 @@ Notes on this release are broken into the following sections:
          // this column IS editable
          .setValue(SwingBindingSupport.EditableParameter, false);
      b.addBinding("${lastName}, null)
-         .setParameter(SwingBindingSupport.TableColumnParameter, 2);
+         .setValue(SwingBindingSupport.TableColumnParameter, 2);
 
 *** Issues Resolved ***
 
