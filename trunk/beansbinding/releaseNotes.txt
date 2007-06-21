@@ -57,11 +57,11 @@ Notes on this release are broken into the following sections:
      Binding b = new Binding(list, null, table, "elements");
      // whole table is non-editable
      b.setValue(SwingBindingSupport.EditableParameter, false);
-     b.addBinding("${firstName}, null)
+     b.addChildBinding("${firstName}, null)
          .setValue(SwingBindingSupport.TableColumnParameter, 0)
          // this column IS editable
          .setValue(SwingBindingSupport.EditableParameter, true);
-     b.addBinding("${lastName}, null)
+     b.addChildBinding("${lastName}, null)
          .setValue(SwingBindingSupport.TableColumnParameter, 2);
 
 *** Issues Resolved ***
