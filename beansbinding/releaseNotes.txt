@@ -60,7 +60,7 @@ Notes on this release are broken into the following sections:
      b.addBinding("${firstName}, null)
          .setValue(SwingBindingSupport.TableColumnParameter, 0)
          // this column IS editable
-         .setValue(SwingBindingSupport.EditableParameter, false);
+         .setValue(SwingBindingSupport.EditableParameter, true);
      b.addBinding("${lastName}, null)
          .setValue(SwingBindingSupport.TableColumnParameter, 2);
 
