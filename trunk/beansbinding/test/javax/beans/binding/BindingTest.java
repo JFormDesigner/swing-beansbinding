@@ -23,8 +23,8 @@ import static javax.beans.binding.Binding.ValueState.*;
  * @author sky
  */
 public class BindingTest extends TestCase {
-    private static final Binding.Parameter<Integer> IntKey = new Binding.Parameter<Integer>("");
-    private static final Binding.Parameter<Boolean> BooleanKey = new Binding.Parameter<Boolean>("");
+    private static final Binding.ParameterKey<Integer> IntKey = new Binding.ParameterKey<Integer>("");
+    private static final Binding.ParameterKey<Boolean> BooleanKey = new Binding.ParameterKey<Boolean>("");
 
     private TestBean source;
     private TestBean target;
@@ -399,14 +399,14 @@ public class BindingTest extends TestCase {
 
     public void testValues() {
         Binding binding = new Binding();
-        binding.setValue(IntKey, 10);
-        assertEquals((int)10, (int)binding.getValue(IntKey, 0));
+        binding.putParameter(IntKey, 10);
+        assertEquals((int)10, (int)binding.getParameter(IntKey, 0));
         
-        binding.setValue(BooleanKey, Boolean.FALSE);
-        assertEquals(false, (boolean)binding.getValue(BooleanKey, Boolean.TRUE));
+        binding.putParameter(BooleanKey, Boolean.FALSE);
+        assertEquals(false, (boolean)binding.getParameter(BooleanKey, Boolean.TRUE));
         
-        binding.setValue(IntKey, null);
-        assertEquals((int)0, (int)binding.getValue(IntKey, 0));
+        binding.putParameter(IntKey, null);
+        assertEquals((int)0, (int)binding.getParameter(IntKey, 0));
     }
 
     public void testConvertExceptions2() {
@@ -767,7 +767,7 @@ public class BindingTest extends TestCase {
     public void testReadOnly() {
         Binding binding = new Binding(
                 source, "${value}", target, "value");
-        binding.setUpdateStrategy(Binding.UpdateStrategy.READ_FROM_SOURCE);
+        binding.setUpdateStrategy(Binding.UpdateStrategy.READ);
         binding.bind();
         assertEquals(Binding.ValueState.VALID, binding.getTargetValueState());
         assertEquals(Binding.ValueState.VALID, binding.getSourceValueState());

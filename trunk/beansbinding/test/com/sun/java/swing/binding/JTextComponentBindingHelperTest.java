@@ -12,13 +12,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import javax.swing.binding.SwingBindingSupport;
+import javax.swing.binding.ParameterKeys;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.DocumentFilter;
 import junit.framework.*;
 import javax.beans.binding.Binding;
 import javax.swing.JTextField;
-import static javax.swing.binding.SwingBindingSupport.TextChangeStrategyParameter;
+import javax.swing.binding.TextChangeStrategy;
 
 /**
  *
@@ -57,8 +57,8 @@ public class JTextComponentBindingHelperTest extends TestCase {
     // PENDING: test for disable on incomplete path
     
     public void testChangeOnType() throws Throwable {
-        binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
-                         SwingBindingSupport.TextChangeStrategy.CHANGE_ON_TYPE);
+        binding.putParameter(ParameterKeys.TEXT_CHANGE_STRATEGY,
+                             TextChangeStrategy.ON_TYPE);
         context.addBinding(binding);
         context.bind();
         assertEquals("", textField.getText());
@@ -77,8 +77,8 @@ public class JTextComponentBindingHelperTest extends TestCase {
     }
     
     public void testChangeOnActionOrFocusLost() throws Throwable {
-        binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
-                         SwingBindingSupport.TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST);
+        binding.putParameter(ParameterKeys.TEXT_CHANGE_STRATEGY,
+                             TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST);
         context.addBinding(binding);
         context.bind();
         assertEquals("", textField.getText());
@@ -105,8 +105,8 @@ public class JTextComponentBindingHelperTest extends TestCase {
     }
     
     public void testChangeOnFocusLost() throws Throwable {
-        binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
-                         SwingBindingSupport.TextChangeStrategy.CHANGE_ON_FOCUS_LOST);
+        binding.putParameter(ParameterKeys.TEXT_CHANGE_STRATEGY,
+                             TextChangeStrategy.ON_FOCUS_LOST);
         context.addBinding(binding);
         context.bind();
         assertEquals("", textField.getText());

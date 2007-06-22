@@ -96,7 +96,7 @@ public class BindingContextTest extends TestCase {
                 new EventListenerRecorder<PropertyChangeListener>(PropertyChangeListener.class);
         context.addPropertyChangeListener(recorder.getEventListenerImpl());
         Binding binding = context.addBinding(source, "${value}", target, "value");
-        binding.setUpdateStrategy(Binding.UpdateStrategy.READ_FROM_SOURCE);
+        binding.setUpdateStrategy(Binding.UpdateStrategy.READ);
         context.bind();
         recorder.getAndClearRecords();
         target.setValue("x");
