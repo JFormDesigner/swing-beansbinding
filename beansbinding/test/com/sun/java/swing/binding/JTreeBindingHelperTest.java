@@ -13,7 +13,7 @@ import com.sun.java.util.BindingCollections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.binding.SwingBindingSupport;
+import javax.swing.binding.ParameterKeys;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeSelectionModel;
@@ -87,7 +87,7 @@ public class JTreeBindingHelperTest extends TestCase {
     }
     
     public void testSelection() {
-        lbd.addChildBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
+        lbd.addChildBinding("${value}", null).putParameter(ParameterKeys.TREE_NODE_CLASS, Object.class);
         context.addBinding(lbd);
         
         TestBean selectionBean = new TestBean();
@@ -126,15 +126,15 @@ public class JTreeBindingHelperTest extends TestCase {
     }
     
     public void testEmptyNode() {
-        lbd.setValue(SwingBindingSupport.EmptyNodeTreatedAsLeafParameter, true);
-        lbd.addChildBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
+        lbd.putParameter(ParameterKeys.EMPTY_NODE_TREATED_AS_LEAF, true);
+        lbd.addChildBinding("${value}", null).putParameter(ParameterKeys.TREE_NODE_CLASS, Object.class);
         lbd.bind();
         TreeModel tm = tree.getModel();
         assertTrue(tm.isLeaf(root));
     }
     
     public void testNotification() {
-        lbd.addChildBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
+        lbd.addChildBinding("${value}", null).putParameter(ParameterKeys.TREE_NODE_CLASS, Object.class);
         context.addBinding(lbd);
         context.bind();
         TreeModel tm = tree.getModel();
@@ -175,7 +175,7 @@ public class JTreeBindingHelperTest extends TestCase {
     }
 
     public void testRootChildren() {
-        lbd.addChildBinding("${value}", null).setValue(SwingBindingSupport.TreeNodeClassParameter, Object.class);
+        lbd.addChildBinding("${value}", null).putParameter(ParameterKeys.TREE_NODE_CLASS, Object.class);
         context.addBinding(lbd);
         context.bind();
         TreeModel tm = tree.getModel();

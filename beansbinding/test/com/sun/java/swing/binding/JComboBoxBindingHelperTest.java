@@ -8,7 +8,7 @@ package com.sun.java.swing.binding;
 import com.sun.java.util.BindingCollections;
 import java.util.ArrayList;
 import javax.beans.binding.TestBean;
-import javax.swing.binding.SwingBindingSupport;
+import javax.swing.binding.ParameterKeys;
 import junit.framework.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -54,7 +54,7 @@ public class JComboBoxBindingHelperTest extends TestCase {
         elements.get(1).setValue("1");
         elements.get(2).setValue("2");
         Binding binding = new Binding(elements, null, cb, "elements");
-        binding.setValue(SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, "${value}");
+        binding.putParameter(ParameterKeys.COMBOBOX_SELECTED_OBJECT_PROPERTY, "${value}");
         binding.addChildBinding("${value}", null);
         binding.bind();
 
@@ -82,7 +82,7 @@ public class JComboBoxBindingHelperTest extends TestCase {
         elements.get(1).setValue("1");
         elements.get(2).setValue("2");
         Binding binding = new Binding(elements, null, cb, "elements");
-        binding.setValue(SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, "${value}");
+        binding.putParameter(ParameterKeys.COMBOBOX_SELECTED_OBJECT_PROPERTY, "${value}");
         binding.bind();
 
         TestBean selectionBean = new TestBean();
