@@ -12,7 +12,7 @@ import javax.beans.binding.ext.BindingTargetProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.beans.binding.Binding.BindingController;
-import javax.swing.binding.SwingBindingSupport;
+import javax.swing.binding.ParameterKeys;
 
 /**
  *
@@ -82,8 +82,8 @@ abstract class AbstractBindingHelper implements BindingTarget {
     }
 
     protected boolean getDisableOnIncompletePath() {
-        return getBinding().getValue(
-                SwingBindingSupport.DisableOnIncompletePathParameter, Boolean.TRUE);
+        return getBinding().getParameter(
+                ParameterKeys.DISABLE_ON_INCOMPLETE_PATH, Boolean.TRUE);
     }
     
     
