@@ -39,9 +39,7 @@ b.addChildBinding("${firstName}, null)
     .setParameter(ParameterKeys.COLUMN, 0)
     .setParameter(ParameterKeys.COLUMN_CLASS, String.class);
 
-Likewise:
-
-Before:
+Likewise, before:
 
 Binding b = new Binding(object, "${property}", textField, "text");
 b.setValue(SwingBindingSupport.TextChangeStrategyParameter,
@@ -52,6 +50,7 @@ After:
 Binding b = new Binding(object, "${property}", textField, "text");
 binding.putParameter(ParameterKeys.TEXT_CHANGE_STRATEGY,
                      TextChangeStrategy.ON_TYPE);
+
 
 0.6 Release (2007/06/20)
 --------------------------

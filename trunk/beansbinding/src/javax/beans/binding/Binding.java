@@ -731,7 +731,7 @@ public class Binding {
      *
      * @throws NullPointerException if {@code key} is {@code null}
      */
-    public final <T> T getValue(ParameterKey<T> key, T defaultValue) {
+    public final <T> T getParameter(ParameterKey<T> key, T defaultValue) {
         if (parameters == null) {
             return defaultValue;
         }
