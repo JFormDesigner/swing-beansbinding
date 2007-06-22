@@ -1,7 +1,60 @@
 Release notes for Beans Binding (http://beansbinding.dev.java.net)
 
+0.6.1 Release (2007/06/22)
+--------------------------
+
+API changes:
+
+  1) UpdateStrategy.READ_FROM_SOURCE has been renamed to the shorter
+     UpdateStrategy.READ
+
+  2) TextChangeStategy is now a top-level enum. In addition, the values
+     CHANGE_ON_TYPE, CHANGE_ON_ACTION_OR_FOCUS_LOST and CHANGE_ON_FOCUS_LOST
+     have been shortened to ON_TYPE, ON_ACTION_OR_FOCUS_LOST, ON_FOCUS_LOST.
+
+  3) Binding.Parameter has been renamed to Binding.ParameterKey and
+     Binding.setValue/getValue have been given the more appropriate names
+     Binding.putParameter/getParameter.
+
+  4) All Swing ParameterKeys are now in a top-level ParameterKeys class.
+     They've been renamed as appropriate to reflect the fact that
+     they are constants. A few have also been shortened.
+
+  5) SwingBindingSupport has been removed. Documentation for Swing binding
+     is now in the package-level documentation.
+
+To see how some of these changes affect you, let's look at two examples:
+
+Before:
+
+Binding b = new Binding(list, null, table, "elements");
+b.addChildBinding("${firstName}, null)
+    .setValue(SwingBindingSupport.TableColumnParameter, 0)
+    .setValue(SwingBindingSupport.TableColumnClassParameter, String.class);
+
+After:
+
+Binding b = new Binding(list, null, table, "elements");
+b.addChildBinding("${firstName}, null)
+    .setParameter(ParameterKeys.COLUMN, 0)
+    .setParameter(ParameterKeys.COLUMN_CLASS, String.class);
+
+Likewise:
+
+Before:
+
+Binding b = new Binding(object, "${property}", textField, "text");
+b.setValue(SwingBindingSupport.TextChangeStrategyParameter,
+           SwingBindingSupport.TextChangeStrategy.CHANGE_ON_TYPE);
+
+After:
+
+Binding b = new Binding(object, "${property}", textField, "text");
+binding.putParameter(ParameterKeys.TEXT_CHANGE_STRATEGY,
+                     TextChangeStrategy.ON_TYPE);
+
 0.6 Release (2007/06/20)
-------------------------
+--------------------------
 Notes on this release are broken into the following sections:
   API Changes/Additions, Issues Resolved, Other
 
@@ -62,7 +115,7 @@ Notes on this release are broken into the following sections:
          // this column IS editable
          .setValue(SwingBindingSupport.EditableParameter, true);
      b.addChildBinding("${lastName}, null)
-         .setValue(SwingBindingSupport.TableColumnParameter, 2);
+         .setValue(SwingBindingSupport.TableColumnParameter, 1);
 
 *** Issues Resolved ***
 
@@ -76,5 +129,5 @@ Notes on this release are broken into the following sections:
 
 
 0.5 Release (2007/04/02)
-------------------------
+--------------------------
 Initial public release.
