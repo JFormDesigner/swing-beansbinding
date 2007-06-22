@@ -20,7 +20,7 @@ import javax.el.Expression;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.binding.SwingBindingSupport;
+import javax.swing.binding.ParameterKeys;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
@@ -57,8 +57,8 @@ class JComboBoxBindingHelper extends AbstractBindingHelper {
         if (property == ELEMENTS_P) {
             throwIfNonNull(this.controller);
             this.controller = controller;
-            String selectedElementPath = controller.getBinding().getValue(
-                    SwingBindingSupport.ComboBoxSelectedObjectPropertyParameter, null);
+            String selectedElementPath = controller.getBinding().getParameter(
+                    ParameterKeys.COMBOBOX_SELECTED_OBJECT_PROPERTY, null);
             if (selectedElementPath != null) {
                 selectedElementResolver = controller.createResolver();
                 selectedElementResolver.setPath(selectedElementPath);

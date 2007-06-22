@@ -16,7 +16,6 @@ import java.beans.PropertyChangeListener;
 import javax.beans.binding.Binding.BindingController;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.binding.SwingBindingSupport;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
@@ -25,8 +24,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.JTextComponent;
-import static javax.swing.binding.SwingBindingSupport.TextChangeStrategy;
-import javax.swing.binding.SwingBindingSupport.TextChangeStrategy;
+import javax.swing.binding.ParameterKeys;
+import javax.swing.binding.TextChangeStrategy;
 
 class JTextComponentBindingHelper extends AbstractBindingHelper {
     private final JTextComponent textComponent;
@@ -157,7 +156,7 @@ class JTextComponentBindingHelper extends AbstractBindingHelper {
     
     private void textChanged() {
         if (!changingText) {
-            if (getChangeStrategy() == TextChangeStrategy.CHANGE_ON_TYPE) {
+            if (getChangeStrategy() == TextChangeStrategy.ON_TYPE) {
                 delegate.fireTextChanged();
             } else {
                 controller.valueEdited();
@@ -271,7 +270,7 @@ class JTextComponentBindingHelper extends AbstractBindingHelper {
         }
 
         public void actionPerformed(ActionEvent e) {
-            if (getChangeStrategy() != TextChangeStrategy.CHANGE_ON_TYPE &&
+            if (getChangeStrategy() != TextChangeStrategy.ON_TYPE &&
                     isUncommitted()) {
                 delegate.fireTextChanged();
             }
@@ -282,7 +281,7 @@ class JTextComponentBindingHelper extends AbstractBindingHelper {
 
         public void focusLost(FocusEvent e) {
             if (!e.isTemporary() &&
-                    getChangeStrategy() != TextChangeStrategy.CHANGE_ON_TYPE &&
+                    getChangeStrategy() != TextChangeStrategy.ON_TYPE &&
                     isUncommitted()) {
                 delegate.fireTextChanged();
             }

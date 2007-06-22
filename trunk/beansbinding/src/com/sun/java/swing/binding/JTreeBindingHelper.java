@@ -21,7 +21,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.beans.binding.Binding.BindingController;
 import javax.el.Expression;
 import javax.swing.JTree;
-import javax.swing.binding.SwingBindingSupport;
+import javax.swing.binding.ParameterKeys;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;

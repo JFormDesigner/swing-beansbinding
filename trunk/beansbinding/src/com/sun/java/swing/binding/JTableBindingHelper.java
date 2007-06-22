@@ -19,7 +19,7 @@ import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.binding.SwingBindingSupport;
+import javax.swing.binding.ParameterKeys;
 import javax.swing.border.LineBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
@@ -236,11 +236,10 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
             // PENDING: this should be done once
             if (elementsBinding != null) {
                 Boolean tableEditable =
-                        elementsBinding.getValue(SwingBindingSupport.EditableParameter, true);
+                        elementsBinding.getParameter(ParameterKeys.EDITABLE, true);
 
                 for (Binding binding : elementsBinding.getChildBindings()) {
-                    Integer column = binding.getValue(
-                            SwingBindingSupport.TableColumnParameter, null);
+                    Integer column = binding.getParameter(ParameterKeys.COLUMN, null);
                     if (column == null) {
                         throw new IllegalArgumentException(
                                 "JTable element binding must identify the column by way of " +
@@ -252,7 +251,7 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
                     boolean isEditor = false;//binding.getValue(SwingBindingSupport.TableEditorKey, 
                             //Boolean.FALSE);
                     boolean isValue = (!isRenderer && !isEditor);
-                    Class<?> type = binding.getValue(SwingBindingSupport.TableColumnClassParameter,
+                    Class<?> type = binding.getParameter(ParameterKeys.COLUMN_CLASS,
                             Object.class);
 
                     // PENDING: this should be false if no writable property
