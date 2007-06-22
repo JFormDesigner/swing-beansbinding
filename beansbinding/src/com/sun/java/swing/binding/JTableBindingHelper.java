@@ -256,7 +256,7 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
 
                     // PENDING: this should be false if no writable property
                     Boolean columnEditable =
-                            binding.getValue(SwingBindingSupport.EditableParameter, null);
+                            binding.getParameter(ParameterKeys.EDITABLE, null);
                     if (columnEditable == null) {
                         columnEditable = tableEditable;
                     }

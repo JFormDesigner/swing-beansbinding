@@ -126,9 +126,9 @@ import java.math.BigInteger;
  * is for children bindings, in which case the parent binding supplies the two
  * endpoints.
  * <p>
- * While a {@code Binding} is bound, it can not be mutated. All setter methods
- * of this class throw an {@code IllegalStateException} if invoked on a bound
- * {@code Binding}.
+ * While a {@code Binding} is bound, it can not be mutated. All setter (and put)
+ * methods of this class throw an {@code IllegalStateException} if invoked on a
+ * bound {@code Binding}.
  *
  * @see javax.swing.binding.SwingBindingSupport
  *
