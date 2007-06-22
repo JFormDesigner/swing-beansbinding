@@ -216,7 +216,7 @@ public class Binding {
     private String name;
 
     private List<BindingListener> bindingListeners;
-    private Map<Parameter<?>, Object> parameters;
+    private Map<ParameterKey<?>, Object> parameters;
 
     private Object source;
     private String sourceExpression;
@@ -679,18 +679,22 @@ public class Binding {
     }
 
     /**
-     * Sets a parameter for the binding. If {@code value} is {@code null}, then
-     * the entry is removed. This method is used to specify target specific
-     * parameters. For example, the following specifies that the "text" property
-     * of a {@code JTextComponent} should change as you type:
+     * Puts or removes a parameter for the binding. Putting the value for a key
+     * with an existing value replaces the value associated with that key.
+     * Putting a value of {@code null} removes any existing value for the key.
+     * <p>
+     * This method is used to specify target specific parameters. For
+     * example, the following specifies that the "text" property of a
+     * {@code JTextComponent} should change as you type:
      * <pre>
      *   binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
      *                    TextChangeStrategy.CHANGE_ON_TYPE);
      * </pre>
      * Returns {@code this} to allow for chaining of method calls.
      *
-     * @param key the key
-     * @param value the value
+     * @param key the key identifying the parameter to put
+     * @param value the value to set for the parameter, or {@code null}
+     *        to remove any value for the key
      * @return {@code this}
      *
      * @throws ClassCastException if {@code value} is not of the type defined
@@ -698,7 +702,7 @@ public class Binding {
      * @throws NullPointerException if {@code key} is {@code null}
      * @throws IllegalStateException if bound
      */
-    public final <T> Binding setValue(Parameter<T> key, T value) {
+    public final <T> Binding putParameter(ParameterKey<T> key, T value) {
         throwIfBound();
 
         if (value == null) {
@@ -707,7 +711,7 @@ public class Binding {
             }
         } else {
             if (parameters == null) {
-                parameters = new HashMap<Parameter<?>,Object>(1);
+                parameters = new HashMap<ParameterKey<?>,Object>(1);
             }
             parameters.put(key, value);
         }
@@ -716,7 +720,7 @@ public class Binding {
     }
 
     /**
-     * Returns the value for the specified parameter.
+     * Returns the value for the parameter specified by the key.
      *
      * @param key the key to obtain the value for
      * @param defaultValue the value to return if the binding has no value
@@ -725,7 +729,7 @@ public class Binding {
      *
      * @throws NullPointerException if {@code key} is {@code null}
      */
-    public final <T> T getValue(Parameter<T> key, T defaultValue) {
+    public final <T> T getValue(ParameterKey<T> key, T defaultValue) {
         if (parameters == null) {
             return defaultValue;
         }
@@ -1785,23 +1789,24 @@ public class Binding {
 
 
     /**
-     * {@code Parameter} is used to provide additional information to configure
-     * a specific binding. See {@link javax.swing.binding.SwingBindingSupport}
-     * for examples of this.
+     * {@code ParameterKey} is used to provide additional piece(s) of
+     * information (parameter(s)) to configure a specific binding.
+     * Parameters are added to a {@code Binding} with the {@code putParameter}
+     * method. {@code ParameterKey} identifies the parameter that is being put.
      *
-     * @see #setValue
-     * @see #getValue
+     * @see #putParameter
+     * @see #getParameter
      */
-    public static class Parameter<T> {
+    public static class ParameterKey<T> {
         private final String description;
 
         /**
-         * Creates a {@code Parameter} with the specified description.
+         * Creates a {@code ParameterKey} with the specified description.
          *
-         * @param description a description of the {@code Parameter}
+         * @param description a description of the {@code ParameterKey}
          * @throws IllegalArgumentException if {@code description} is {@code null}
          */
-        public Parameter(String description) {
+        public ParameterKey(String description) {
             if (description == null) {
                 throw new IllegalArgumentException("Description must be non-null");
             }
@@ -1809,22 +1814,22 @@ public class Binding {
         }
 
         /**
-         * Returns a description of the parameter.
+         * Returns a description of the {@code ParameterKey}.
          *
-         * @return a description of the parameter
+         * @return a description of the {@code ParameterKey}
          */
         public final String getDescription() {
             return description;
         }
 
         /**
-         * Returns a string representing the state of this {@code Parameter}.
+         * Returns a string representing this {@code ParameterKey}.
          * This method is intended to be used only for debugging purposes, and
          * the content and format of the returned string may vary between
          * implementations. The returned string may be empty but may not
          * be {@code null}.
          *
-         * @return a string representation of this {@code Parameter}
+         * @return a string representation of this {@code ParameterKey}
          */
         public String toString() {
             return getClass() + " [" + " description=" + description + "]";
