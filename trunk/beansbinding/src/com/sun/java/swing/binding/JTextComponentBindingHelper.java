@@ -62,10 +62,10 @@ class JTextComponentBindingHelper extends AbstractBindingHelper {
         assert (property == JTEXT_COMPONENT_TEXT_P);
         this.controller = controller;
         textComponent.addPropertyChangeListener(handler);
-        if (getChangeStrategy() != TextChangeStrategy.CHANGE_ON_TYPE) {
+        if (getChangeStrategy() != TextChangeStrategy.ON_TYPE) {
             textComponent.addFocusListener(handler);
         }
-        if (getChangeStrategy() == TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST &&
+        if (getChangeStrategy() == TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST &&
                 (textComponent instanceof JTextField)) {
             ((JTextField)textComponent).addActionListener(handler);
         }
@@ -79,10 +79,10 @@ class JTextComponentBindingHelper extends AbstractBindingHelper {
         assert (controller == this.controller && 
                 property == JTEXT_COMPONENT_TEXT_P);
         textComponent.removePropertyChangeListener(handler);
-        if (getChangeStrategy() != TextChangeStrategy.CHANGE_ON_TYPE) {
+        if (getChangeStrategy() != TextChangeStrategy.ON_TYPE) {
             textComponent.removeFocusListener(handler);
         }
-        if (getChangeStrategy() == TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST &&
+        if (getChangeStrategy() == TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST &&
                 (textComponent instanceof JTextField)) {
             ((JTextField)textComponent).removeActionListener(handler);
         }
@@ -112,9 +112,9 @@ class JTextComponentBindingHelper extends AbstractBindingHelper {
     }
     
     private TextChangeStrategy getChangeStrategy() {
-        return controller.getBinding().getValue(
-                SwingBindingSupport.TextChangeStrategyParameter,
-                TextChangeStrategy.CHANGE_ON_ACTION_OR_FOCUS_LOST);
+        return controller.getBinding().getParameter(
+                ParameterKeys.TEXT_CHANGE_STRATEGY,
+                TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST);
     }
     
     private void installDocumentListener() {

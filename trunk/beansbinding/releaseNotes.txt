@@ -36,8 +36,8 @@ After:
 
 Binding b = new Binding(list, null, table, "elements");
 b.addChildBinding("${firstName}, null)
-    .setParameter(ParameterKeys.COLUMN, 0)
-    .setParameter(ParameterKeys.COLUMN_CLASS, String.class);
+    .putParameter(ParameterKeys.COLUMN, 0)
+    .putParameter(ParameterKeys.COLUMN_CLASS, String.class);
 
 Likewise, before:
 
