@@ -154,10 +154,10 @@ public class Binding {
     public enum UpdateStrategy {
         /**
          * Enumeration value indicating that the target should be kept in sync
-         * with the source. Changes to the target are not propaged back to the
+         * with the source. Changes to the target are not propagated back to the
          * source. A one-way binding.
          */
-        READ_FROM_SOURCE,
+        READ,
         
         /**
          * Enumeration value indicating that the target should only be set from
@@ -687,8 +687,10 @@ public class Binding {
      * example, the following specifies that the "text" property of a
      * {@code JTextComponent} should change as you type:
      * <pre>
-     *   binding.setValue(SwingBindingSupport.TextChangeStrategyParameter,
-     *                    TextChangeStrategy.CHANGE_ON_TYPE);
+     *   import javax.swing.binding.*;
+     *
+     *   binding.putParameter(ParameterKeys.TEXT_CHANGE_STRATEGY,
+     *                        TextChangeStrategy.ON_TYPE);
      * </pre>
      * Returns {@code this} to allow for chaining of method calls.
      *
