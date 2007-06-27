@@ -16,11 +16,11 @@ import java.util.Map;
  *
  * @author sky
  */
-public class PropertyResolverTest extends TestCase {
+public class ReflectionPropertyResolverTest extends TestCase {
     private LoggingDelegate delegate;
-    private PropertyResolver resolver;
+    private ReflectionPropertyResolver resolver;
     
-    public PropertyResolverTest(String testName) {
+    public ReflectionPropertyResolverTest(String testName) {
         super(testName);
     }
 
@@ -29,13 +29,13 @@ public class PropertyResolverTest extends TestCase {
     }
 
     public static Test suite() {
-        TestSuite suite = new TestSuite(PropertyResolverTest.class);
+        TestSuite suite = new TestSuite(ReflectionPropertyResolverTest.class);
         
         return suite;
     }
     
-    private PropertyResolver createPropertyResolver(Object source, String path) {
-        return PropertyResolver.createPropertyResolver(source, path);
+    private ReflectionPropertyResolver createResolver(Object source, String path) {
+        return ReflectionPropertyResolver.create(source, path);
     }
     
     private void verifyValueException() {
@@ -48,7 +48,7 @@ public class PropertyResolverTest extends TestCase {
     
     public void testSimplePCL() {
         TestBean2 bean2 = new TestBean2();
-        resolver = createPropertyResolver(bean2, "value");
+        resolver = createResolver(bean2, "value");
         resolver.bind();
         resolver.setDelegate(delegate);
         assertEquals(1, bean2.getPropetyChangeListenerCount());
@@ -66,12 +66,12 @@ public class PropertyResolverTest extends TestCase {
     
     public void testTypeOfLastProperty() {
         TestBean bean = new TestBean();
-        resolver = createPropertyResolver(bean, "stringProperty");
+        resolver = createResolver(bean, "stringProperty");
         assertEquals(String.class, resolver.getTypeOfLastProperty());
         resolver.bind();
         assertEquals(String.class, resolver.getTypeOfLastProperty());
 
-        resolver = createPropertyResolver(bean, "intProperty");
+        resolver = createResolver(bean, "intProperty");
         assertEquals(int.class, resolver.getTypeOfLastProperty());
         resolver.bind();
         assertEquals(int.class, resolver.getTypeOfLastProperty());
@@ -79,7 +79,7 @@ public class PropertyResolverTest extends TestCase {
     
     public void testUnbind() {
         TestBean bean = new TestBean();
-        resolver = createPropertyResolver(bean, "value");
+        resolver = createResolver(bean, "value");
         resolver.bind();
         assertEquals(1, bean.getPropetyChangeListenerCount());
         resolver.unbind();
@@ -88,7 +88,7 @@ public class PropertyResolverTest extends TestCase {
     
     public void testSingle() {
         TestBean bean = new TestBean();
-        resolver = createPropertyResolver(bean, "value");
+        resolver = createResolver(bean, "value");
         resolver.setDelegate(delegate);
         resolver.bind();
         assertTrue(resolver.hasAllPathValues());
@@ -111,7 +111,7 @@ public class PropertyResolverTest extends TestCase {
     
     public void testMulti() {
         TestBean bean = new TestBean();
-       resolver = createPropertyResolver(bean, "value.value");
+       resolver = createResolver(bean, "value.value");
         resolver.setDelegate(delegate);
         resolver.bind();
         assertFalse(resolver.hasAllPathValues());
@@ -163,7 +163,7 @@ public class PropertyResolverTest extends TestCase {
     public void testObservableMap() {
         Map<Object,Object> map = new HashMap<Object, Object>();
         map = BindingCollections.observableMap(map);
-        resolver = createPropertyResolver(map, "source.value");
+        resolver = createResolver(map, "source.value");
         resolver.setDelegate(delegate);
         resolver.bind();
         assertFalse(resolver.hasAllPathValues());
@@ -193,8 +193,7 @@ public class PropertyResolverTest extends TestCase {
     
     public void testOne() {
         TestBean bean = new TestBean();
-        PropertyResolver resolver = createPropertyResolver(
-                bean, "value.value");
+        ReflectionPropertyResolver resolver = createResolver(bean, "value.value");
         assertEquals(false, resolver.hasAllPathValues());
         
         bean.setValue(new TestBean());
@@ -206,9 +205,8 @@ public class PropertyResolverTest extends TestCase {
     
     public void testPCLOnPropertyDelegate() {
         TestBean bean = new TestBean();
-        PropertyResolver resolver = createPropertyResolver(
-                bean, "foo");
-        PropertyResolverDelegate delegate = new PropertyResolverDelegate();
+        ReflectionPropertyResolver resolver = createResolver(bean, "foo");
+        Delegate delegate = new Delegate();
         resolver.setDelegate(delegate);
         resolver.bind();
         assertEquals(true, resolver.hasAllPathValues());
@@ -225,9 +223,8 @@ public class PropertyResolverTest extends TestCase {
     
     public void testNestedPCLs() {
         TestBean bean = new TestBean();
-        PropertyResolver resolver = createPropertyResolver(
-                bean, "foo.foo");
-        PropertyResolverDelegate delegate = new PropertyResolverDelegate();
+        ReflectionPropertyResolver resolver = createResolver(bean, "foo.foo");
+        Delegate delegate = new Delegate();
         resolver.setDelegate(delegate);
         resolver.bind();
         assertEquals(false, resolver.hasAllPathValues());
@@ -252,10 +249,10 @@ public class PropertyResolverTest extends TestCase {
     }
 
     
-    private static final class PropertyResolverDelegate extends PropertyResolver.Delegate {
+    private static final class Delegate extends ReflectionPropertyResolver.Delegate {
         private int changeCount;
         
-        public void valueChanged(PropertyResolver resolver) {
+        public void valueChanged(ReflectionPropertyResolver resolver) {
             changeCount++;
         }
         
@@ -266,10 +263,10 @@ public class PropertyResolverTest extends TestCase {
         }
     }
     
-    private static final class LoggingDelegate extends PropertyResolver.Delegate {
+    private static final class LoggingDelegate extends ReflectionPropertyResolver.Delegate {
         private int changeCount;
         
-        public void valueChanged(PropertyResolver resolver) {
+        public void valueChanged(ReflectionPropertyResolver resolver) {
             changeCount++;
         }
         
