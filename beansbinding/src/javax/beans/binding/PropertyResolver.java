@@ -34,7 +34,7 @@ public abstract class PropertyResolver<S>  {
         return false;
     }
 
-    public boolean isComplete() {
+    public boolean isCompletePath() {
         return true;
     }
 
