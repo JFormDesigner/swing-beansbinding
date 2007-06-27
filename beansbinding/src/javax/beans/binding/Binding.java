@@ -239,7 +239,7 @@ public class Binding {
     private BindingContext context;
     private boolean bound;
     private ELPropertyResolver sourceResolver;
-    private PropertyResolver targetResolver;
+    private ReflectionPropertyResolver targetResolver;
     private boolean changingValue;
     private ValueState targetValueState;
     private ValueState sourceValueState;
@@ -861,7 +861,7 @@ public class Binding {
         }
         // Set the delegate after invoking bind to avoid notification
         sourceResolver.setDelegate(new ELPropertyResolverDelegate());
-        targetResolver = PropertyResolver.createPropertyResolver(
+        targetResolver = ReflectionPropertyResolver.create(
                 getTarget0(), getTargetPath0());
         targetResolver.bind();
         // Set the delegate after invoking bind to avoid notification
@@ -1783,8 +1783,8 @@ public class Binding {
     
     
     private final class PropertyResolverDelegate extends
-            PropertyResolver.Delegate {
-        public void valueChanged(PropertyResolver resolver) {
+            ReflectionPropertyResolver.Delegate {
+        public void valueChanged(ReflectionPropertyResolver resolver) {
             targetChanged();
         }
     }

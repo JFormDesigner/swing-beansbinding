@@ -17,8 +17,8 @@ import java.lang.reflect.Method;
 import java.util.Map;
 
 /**
- * {@code PropertyResolver} is used to resolve a dot separated list of
- * properties against an object. Once bound, {@code PropertyResolver}
+ * {@code ReflectionPropertyResolver} is used to resolve a dot separated list of
+ * properties against an object. Once bound, {@code ReflectionPropertyResolver}
  * listens for changes to the source, notifying the delegate any time
  * a change occurs along any element in the path. This class is used internally 
  * by {@code Binding}, most developers need not use this class.
@@ -35,7 +35,7 @@ import java.util.Map;
  * If the property is not found after trying all these options, a
  * {@code PropertyResolverException} is thrown.
  * <p>
- * A bound {@code PropertyResolver} tracks changes using the following
+ * A bound {@code ReflectionPropertyResolver} tracks changes using the following
  * algorithm:
  * <ol>
  *   <li>If the object is an {@code ObservableMap}, an
@@ -67,7 +67,7 @@ import java.util.Map;
 // PENDING: better document the cases under which a PRE is thrown
 // PENDING: this may not completely handle a null source, check on
 //          getValue()/setValue()/bind()
-final class PropertyResolver {
+final class ReflectionPropertyResolver {
     private final PropertyPath path;
     private final Object[] sources;
     private final boolean emptySourcePath;
@@ -78,30 +78,29 @@ final class PropertyResolver {
 
 
     /**
-     * Creates a {@code PropertyResolver} from the specified path.
+     * Creates a {@code ReflectionPropertyResolver} from the specified path.
      *
-     * @param path the path to create the {@code PropertyResolver} from
+     * @param path the path to create the {@code ReflectionPropertyResolver} from
      * @throws IllegalArgumentException if {@code path} is {@code null}
      */
-    public static PropertyResolver createPropertyResolver(String path) {
-        return createPropertyResolver(null, path);
+    public static ReflectionPropertyResolver create(String path) {
+        return create(null, path);
     }
 
     /**
-     * Creates a {@code PropertyResolver} for the specified object and path.
+     * Creates a {@code ReflectionPropertyResolver} for the specified object and path.
      *
      * @param source the source object the path is relative to
      * @param path the path identify the property to access
      * @throws IllegalArgumentException if {@code path} or {@code source}
      *         is {@code null}
      */
-    public static PropertyResolver createPropertyResolver(Object source,
-            String path) {
-        return new PropertyResolver(source, PropertyPath.createPropertyPath(path));
+    public static ReflectionPropertyResolver create(Object source, String path) {
+        return new ReflectionPropertyResolver(source, PropertyPath.createPropertyPath(path));
     }
     
     
-    PropertyResolver(Object source, PropertyPath path) {
+    ReflectionPropertyResolver(Object source, PropertyPath path) {
         if (path == null) {
             throw new IllegalArgumentException();
         }
@@ -158,7 +157,7 @@ final class PropertyResolver {
     public void setDelegate(Delegate delegate) {
         if (this.delegate != null) {
             throw new IllegalStateException(
-            "PropertyResolver can only have one delegate, and a delegate " +
+            "ReflectionPropertyResolver can only have one delegate, and a delegate " +
             "is already registered.");
         }
         this.delegate = delegate;
@@ -764,16 +763,16 @@ final class PropertyResolver {
 
 
     /**
-     * A {@code Delegate} is notified once a {@code PropertyResolver} is
+     * A {@code Delegate} is notified once a {@code ReflectionPropertyResolver} is
      * bound and a value of an observable property changes.
      */
     public static abstract class Delegate {
         /**
          * Notification that a property has changed.
          *
-         * @param resolver the {@code PropertyResolver} the delegate was
+         * @param resolver the {@code ReflectionPropertyResolver} the delegate was
          *        added to
          */
-        public abstract void valueChanged(PropertyResolver resolver);
+        public abstract void valueChanged(ReflectionPropertyResolver resolver);
     }
 }
