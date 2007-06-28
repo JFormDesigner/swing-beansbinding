@@ -11,42 +11,34 @@ import java.beans.PropertyChangeSupport;
 /**
  * @author Shannon Hickey
  */
-public abstract class PropertyResolver<S>  {
+public interface PropertyResolver<S, V>  {
 
-    public void setSource(S source) {
-        throw new UnsupportedOperationException();
-    }
+    void setSource(S source);
 
-    public S getSource() {
-        throw new UnsupportedOperationException();
-    }
+    S getSource();
 
-    public abstract Class<?> getValueType();
+    Class<S> getSourceType();
 
-    public abstract Object getValue();
+    Class<? extends V> getValueType();
 
-    public void setValue(Object value) {
-        throw new UnsupportedOperationException();
-    }
+    V getValue();
 
-    public boolean isWriteable() {
-        return false;
-    }
+    void setValue(V value);
 
-    public boolean isCompletePath() {
-        return true;
-    }
+    boolean isReadable();
 
-    public boolean isObservable() {
-        return false;
-    }
+    boolean isWriteable();
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {}
+    boolean isObservable();
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {}
+    boolean isCompletePath();
 
-    public PropertyChangeListener[] getPropertyChangeListeners() {
-        return new PropertyChangeListener[0];
-    }
+    void addPropertyChangeListener(PropertyChangeListener listener);
+
+    void removePropertyChangeListener(PropertyChangeListener listener);
+
+    PropertyChangeListener[] getPropertyChangeListeners();
+
+    String toString();
 
 }
