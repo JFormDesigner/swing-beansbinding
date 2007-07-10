@@ -48,7 +48,7 @@ public interface Property<S, V>  {
 
     <F> void putConverter(Class<F> otherType, Converter<F, V> converter);
 
-    Converter getConverter(Class<?> otherType);
+    <F> Converter<F, V> getConverter(Class<F> otherType);
 
     Map<Class<?>, Converter<?, V>> getConverters();
 
