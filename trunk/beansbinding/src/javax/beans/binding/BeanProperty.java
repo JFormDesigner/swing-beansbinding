@@ -17,9 +17,8 @@ import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 import javax.beans.binding.ext.PropertyDelegateFactory;
 
-public final class BeanPropertyResolver<S, V> implements PropertyResolver<S, V> {
+public final class BeanProperty<S, V> implements Property<S, V> {
 
-    private Class<S> sourceClass;
     private S source;
     private final PropertyPath path;
     private PropertyChangeSupport support;
@@ -33,12 +32,7 @@ public final class BeanPropertyResolver<S, V> implements PropertyResolver<S, V> 
     //private boolean ignoreChange;
     //private Delegate delegate;
 
-    public BeanPropertyResolver(Class<S> sourceClass, String path, S source) {
-        if (sourceClass == null) {
-            throw new IllegalArgumentException("Must supply source class.");
-        }
-
-        this.sourceClass = sourceClass;
+    public BeanProperty(String path, S source) {
         this.path = PropertyPath.createPropertyPath(path);
         this.source = source;
 
@@ -71,10 +65,6 @@ public final class BeanPropertyResolver<S, V> implements PropertyResolver<S, V> 
 
     public S getSource() {
         return source;
-    }
-
-    public Class<S> getSourceType() {
-        return (Class<S>)sourceClass.getClass();
     }
 
     public Class<? extends V> getValueType() {
