@@ -7,17 +7,16 @@ package javax.beans.binding;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.Map;
 
 /**
  * @author Shannon Hickey
  */
-public interface PropertyResolver<S, V>  {
+public interface Property<S, V>  {
 
     void setSource(S source);
 
     S getSource();
-
-    Class<S> getSourceType();
 
     Class<? extends V> getValueType();
 
@@ -32,6 +31,16 @@ public interface PropertyResolver<S, V>  {
     boolean isObservable();
 
     boolean isCompletePath();
+
+    void setValidator(Validator<V> validator);
+
+    Validator<V> getValidator();
+
+    <F> void putConverter(Class<F> otherType, Converter<F, V> converter);
+
+    Converter getConverter(Class<?> otherType);
+
+    Map<Class<?>, Converter<?, V>> getConverters();
 
     void addPropertyChangeListener(PropertyChangeListener listener);
 
