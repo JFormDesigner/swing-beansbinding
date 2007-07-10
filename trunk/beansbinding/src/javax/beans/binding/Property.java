@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2007 Sun Microsystems, Inc. All rights reserved. Use is
+ * Copyright (C) 2007 Sun Microsystems, Inc. All rights reserved. Use is
  * subject to license terms.
  */
 
@@ -14,10 +14,6 @@ import java.util.Map;
  */
 public interface Property<S, V>  {
 
-    void setSource(S source);
-
-    S getSource();
-
     Class<? extends V> getValueType();
 
     V getValue();
@@ -30,8 +26,22 @@ public interface Property<S, V>  {
 
     boolean isObservable();
 
-    boolean isCompletePath();
+    boolean isComplete();
 
+    void addPropertyChangeListener(PropertyChangeListener listener);
+
+    void removePropertyChangeListener(PropertyChangeListener listener);
+
+    PropertyChangeListener[] getPropertyChangeListeners();
+
+    String toString();
+
+    // optional methods follow
+
+    void setSource(S source);
+
+    S getSource();
+    
     void setValidator(Validator<V> validator);
 
     Validator<V> getValidator();
@@ -41,13 +51,5 @@ public interface Property<S, V>  {
     Converter getConverter(Class<?> otherType);
 
     Map<Class<?>, Converter<?, V>> getConverters();
-
-    void addPropertyChangeListener(PropertyChangeListener listener);
-
-    void removePropertyChangeListener(PropertyChangeListener listener);
-
-    PropertyChangeListener[] getPropertyChangeListeners();
-
-    String toString();
 
 }
