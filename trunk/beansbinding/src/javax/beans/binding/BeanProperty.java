@@ -30,6 +30,10 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     private Validator<V> validator;
     private HashMap<Class<?>, Converter<?, V>> converters;
 
+    public BeanProperty(String path) {
+        this(path, null);
+    }
+
     public BeanProperty(String path, S source) {
         this.path = PropertyPath.createPropertyPath(path);
 
@@ -48,7 +52,26 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public V getValue() {
-        return null;
+//        if (bound) {
+//            checkBoundPath();
+//            if (emptySourcePath) {
+//                return sources[0];
+//            }
+//            return getProperty(sources[sources.length - 1],
+//                    path.get(path.length() - 1));
+//        }
+
+        Object value = sources[0];
+
+        for (int i = 0; i < path.length(); i++) {
+            if (value == null) {
+                return null;
+            }
+
+            value = getProperty(value, path.get(i));
+        }
+
+        return (V)value;
     }
 
     public void setValue(V value) {
@@ -184,6 +207,54 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
     public Map<Class<?>, Converter<?, V>> getConverters() {
         return Collections.unmodifiableMap(converters);
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
+    private Object getProperty(Object object, String string) {
+        if (object == null) {
+            return null;
+        }
+
+        if (object instanceof Map) {
+            return ((Map)object).get(string);
+        }
+
+        try {
+            PropertyDescriptor pd =
+                new PropertyDescriptor(string, object.getClass(),
+                                       "is" + capitalize(string), null);
+            Method readMethod = pd.getReadMethod();
+            if (readMethod != null) {
+                Exception reason;
+                try {
+                    return readMethod.invoke(object);
+                } catch (IllegalArgumentException ex) {
+                    reason = ex;
+                } catch (IllegalAccessException ex) {
+                    reason = ex;
+                } catch (InvocationTargetException ex) {
+                    reason = ex;
+                }
+
+                throw new PropertyResolverException(
+                        "Exception getting value " + string + " " + object,
+                        sources[0], path.toString(), reason);
+            } else {
+                throw new PropertyResolverException(
+                        "Unable to find read method " + string + " " + object,
+                        sources[0], path.toString());
+            }
+        } catch (IntrospectionException ex) {
+            throw new PropertyResolverException(
+                    "IntrospectionException getting read method " + string + " " + object,
+                    sources[0], path.toString(), ex);
+        }
+    }
+
+    private static String capitalize(String name) {
+	return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
 
 /*
