@@ -37,15 +37,53 @@ abstract class PropertyPath {
         return new MultiPropertyPath(path.split("\\."));
     }
 
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
 
-    private static final class MultiPropertyPath extends PropertyPath {
+        if (o instanceof PropertyPath) {
+            PropertyPath oPath = (PropertyPath)o;
+
+            int length = length();
+
+            if (length != oPath.length()) {
+                return false;
+            }
+
+            for (int i = 0; i < length; i++) {
+                if (!get(i).equals(oPath.get(i))) {
+                    return false;
+                }
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    public int hashCode() {
+        int result = 17;
+        int length = length();
+
+        for (int i = 0; i < length; i++) {
+            result = 37 * result + get(i).hashCode();
+        }
+
+        return result;
+    }
+
+    static final class MultiPropertyPath extends PropertyPath {
         private final String[] path;
         
         public MultiPropertyPath(String[] path) {
             this.path = path;
+
             for (int i = 0; i < path.length; i++) {
                 path[i] = path[i].intern();
             }
+
             assert (path.length > 0);
         }
 
@@ -66,37 +104,10 @@ abstract class PropertyPath {
             }
             return builder.toString();
         }
-
-        public boolean equals(Object o) {
-            if (o == this) {
-                return true;
-            }
-            if (o instanceof MultiPropertyPath) {
-                String[] oPath = ((MultiPropertyPath)o).path;
-                if (oPath.length != path.length) {
-                    return false;
-                }
-                for (int i = 0; i < oPath.length; i++) {
-                    if (!path[i].equals(oPath[i])) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-            return false;
-        }
-
-        public int hashCode() {
-            int result = 17;
-            for (int i = 0; i < path.length; i++) {
-                result = 37 * result + path[i].hashCode();
-            }
-            return result;
-        }
     }
     
     
-    private static final class SinglePropertyPath extends PropertyPath {
+    static final class SinglePropertyPath extends PropertyPath {
         private final String path;
         
         public SinglePropertyPath(String path) {
@@ -111,25 +122,12 @@ abstract class PropertyPath {
             if (index == 0) {
                 return path;
             }
+
             throw new ArrayIndexOutOfBoundsException();
         }
         
         public String toString() {
             return path;
-        }
-
-        public boolean equals(Object o) {
-            if (o == this) {
-                return true;
-            }
-            if (o instanceof SinglePropertyPath) {
-                return path.equals(((SinglePropertyPath)o).path);
-            }
-            return false;
-        }
-
-        public int hashCode() {
-            return 17 + 37 * path.hashCode();
         }
     }
 }
