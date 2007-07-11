@@ -46,61 +46,46 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public Class<? extends V> getValueType() {
-        if (isListening) {
-            return (Class<? extends V>)getType(sources[sources.length - 1],
-                                               path.get(path.length() - 1));
-        } else {
-            int i = 0;
-            Object source = sources[i];
-            
-            for (; i < path.length() - 1; i++) {
-                if (source == null) {
-                    return null;
-                }
-                
-                source = getProperty(source, path.get(i));
+        int i = 0;
+        Object source = sources[i];
+        
+        for (; i < path.length() - 1; i++) {
+            if (source == null) {
+                return null;
             }
             
-            return (Class<? extends V>)getType(source, path.get(i));
+            source = getProperty(source, path.get(i));
         }
+        
+        return (Class<? extends V>)getType(source, path.get(i));
     }
 
     public V getValue() {
-        if (isListening) {
-            return (V)getProperty(sources[sources.length - 1],
-                                  path.get(path.length() - 1));
-        } else {
-            Object source = sources[0];
-            
-            for (int i = 0; i < path.length(); i++) {
-                if (source == null) {
-                    return null;
-                }
-                
-                source = getProperty(source, path.get(i));
+        Object source = sources[0];
+        
+        for (int i = 0; i < path.length(); i++) {
+            if (source == null) {
+                return null;
             }
             
-            return (V)source;
+            source = getProperty(source, path.get(i));
         }
+        
+        return (V)source;
     }
 
     public void setValue(V value) {
-        if (isListening) {
-            setProperty(sources[sources.length - 1],
-                        path.get(sources.length - 1), value);
-        } else {
-            Object source = sources[0];
-            
-            for (int i = 0; i < path.length() - 1; i++) {
-                if (source == null) {
-                    return;
-                }
-                
-                source = getProperty(source, path.get(i));
+        Object source = sources[0];
+        
+        for (int i = 0; i < path.length() - 1; i++) {
+            if (source == null) {
+                return;
             }
             
-            setProperty(source, path.get(sources.length - 1), value);
+            source = getProperty(source, path.get(i));
         }
+        
+        setProperty(source, path.get(sources.length - 1), value);
     }
 
     public boolean isReadable() {
@@ -116,14 +101,6 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public boolean isComplete() {
-//        if (bound) {
-//            for (int i = 0; i < sources.length; i++) {
-//                if (sources[i] == null) {
-//                    return false;
-//                }
-//            }
-//        } else {
-
         Object source = sources[0];
 
         for (int i = 0; i < path.length(); i++) {
