@@ -46,68 +46,61 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public Class<? extends V> getValueType() {
-        // checkBoundPath();
-
-//        if (bound) {
-//            return getType(sources[sources.length - 1], path.get(path.length() - 1));
-//        } else {
-
-        int i = 0;
-        Object source = sources[i];
-
-        for (; i < path.length() - 1; i++) {
-            if (source == null) {
-                return null;
+        if (isListening) {
+            return (Class<? extends V>)getType(sources[sources.length - 1],
+                                               path.get(path.length() - 1));
+        } else {
+            int i = 0;
+            Object source = sources[i];
+            
+            for (; i < path.length() - 1; i++) {
+                if (source == null) {
+                    return null;
+                }
+                
+                source = getProperty(source, path.get(i));
             }
-
-            source = getProperty(source, path.get(i));
+            
+            return (Class<? extends V>)getType(source, path.get(i));
         }
-
-        return (Class<? extends V>)getType(source, path.get(i));
     }
 
     public V getValue() {
-//        if (bound) {
-//            checkBoundPath();
-//            if (emptySourcePath) {
-//                return sources[0];
-//            }
-//            return getProperty(sources[sources.length - 1],
-//                    path.get(path.length() - 1));
-//        }
-
-        Object source = sources[0];
-
-        for (int i = 0; i < path.length(); i++) {
-            if (source == null) {
-                return null;
+        if (isListening) {
+            return (V)getProperty(sources[sources.length - 1],
+                                  path.get(path.length() - 1));
+        } else {
+            Object source = sources[0];
+            
+            for (int i = 0; i < path.length(); i++) {
+                if (source == null) {
+                    return null;
+                }
+                
+                source = getProperty(source, path.get(i));
             }
-
-            source = getProperty(source, path.get(i));
+            
+            return (V)source;
         }
-
-        return (V)source;
     }
 
     public void setValue(V value) {
-//        if (bound) {
-//            checkBoundPath();
-//            setProperty(sources[sources.length - 1],
-//                    path.get(sources.length - 1),
-//                    value);
-//        } else {
-
-        Object source = sources[0];
-
-        for (int i = 0; i < path.length() - 1; i++) {
-            if (source == null) {
-                return;
+        if (isListening) {
+            setProperty(sources[sources.length - 1],
+                        path.get(sources.length - 1), value);
+        } else {
+            Object source = sources[0];
+            
+            for (int i = 0; i < path.length() - 1; i++) {
+                if (source == null) {
+                    return;
+                }
+                
+                source = getProperty(source, path.get(i));
             }
-
-            source = getProperty(source, path.get(i));
+            
+            setProperty(source, path.get(sources.length - 1), value);
         }
-
-        setProperty(source, path.get(sources.length - 1), value);
     }
 
     public boolean isReadable() {
@@ -537,7 +530,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         updateListeners(index, value, false);
         //firePropertyChange here
     }
-    
+
     private void mapValueChanged(ObservableMap map, Object key) {
         if (!ignoreChange) {
             int index = getSourceIndex(map);
