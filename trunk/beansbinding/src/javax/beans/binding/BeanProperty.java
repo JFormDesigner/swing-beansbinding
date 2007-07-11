@@ -200,8 +200,8 @@ public final class BeanProperty<S, V> implements Property<S, V> {
             V oldValue = getValue();
             boolean wasComplete = isComplete();
             updateListeners(0, sources[0], false);
-            firePropertyChange("value", oldValue, getValue());
             firePropertyChange("complete", wasComplete, isComplete());
+            firePropertyChange("value", oldValue, getValue());
         }
     };
 
@@ -523,20 +523,22 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         return -1;
     }
 
-    private void sourceValueChanged(int index, Object value) {
-        Object oldValue = getValue();
+    private void sourceValueChanged(int index, Object value, Object oldValue) {
+        // PENDING - this is incomplete - still doesn't work when called from a property change listener
+        // without the new value
+        Object old = (index == path.length() ? oldValue : getValue());
         boolean wasComplete = isComplete();
         updateListeners(index, value, false);
-        firePropertyChange("value", oldValue, getValue());
         firePropertyChange("complete", wasComplete, isComplete());
+        firePropertyChange("value", old, getValue());
     }
 
-    private void mapValueChanged(ObservableMap map, Object key) {
+    private void mapValueChanged(ObservableMap map, Object key, Object lastValue) {
         if (!ignoreChange) {
             int index = getSourceIndex(map);
             if (index != -1) {
                 if (key.equals(path.get(index))) {
-                    sourceValueChanged(index + 1, map.get(key));
+                    sourceValueChanged(index + 1, map.get(key), lastValue);
                 }
             } else {
                 // PENDING: Shouldn't get here, implies listener fired after
@@ -569,9 +571,9 @@ public final class BeanProperty<S, V> implements Property<S, V> {
                             // two things: either the new value is null, or it's
                             // too expensive to calculate the new value. This
                             // assumes it's the later.
-                            sourceValueChanged(index, source);
+                            sourceValueChanged(index, source, e.getOldValue());
                         } else {
-                            sourceValueChanged(index + 1, newValue);
+                            sourceValueChanged(index + 1, newValue, e.getOldValue());
                         }
                     } // else case means a different property changes
                 } else {
@@ -579,17 +581,16 @@ public final class BeanProperty<S, V> implements Property<S, V> {
             }
         }
 
-        public void mapKeyValueChanged(ObservableMap map, Object key,
-                Object lastValue) {
-            mapValueChanged(map, key);
+        public void mapKeyValueChanged(ObservableMap map, Object key, Object lastValue) {
+            mapValueChanged(map, key, lastValue);
         }
 
         public void mapKeyAdded(ObservableMap map, Object key) {
-            mapValueChanged(map, key);
+            mapValueChanged(map, key, null);
         }
 
         public void mapKeyRemoved(ObservableMap map, Object key, Object value) {
-            mapValueChanged(map, key);
+            mapValueChanged(map, key, null);
         }
     }
 
