@@ -46,6 +46,11 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public Class<? extends V> getValueType() {
+        if (isListening) {
+            return (Class<? extends V>)getType(sources[sources.length - 1],
+                                               path.get(path.length() - 1));
+        }
+        
         int i = 0;
         Object source = sources[i];
         
@@ -61,6 +66,11 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public V getValue() {
+        if (isListening) {
+            return (V)getProperty(sources[sources.length - 1],
+                                  path.get(path.length() - 1));
+        }
+        
         Object source = sources[0];
         
         for (int i = 0; i < path.length(); i++) {
@@ -75,17 +85,22 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public void setValue(V value) {
-        Object source = sources[0];
-        
-        for (int i = 0; i < path.length() - 1; i++) {
-            if (source == null) {
-                return;
+        if (isListening) {
+            setProperty(sources[sources.length - 1],
+                        path.get(sources.length - 1), value);
+        } else {
+            Object source = sources[0];
+            
+            for (int i = 0; i < path.length() - 1; i++) {
+                if (source == null) {
+                    return;
+                }
+                
+                source = getProperty(source, path.get(i));
             }
             
-            source = getProperty(source, path.get(i));
+            setProperty(source, path.get(sources.length - 1), value);
         }
-        
-        setProperty(source, path.get(sources.length - 1), value);
     }
 
     public boolean isReadable() {
@@ -101,13 +116,17 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public boolean isComplete() {
+        if (isListening) {
+            return sources[sources.length - 1] != null;
+        }
+        
         Object source = sources[0];
-
+        
         for (int i = 0; i < path.length(); i++) {
             if (source == null) {
                 return false;
             }
-
+            
             source = getProperty(source, path.get(i));
         }
 
@@ -121,6 +140,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
     private void stopListening() {
         isListening = false;
+        // TBD TBD TBD TBD
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -155,7 +175,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         return support.getPropertyChangeListeners();
     }
 
-    protected void firePropertyChange(Object oldValue, Object newValue) {
+    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         if (support == null || support.getPropertyChangeListeners().length == 0) {
             return;
         }
@@ -164,7 +184,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
             return;
         }
 
-        support.firePropertyChange("value", oldValue, newValue);
+        support.firePropertyChange(propertyName, oldValue, newValue);
     }
 
     public String toString() {
@@ -174,17 +194,14 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public void setSource(S source) {
-        V oldValue = null;
-
-        if (isListening) {
-            oldValue = getValue();
-        }
-
         sources[0] = source;
 
         if (isListening) {
+            V oldValue = getValue();
+            boolean wasComplete = isComplete();
             updateListeners(0, sources[0], false);
-            firePropertyChange(oldValue, getValue());
+            firePropertyChange("value", oldValue, getValue());
+            firePropertyChange("complete", wasComplete, isComplete());
         }
     };
 
@@ -360,19 +377,22 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
     private void updateListeners(int index, Object value, boolean initialBind) {
         Object sourceValue = value;
-//        Object sourceValue = (value == null) ? sources[index] : value;
+
         if (initialBind) {
             // forces installing listener (if necessary)
             sources[0] = null;
         }
+
         for (int i = index, max = path.length(); i < max; i++) {
             if (sourceValue != sources[i]) {
                 unregisterListener(sources[i], path.get(i));
                 sources[i] = sourceValue;
+
                 if (sourceValue != null) {
                     registerListener(sourceValue, path.get(i));
                 }
             }
+
             if (i + 1 < max) {
                 sourceValue = getProperty(sourceValue, path.get(i));
             }
@@ -504,8 +524,11 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     private void sourceValueChanged(int index, Object value) {
+        Object oldValue = getValue();
+        boolean wasComplete = isComplete();
         updateListeners(index, value, false);
-        //firePropertyChange here
+        firePropertyChange("value", oldValue, getValue());
+        firePropertyChange("complete", wasComplete, isComplete());
     }
 
     private void mapValueChanged(ObservableMap map, Object key) {
