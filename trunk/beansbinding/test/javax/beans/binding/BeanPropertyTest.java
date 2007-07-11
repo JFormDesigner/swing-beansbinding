@@ -11,12 +11,10 @@ import junit.framework.*;
  *
  * @author Shannon Hickey
  */
-public class REFPropertyResolverTest extends TestCase {
-
-    private PropertyResolver resolver;
+public class BeanPropertyTest extends TestCase {
 
     public static Test suite() {
-        TestSuite suite = new TestSuite(REFPropertyResolverTest.class);
+        TestSuite suite = new TestSuite(BeanPropertyTest.class);
         return suite;
     }
 
@@ -26,12 +24,6 @@ public class REFPropertyResolverTest extends TestCase {
     protected void tearDown() throws Exception {
     }
 
-    public void testFoo() {
-        assertEquals("FOO", "FOO");
+    public void testA() {
     }
-
-    public void testBar() {
-        assertEquals("BAR", "BAR");
-    }
-
 }
