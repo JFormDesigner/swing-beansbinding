@@ -37,7 +37,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     public BeanProperty(String path, S source) {
         this.path = PropertyPath.createPropertyPath(path);
 
-        if (path.length() > 0) {
+        if (this.path.length() > 0) {
             sources = new Object[path.length()];
             sources[0] = source;
             emptySourcePath = false;
@@ -48,7 +48,31 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public Class<? extends V> getValueType() {
-        return null;
+        // checkBoundPath();
+
+        if (path.length() == 0) {
+            return (Class<? extends V>)sources[0].getClass();
+        }
+
+//        if (bound) {
+//            return getType(sources[sources.length - 1], path.get(path.length() - 1));
+//        } else {
+
+        Object value = sources[0];
+
+        for (int i = 0; i < path.length() - 1; i++) {
+            if (value == null) {
+                return null;
+            }
+
+            value = getProperty(value, path.get(i));
+        }
+
+        if (value == null) {
+            return null;
+        }
+
+        return (Class<? extends V>)getType(value, path.get(path.length() - 1));
     }
 
     public V getValue() {
@@ -255,6 +279,38 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
     private static String capitalize(String name) {
 	return name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
+    private Class<?> getType(Object object, String string) {
+        if (object == null) {
+            return null;
+        }
+
+        if (object instanceof Map) {
+            // PENDING: can we get type information at run time?
+            return Object.class;
+        }
+
+        try {
+            PropertyDescriptor pd
+                = new PropertyDescriptor(string, object.getClass(),
+                                         "is" + capitalize(string), null);
+            Method readMethod = pd.getReadMethod();
+            if (readMethod != null) {
+                return readMethod.getReturnType();
+            } else {
+                throw new PropertyResolverException(
+                        "Unable to determine type " + string + " " + object,
+                        sources[0], path.toString());
+            }
+        } catch (IntrospectionException ex) {
+            throw new PropertyResolverException(
+                    "IntrospectionException getting read method " + string + " " + object,
+                    sources[0], path.toString(), ex);
+        }
     }
 
 /*
