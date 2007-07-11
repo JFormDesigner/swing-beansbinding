@@ -24,7 +24,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     private final Object[] sources;
     private PropertyChangeSupport support;
     private boolean isListening = false;
-    //private ChangeHandler changeHandler;
+    private ChangeHandler changeHandler;
     private boolean ignoreChange;
     private Validator<V> validator;
     private HashMap<Class<?>, Converter<?, V>> converters;
@@ -146,6 +146,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
     private void startListening() {
         isListening = true;
+        updateListeners(0, sources[0], true);
     }
 
     private void stopListening() {
@@ -203,18 +204,16 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public void setSource(S source) {
-        boolean wasListening = isListening;
         V oldValue = null;
 
-        if (wasListening) {
-            stopListening();
+        if (isListening) {
             oldValue = getValue();
         }
 
         sources[0] = source;
 
-        if (wasListening) {
-            startListening();
+        if (isListening) {
+            updateListeners(0, sources[0], false);
             firePropertyChange(oldValue, getValue());
         }
     };
@@ -389,7 +388,178 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         }
     }
 
-/*
+    private void updateListeners(int index, Object value, boolean initialBind) {
+        Object sourceValue = value;
+//        Object sourceValue = (value == null) ? sources[index] : value;
+        if (initialBind) {
+            // forces installing listener (if necessary)
+            sources[0] = null;
+        }
+        for (int i = index, max = path.length(); i < max; i++) {
+            if (sourceValue != sources[i]) {
+                unregisterListener(sources[i], path.get(i));
+                sources[i] = sourceValue;
+                if (sourceValue != null) {
+                    registerListener(sourceValue, path.get(i));
+                }
+            }
+            if (i + 1 < max) {
+                sourceValue = getProperty(sourceValue, path.get(i));
+            }
+        }
+    }
+
+    private void registerListener(Object source, String property) {
+        if (source != null) {
+            if (source instanceof ObservableMap) {
+                ((ObservableMap)source).addObservableMapListener(
+                        getChangeHandler());
+            } else {
+                addPropertyChangeListener(source, property);
+            }
+        }
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
+    private void unregisterListener(Object source, String property) {
+        if (changeHandler != null && source != null) {
+            // PENDING: optimize this and cache
+            if (source instanceof ObservableMap) {
+                ((ObservableMap)source).removeObservableMapListener(
+                        getChangeHandler());
+            } else {
+                removePropertyChangeListener(source, property);
+            }
+        }
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
+    private void addPropertyChangeListener(Object source, String property) {
+        // PENDING: optimize this and cache
+        Exception reason = null;
+        try {
+            Method addPCL = source.getClass().getMethod(
+                    "addPropertyChangeListener",
+                    String.class, PropertyChangeListener.class);
+            addPCL.invoke(source, property, getChangeHandler());
+        } catch (SecurityException ex) {
+            reason = ex;
+        } catch (IllegalArgumentException ex) {
+            reason = ex;
+        } catch (InvocationTargetException ex) {
+            reason = ex;
+        } catch (IllegalAccessException ex) {
+            reason = ex;
+        } catch (NoSuchMethodException ex) {
+            // No addPCL(String,PCL), look for addPCL(PCL)
+            try {
+                Method addPCL = source.getClass().getMethod(
+                        "addPropertyChangeListener",
+                        PropertyChangeListener.class);
+                addPCL.invoke(source, getChangeHandler());
+            } catch (SecurityException ex2) {
+                reason = ex2;
+            } catch (IllegalArgumentException ex2) {
+                reason = ex2;
+            } catch (InvocationTargetException ex2) {
+                reason = ex2;
+            } catch (IllegalAccessException ex2) {
+                reason = ex2;
+            } catch (NoSuchMethodException ex2) {
+                // No addPCL(String,PCL), or addPCL(PCL), should log.
+            }
+        }
+        if (reason != null) {
+            throw new PropertyResolverException(
+                    "Unable to register propertyChangeListener " + property + " " + source,
+                    sources[0], path.toString(), reason);
+        }
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
+    private void removePropertyChangeListener(Object source, String property) {
+        Exception reason = null;
+        try {
+            Method removePCL = source.getClass().getMethod(
+                    "removePropertyChangeListener",
+                    String.class, PropertyChangeListener.class);
+            removePCL.invoke(source, property, changeHandler);
+        } catch (SecurityException ex) {
+            reason = ex;
+        } catch (IllegalArgumentException ex) {
+            reason = ex;
+        } catch (InvocationTargetException ex) {
+            reason = ex;
+        } catch (IllegalAccessException ex) {
+            reason = ex;
+        } catch (NoSuchMethodException ex) {
+            // No removePCL(String,PCL), try removePCL(PCL)
+            try {
+                Method removePCL = source.getClass().getMethod(
+                        "removePropertyChangeListener",
+                        PropertyChangeListener.class);
+                removePCL.invoke(source, changeHandler);
+            } catch (SecurityException ex2) {
+                reason = ex2;
+            } catch (IllegalArgumentException ex2) {
+                reason = ex2;
+            } catch (InvocationTargetException ex2) {
+                reason = ex2;
+            } catch (IllegalAccessException ex2) {
+                reason = ex2;
+            } catch (NoSuchMethodException ex2) {
+            }
+        }
+        if (reason != null) {
+            throw new PropertyResolverException(
+                    "Unable to remove propertyChangeListener " + property + " " + source,
+                    sources[0], path.toString(), reason);
+        }
+    }
+
+    private int getSourceIndex(Object source) {
+        for (int i = 0; i < sources.length; i++) {
+            if (sources[i] == source) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private void sourceValueChanged(int index, Object value) {
+        updateListeners(index, value, false);
+        //firePropertyChange here
+    }
+    
+    private void mapValueChanged(ObservableMap map, Object key) {
+        if (!ignoreChange) {
+            int index = getSourceIndex(map);
+            if (index != -1) {
+                if (key.equals(path.get(index))) {
+                    sourceValueChanged(index + 1, map.get(key));
+                }
+            } else {
+                // PENDING: Shouldn't get here, implies listener fired after
+                // we removed ourself. Log or assert.
+            }
+        }
+    }
+    
+    private ChangeHandler getChangeHandler() {
+        if (changeHandler== null) {
+            changeHandler = new ChangeHandler();
+        }
+        return changeHandler;
+    }
+
+    
     private final class ChangeHandler implements PropertyChangeListener,
             ObservableMapListener {
         public void propertyChange(PropertyChangeEvent e) {
@@ -429,5 +599,5 @@ public final class BeanProperty<S, V> implements Property<S, V> {
             mapValueChanged(map, key);
         }
     }
-*/
+
 }
