@@ -8,72 +8,40 @@ package javax.beans.binding;
 /**
  *
  * @author sky
+ * @author Shannon Hickey
  */
 abstract class PropertyPath {
-    private static final PropertyPath EMPTY_PROPERTY_PATH =
-            new EmptyPropertyPath();
-    
+
+    private PropertyPath() {}
+
+    public abstract int length();
+
+    // throws ArrayIndexOutBoundsException if not valid
+    public abstract String get(int index);
+
+    public abstract String toString();
+
     public static PropertyPath createPropertyPath(String path) {
-        int length;
-        if (path == null || (length = path.length()) == 0) {
-            return EMPTY_PROPERTY_PATH;
+        if (path == null || path.length() == 0) {
+            throw new IllegalArgumentException("path must be non-empty and non-null");
         }
+
         int dotIndex = path.indexOf('.');
+
         if (dotIndex == -1) {
             return new SinglePropertyPath(path);
         }
+
         // PENDING: optimize this, I suspect writing own split would
         // be more effecient
         return new MultiPropertyPath(path.split("\\."));
     }
-    
-    PropertyPath() {
-    }
 
-    public abstract int length();
-    
-    // throws ArrayIndexOutBoundsException if not valid
-    public abstract String get(int index);
-    
-    public PropertyPath subPath(int start, int length) {
-        if (start == 0 && length == length()) {
-            return this;
-        }
-        if (start < 0 || start + length > length() || length < 0) {
-            throw new IllegalArgumentException();
-        }
-        if (length == 0) {
-            return EMPTY_PROPERTY_PATH;
-        }
-        if (length == 1) {
-            return new SinglePropertyPath(get(start));
-        }
-        String[] path = new String[length];
-        for (int i = 0; i < path.length; i++) {
-            path[i] = get(i + start);
-        }
-        return new MultiPropertyPath(path);
-    }
-    
-    public PropertyPath append(PropertyPath path) {
-        if (this == EMPTY_PROPERTY_PATH) {
-            return path;
-        }
-        if (path == EMPTY_PROPERTY_PATH) {
-            return this;
-        }
-        // PENDING: optimize this
-        return PropertyPath.createPropertyPath(toString() + "." +
-                path.toString());
-    }
-
-    public abstract String toString();
-    
 
     private static final class MultiPropertyPath extends PropertyPath {
         private final String[] path;
         
-        MultiPropertyPath(String[] path) {
+        public MultiPropertyPath(String[] path) {
             this.path = path;
             for (int i = 0; i < path.length; i++) {
                 path[i] = path[i].intern();
@@ -131,7 +99,7 @@ abstract class PropertyPath {
     private static final class SinglePropertyPath extends PropertyPath {
         private final String path;
         
-        SinglePropertyPath(String path) {
+        public SinglePropertyPath(String path) {
             this.path = path.intern();
         }
 
@@ -162,29 +130,6 @@ abstract class PropertyPath {
 
         public int hashCode() {
             return 17 + 37 * path.hashCode();
-        }
-    }
-    
-    
-    private static final class EmptyPropertyPath extends PropertyPath {
-        public int length() {
-            return 0;
-        }
-
-        public String get(int index) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-        
-        public String toString() {
-            return "";
-        }
-
-        public boolean equals(Object o) {
-            return (o == this);
-        }
-
-        public int hashCode() {
-            return 17;
         }
     }
 }

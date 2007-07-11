@@ -24,55 +24,46 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     private final Object[] sources;
     private PropertyChangeSupport support;
     private boolean isListening = false;
-    private final boolean emptySourcePath;
     //private ChangeHandler changeHandler;
     private boolean ignoreChange;
     private Validator<V> validator;
     private HashMap<Class<?>, Converter<?, V>> converters;
 
+    /**
+     * @throws IllegalArgumentException for empty or {@code null} path.
+     */
     public BeanProperty(String path) {
         this(path, null);
     }
 
+    /**
+     * @throws IllegalArgumentException for empty or {@code null} path.
+     */
     public BeanProperty(String path, S source) {
         this.path = PropertyPath.createPropertyPath(path);
-
-        if (this.path.length() > 0) {
-            sources = new Object[path.length()];
-            sources[0] = source;
-            emptySourcePath = false;
-        } else {
-            sources = new Object[] { source };
-            emptySourcePath = true;
-        }
+        sources = new Object[this.path.length()];
+        sources[0] = source;
     }
 
     public Class<? extends V> getValueType() {
         // checkBoundPath();
 
-        if (path.length() == 0) {
-            return (Class<? extends V>)sources[0].getClass();
-        }
-
 //        if (bound) {
 //            return getType(sources[sources.length - 1], path.get(path.length() - 1));
 //        } else {
 
-        Object value = sources[0];
+        int i = 0;
+        Object source = sources[i];
 
-        for (int i = 0; i < path.length() - 1; i++) {
-            if (value == null) {
+        for (; i < path.length() - 1; i++) {
+            if (source == null) {
                 return null;
             }
 
-            value = getProperty(value, path.get(i));
+            source = getProperty(source, path.get(i));
         }
 
-        if (value == null) {
-            return null;
-        }
-
-        return (Class<? extends V>)getType(value, path.get(path.length() - 1));
+        return (Class<? extends V>)getType(source, path.get(i));
     }
 
     public V getValue() {
@@ -85,20 +76,39 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 //                    path.get(path.length() - 1));
 //        }
 
-        Object value = sources[0];
+        Object source = sources[0];
 
         for (int i = 0; i < path.length(); i++) {
-            if (value == null) {
+            if (source == null) {
                 return null;
             }
 
-            value = getProperty(value, path.get(i));
+            source = getProperty(source, path.get(i));
         }
 
-        return (V)value;
+        return (V)source;
     }
 
     public void setValue(V value) {
+//        if (bound) {
+//            checkBoundPath();
+//            setProperty(sources[sources.length - 1],
+//                    path.get(sources.length - 1),
+//                    value);
+//        } else {
+
+        Object source = sources[0];
+
+        for (int i = 0; i < path.length() - 1; i++) {
+            if (source == null) {
+                return;
+            }
+
+            source = getProperty(source, path.get(i));
+        }
+
+        setProperty(source, path.get(sources.length - 1), value);
+//        }
     }
 
     public boolean isReadable() {
@@ -310,6 +320,55 @@ public final class BeanProperty<S, V> implements Property<S, V> {
             throw new PropertyResolverException(
                     "IntrospectionException getting read method " + string + " " + object,
                     sources[0], path.toString(), ex);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void setProperty(Object object, String propertyName, Object value) {
+        if (object == null)  {
+            return;
+        }
+
+        try {
+            ignoreChange = true;
+
+            if (object instanceof Map) {
+                ((Map)object).put(propertyName, value);
+                return;
+            }
+
+            // set value
+            PropertyDescriptor pd = new PropertyDescriptor(
+                    propertyName, object.getClass(), null, 
+                    "set" + capitalize(propertyName));
+            Method setMethod = pd.getWriteMethod();
+            if (setMethod != null) {
+                Exception reason;
+                try {
+                    setMethod.invoke(object, value);
+                    return;
+                } catch (IllegalArgumentException ex) {
+                    reason = ex;
+                } catch (InvocationTargetException ex) {
+                    reason = ex;
+                } catch (IllegalAccessException ex) {
+                    reason = ex;
+                }
+                throw new PropertyResolverException(
+                        "Unable to set value " + propertyName + " on " + object +
+                        " value=" + value,
+                        sources[0], path.toString(), reason);
+            } else {
+                throw new PropertyResolverException(
+                        "Unable to find setter " + propertyName + " on " + object,
+                        sources[0], path.toString());
+            }
+        } catch (IntrospectionException ex) {
+            throw new PropertyResolverException(
+                    "Introspection exception " + propertyName + " on " + object,
+                    sources[0], path.toString(), ex);
+        } finally {
+            ignoreChange = false;
         }
     }
 
