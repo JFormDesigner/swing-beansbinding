@@ -108,7 +108,6 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         }
 
         setProperty(source, path.get(sources.length - 1), value);
-//        }
     }
 
     public boolean isReadable() {
@@ -124,7 +123,25 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public boolean isComplete() {
-        return false;
+//        if (bound) {
+//            for (int i = 0; i < sources.length; i++) {
+//                if (sources[i] == null) {
+//                    return false;
+//                }
+//            }
+//        } else {
+
+        Object source = sources[0];
+
+        for (int i = 0; i < path.length(); i++) {
+            if (source == null) {
+                return false;
+            }
+
+            source = getProperty(source, path.get(i));
+        }
+
+        return true;
     }
 
     private void startListening() {
