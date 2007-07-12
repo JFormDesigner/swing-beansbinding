@@ -22,6 +22,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
     private final PropertyPath path;
     private final Object[] sources;
+    private Object cachedValue;
     private PropertyChangeSupport support;
     private boolean isListening = false;
     private ChangeHandler changeHandler;
@@ -50,7 +51,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
             return (Class<? extends V>)getType(sources[sources.length - 1],
                                                path.get(path.length() - 1));
         }
-        
+
         int i = 0;
         Object source = sources[i];
         
@@ -67,8 +68,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
     public V getValue() {
         if (isListening) {
-            return (V)getProperty(sources[sources.length - 1],
-                                  path.get(path.length() - 1));
+            return (V)cachedValue;
         }
         
         Object source = sources[0];
@@ -88,6 +88,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         if (isListening) {
             setProperty(sources[sources.length - 1],
                         path.get(sources.length - 1), value);
+            updateCachedValue(true);
         } else {
             Object source = sources[0];
             
@@ -133,14 +134,36 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         return true;
     }
 
+    private void updateCachedValue(boolean notify) {
+        Object oldValue = cachedValue;
+        cachedValue = getProperty(sources[sources.length - 1],
+                                  path.get(path.length() - 1));
+        if (notify) {
+            firePropertyChange("value", oldValue, cachedValue);
+        }
+    }
+
     private void startListening() {
         isListening = true;
         updateListeners(0, sources[0], true);
+        updateCachedValue(false);
     }
 
     private void stopListening() {
         isListening = false;
-        // TBD TBD TBD TBD
+        cachedValue = null;
+
+        if (changeHandler != null) {
+            for (int i = 0; i < sources.length; i++) {
+                unregisterListener(sources[i], path.get(i));
+            }
+        }
+
+        for (int i = 1; i < sources.length; i++) {
+            sources[i] = null;
+        }
+
+        changeHandler = null;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -197,11 +220,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         sources[0] = source;
 
         if (isListening) {
-            V oldValue = getValue();
-            boolean wasComplete = isComplete();
-            updateListeners(0, sources[0], false);
-            firePropertyChange("complete", wasComplete, isComplete());
-            firePropertyChange("value", oldValue, getValue());
+            sourceValueChanged(0, sources[0]);
         }
     };
 
@@ -523,22 +542,19 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         return -1;
     }
 
-    private void sourceValueChanged(int index, Object value, Object oldValue) {
-        // PENDING - this is incomplete - still doesn't work when called from a property change listener
-        // without the new value
-        Object old = (index == path.length() ? oldValue : getValue());
+    private void sourceValueChanged(int index, Object value) {
         boolean wasComplete = isComplete();
         updateListeners(index, value, false);
         firePropertyChange("complete", wasComplete, isComplete());
-        firePropertyChange("value", old, getValue());
+        updateCachedValue(true);
     }
 
-    private void mapValueChanged(ObservableMap map, Object key, Object lastValue) {
+    private void mapValueChanged(ObservableMap map, Object key) {
         if (!ignoreChange) {
             int index = getSourceIndex(map);
             if (index != -1) {
                 if (key.equals(path.get(index))) {
-                    sourceValueChanged(index + 1, map.get(key), lastValue);
+                    sourceValueChanged(index + 1, map.get(key));
                 }
             } else {
                 // PENDING: Shouldn't get here, implies listener fired after
@@ -571,9 +587,9 @@ public final class BeanProperty<S, V> implements Property<S, V> {
                             // two things: either the new value is null, or it's
                             // too expensive to calculate the new value. This
                             // assumes it's the later.
-                            sourceValueChanged(index, source, e.getOldValue());
+                            sourceValueChanged(index, source);
                         } else {
-                            sourceValueChanged(index + 1, newValue, e.getOldValue());
+                            sourceValueChanged(index + 1, newValue);
                         }
                     } // else case means a different property changes
                 } else {
@@ -582,15 +598,15 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         }
 
         public void mapKeyValueChanged(ObservableMap map, Object key, Object lastValue) {
-            mapValueChanged(map, key, lastValue);
+            mapValueChanged(map, key);
         }
 
         public void mapKeyAdded(ObservableMap map, Object key) {
-            mapValueChanged(map, key, null);
+            mapValueChanged(map, key);
         }
 
         public void mapKeyRemoved(ObservableMap map, Object key, Object value) {
-            mapValueChanged(map, key, null);
+            mapValueChanged(map, key);
         }
     }
 
