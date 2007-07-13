@@ -18,7 +18,7 @@ import java.util.Collections;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 
-public final class BeanProperty<S, V> implements Property<S, V> {
+public final class BeanProperty implements Property<Object, Object> {
 
     private final PropertyPath path;
     private final Object[] sources;
@@ -27,8 +27,6 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     private boolean isListening = false;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
-    private Validator<V> validator;
-    private HashMap<Class<?>, Converter<?, V>> converters;
 
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
@@ -40,16 +38,27 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    public BeanProperty(String path, S source) {
+    public BeanProperty(String path, Object source) {
         this.path = PropertyPath.createPropertyPath(path);
         sources = new Object[this.path.length()];
         sources[0] = source;
     }
 
-    public Class<? extends V> getValueType() {
+    public void setSource(Object source) {
+        sources[0] = source;
+
         if (isListening) {
-            return (Class<? extends V>)getType(sources[sources.length - 1],
-                                               path.get(path.length() - 1));
+            sourceValueChanged(0, sources[0]);
+        }
+    };
+
+    public Object getSource() {
+        return sources[0];
+    }
+
+    public Class<?> getValueType() {
+        if (isListening) {
+            return getType(sources[sources.length - 1], path.get(path.length() - 1));
         }
 
         int i = 0;
@@ -63,12 +72,12 @@ public final class BeanProperty<S, V> implements Property<S, V> {
             source = getProperty(source, path.get(i));
         }
         
-        return (Class<? extends V>)getType(source, path.get(i));
+        return getType(source, path.get(i));
     }
 
-    public V getValue() {
+    public Object getValue() {
         if (isListening) {
-            return (V)cachedValue;
+            return cachedValue;
         }
         
         Object source = sources[0];
@@ -81,10 +90,10 @@ public final class BeanProperty<S, V> implements Property<S, V> {
             source = getProperty(source, path.get(i));
         }
         
-        return (V)source;
+        return source;
     }
 
-    public void setValue(V value) {
+    public void setValue(Object value) {
         if (isListening) {
             setProperty(sources[sources.length - 1],
                         path.get(sources.length - 1), value);
@@ -109,10 +118,6 @@ public final class BeanProperty<S, V> implements Property<S, V> {
     }
 
     public boolean isWriteable() {
-        return false;
-    }
-
-    public boolean isObservable() {
         return false;
     }
 
@@ -143,10 +148,22 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         }
     }
 
+    private void maybeStartListening() {
+        if (!isListening && getPropertyChangeListeners().length != 0) {
+            startListening();
+        }
+    }
+
     private void startListening() {
         isListening = true;
         updateListeners(0, sources[0], true);
         updateCachedValue(false);
+    }
+
+    private void maybeStopListening() {
+        if (isListening && getPropertyChangeListeners().length == 0) {
+            stopListening();
+        }
     }
 
     private void stopListening() {
@@ -173,9 +190,17 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
         support.addPropertyChangeListener(listener);
 
-        if (!isListening && getPropertyChangeListeners().length != 0) {
-            startListening();
+        maybeStartListening();
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        if (support == null) {
+            support = new PropertyChangeSupport(this);
         }
+
+        support.addPropertyChangeListener(propertyName, listener);
+
+        maybeStartListening();
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -185,9 +210,17 @@ public final class BeanProperty<S, V> implements Property<S, V> {
 
         support.removePropertyChangeListener(listener);
 
-        if (isListening && getPropertyChangeListeners().length == 0) {
-            stopListening();
+        maybeStopListening();
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        if (support == null) {
+            return;
         }
+
+        support.removePropertyChangeListener(propertyName, listener);
+
+        maybeStopListening();
     }
 
     public PropertyChangeListener[] getPropertyChangeListeners() {
@@ -196,6 +229,14 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         }
 
         return support.getPropertyChangeListeners();
+    }
+
+    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        if (support == null) {
+            return new PropertyChangeListener[0];
+        }
+
+        return support.getPropertyChangeListeners(propertyName);
     }
 
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
@@ -215,56 +256,7 @@ public final class BeanProperty<S, V> implements Property<S, V> {
         return path == null ? className
                             : className + '.' + path;
     }
-
-    public void setSource(S source) {
-        sources[0] = source;
-
-        if (isListening) {
-            sourceValueChanged(0, sources[0]);
-        }
-    };
-
-    public S getSource() {
-        return (S)sources[0];
-    }
     
-    public void setValidator(Validator<V> validator) {
-        this.validator = validator;
-    }
-
-    public Validator<V> getValidator() {
-        return validator;
-    }
-
-    public <F> void putConverter(Class<F> otherType, Converter<F, V> converter) {
-        if (otherType == null) {
-            throw new IllegalArgumentException("Must supply type");
-        }
-
-        if (converter == null) {
-            if (converters != null) {
-                converters.remove(otherType);
-            }
-        } else {
-            if (converters == null) {
-                converters = new HashMap<Class<?>, Converter<?, V>>();
-            }
-            converters.put(otherType, converter);
-        }
-    }
-
-    public <F> Converter<F, V> getConverter(Class<F> otherType) {
-        if (converters == null) {
-            return null;
-        }
-
-        return (Converter<F, V>)converters.get(otherType);
-    }
-
-    public Map<Class<?>, Converter<?, V>> getConverters() {
-        return Collections.unmodifiableMap(converters);
-    }
-
     /**
      * @throws PropertyResolverException
      */
