@@ -57,60 +57,47 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     public Class<?> getValueType() {
-        if (isListening) {
-            return getType(sources[sources.length - 1], path.get(path.length() - 1));
-        }
-
         int i = 0;
         Object source = sources[i];
-        
+
         for (; i < path.length() - 1; i++) {
             if (source == null) {
                 return null;
             }
-            
+
             source = getProperty(source, path.get(i));
         }
-        
+
         return getType(source, path.get(i));
     }
 
     public Object getValue() {
-        if (isListening) {
-            return cachedValue;
-        }
-        
         Object source = sources[0];
-        
+
         for (int i = 0; i < path.length(); i++) {
             if (source == null) {
                 return null;
             }
-            
+
             source = getProperty(source, path.get(i));
         }
-        
+
         return source;
     }
 
     public void setValue(Object value) {
-        if (isListening) {
-            setProperty(sources[sources.length - 1],
-                        path.get(sources.length - 1), value);
-            updateCachedValue(true);
-        } else {
-            Object source = sources[0];
-            
-            for (int i = 0; i < path.length() - 1; i++) {
-                if (source == null) {
-                    return;
-                }
-                
-                source = getProperty(source, path.get(i));
+        Object source = sources[0];
+
+        for (int i = 0; i < path.length() - 1; i++) {
+            if (source == null) {
+                return;
             }
-            
-            setProperty(source, path.get(sources.length - 1), value);
+
+            source = getProperty(source, path.get(i));
         }
+
+        setProperty(source, path.get(sources.length - 1), value);
+        updateCachedValue(true);
     }
 
     public boolean isReadable() {
@@ -119,24 +106,6 @@ public final class BeanProperty implements Property<Object, Object> {
 
     public boolean isWriteable() {
         return false;
-    }
-
-    public boolean isComplete() {
-        if (isListening) {
-            return sources[sources.length - 1] != null;
-        }
-        
-        Object source = sources[0];
-        
-        for (int i = 0; i < path.length(); i++) {
-            if (source == null) {
-                return false;
-            }
-            
-            source = getProperty(source, path.get(i));
-        }
-
-        return true;
     }
 
     private void updateCachedValue(boolean notify) {
@@ -256,7 +225,7 @@ public final class BeanProperty implements Property<Object, Object> {
         return path == null ? className
                             : className + '.' + path;
     }
-    
+
     /**
      * @throws PropertyResolverException
      */
@@ -317,6 +286,8 @@ public final class BeanProperty implements Property<Object, Object> {
             // PENDING: can we get type information at run time?
             return Object.class;
         }
+
+        // PENDING: we want the WRITE method type, not READ
 
         try {
             PropertyDescriptor pd
@@ -535,9 +506,7 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     private void sourceValueChanged(int index, Object value) {
-        boolean wasComplete = isComplete();
         updateListeners(index, value, false);
-        firePropertyChange("complete", wasComplete, isComplete());
         updateCachedValue(true);
     }
 
@@ -554,7 +523,7 @@ public final class BeanProperty implements Property<Object, Object> {
             }
         }
     }
-    
+
     private ChangeHandler getChangeHandler() {
         if (changeHandler== null) {
             changeHandler = new ChangeHandler();
@@ -562,7 +531,7 @@ public final class BeanProperty implements Property<Object, Object> {
         return changeHandler;
     }
 
-    
+
     private final class ChangeHandler implements PropertyChangeListener,
             ObservableMapListener {
         public void propertyChange(PropertyChangeEvent e) {
