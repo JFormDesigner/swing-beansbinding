@@ -13,6 +13,10 @@ import java.util.Map;
  */
 public interface Property<S, V>  {
 
+    void setSource(S source);
+
+    S getSource();
+
     Class<? extends V> getValueType();
 
     V getValue();
@@ -23,32 +27,18 @@ public interface Property<S, V>  {
 
     boolean isWriteable();
 
-    boolean isObservable();
-
-    boolean isComplete();
-
     void addPropertyChangeListener(PropertyChangeListener listener);
+
+    void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
 
     void removePropertyChangeListener(PropertyChangeListener listener);
 
+    void removePropertyChangeListener(String propertyName, PropertyChangeListener listener);
+
     PropertyChangeListener[] getPropertyChangeListeners();
+    
+    PropertyChangeListener[] getPropertyChangeListeners(String propertyName);
 
     String toString();
-
-    // optional methods follow
-
-    void setSource(S source);
-
-    S getSource();
-    
-    void setValidator(Validator<V> validator);
-
-    Validator<V> getValidator();
-
-    <F> void putConverter(Class<F> otherType, Converter<F, V> converter);
-
-    <F> Converter<F, V> getConverter(Class<F> otherType);
-
-    Map<Class<?>, Converter<?, V>> getConverters();
 
 }
