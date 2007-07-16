@@ -6,7 +6,6 @@
 package javax.beans.binding;
 
 import java.beans.PropertyChangeListener;
-import java.util.Map;
 
 /**
  * @author Shannon Hickey
