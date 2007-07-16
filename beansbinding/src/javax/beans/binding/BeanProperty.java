@@ -13,13 +13,16 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.ConcurrentModificationException;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 
 public final class BeanProperty implements Property<Object, Object> {
 
     private final PropertyPath path;
-    private final Object[] cache;
+    private Object source;
+    private Object[] cache;
+    private Object cachedValue;
     private PropertyChangeSupport support;
     private boolean isListening = false;
     private ChangeHandler changeHandler;
@@ -37,64 +40,83 @@ public final class BeanProperty implements Property<Object, Object> {
      */
     public BeanProperty(String path, Object source) {
         this.path = PropertyPath.createPropertyPath(path);
-        cache = new Object[this.path.length() + 1];
-        cache[0] = source;
+        this.source = source;
     }
 
     public void setSource(Object source) {
-        cache[0] = source;
+        this.source = source;
 
-//        if (isListening) {
-//            sourceValueChanged(0, cache[0]);
-//        }
+        if (isListening) {
+            cachedValueChanged(0);
+        }
     };
 
     public Object getSource() {
-        return cache[0];
-    }
-
-    public Class<?> getValueType() {
-        int i = 0;
-        Object source = cache[i];
-
-        for (; i < path.length() - 1; i++) {
-            if (source == null) {
-                return null;
-            }
-
-            source = getProperty(source, path.get(i));
-        }
-
-        return getType(source, path.get(i));
-    }
-
-    public Object getValue() {
-        Object source = cache[0];
-
-        for (int i = 0; i < path.length(); i++) {
-            if (source == null) {
-                return null;
-            }
-
-            source = getProperty(source, path.get(i));
-        }
-
         return source;
     }
 
-    public void setValue(Object value) {
-        Object source = cache[0];
+    public Class<?> getValueType() {
+        int pathLength = path.length();
 
-        for (int i = 0; i < path.length() - 1; i++) {
-            if (source == null) {
-                return;
-            }
-
-            source = getProperty(source, path.get(i));
+        if (isListening) {
+            validateCache(-1);
+            return getType(cache[pathLength - 1], path.getLast());
         }
 
-        setProperty(source, path.get(path.length() - 1), value);
-//        updateCachedValue(true);
+        Object src = source;
+
+        for (int i = 0; i < pathLength - 1; i++) {
+            if (src == null) {
+                return null;
+            }
+
+            src = getProperty(src, path.get(i));
+        }
+
+        return getType(src, path.getLast());
+    }
+
+    public Object getValue() {
+        int pathLength = path.length();
+
+        if (isListening) {
+            validateCache(-1);
+            return cachedValue;
+        }
+
+        Object src = source;
+
+        for (int i = 0; i < pathLength; i++) {
+            if (src == null) {
+                return null;
+            }
+
+            src = getProperty(src, path.get(i));
+        }
+
+        return src;
+    }
+
+    public void setValue(Object value) {
+        int pathLength = path.length();
+
+        if (isListening) {
+            validateCache(-1);
+            setProperty(cache[pathLength - 1], path.getLast(), value);
+            updateCachedValue();
+        } else {
+            Object src = source;
+            
+            for (int i = 0; i < pathLength - 1; i++) {
+                if (src == null) {
+                    return;
+                }
+                
+                src = getProperty(src, path.get(i));
+            }
+            
+            setProperty(src, path.get(pathLength - 1), value);
+        }
     }
 
     public boolean isReadable() {
@@ -105,16 +127,6 @@ public final class BeanProperty implements Property<Object, Object> {
         return false;
     }
 
-/*
-    private void updateCachedValue(boolean notify) {
-        Object oldValue = cachedValue;
-        cachedValue = getProperty(sources[sources.length - 1],
-                                  path.get(path.length() - 1));
-        if (notify) {
-            firePropertyChange("value", oldValue, cachedValue);
-        }
-    }
-*/
     private void maybeStartListening() {
         if (!isListening && getPropertyChangeListeners().length != 0) {
             startListening();
@@ -123,8 +135,11 @@ public final class BeanProperty implements Property<Object, Object> {
 
     private void startListening() {
         isListening = true;
-        updateListeners(0, cache[0], true);
-//        updateCachedValue(false);
+        if (cache == null) {
+            cache = new Object[path.length()];
+        }
+        updateListeners(0);
+        cachedValue = getProperty(cache[path.length() - 1], path.getLast());
     }
 
     private void maybeStopListening() {
@@ -133,21 +148,18 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
-    private void stopListening() {/*
+    private void stopListening() {
         isListening = false;
-        cachedValue = null;
 
         if (changeHandler != null) {
-            for (int i = 0; i < sources.length; i++) {
-                unregisterListener(sources[i], path.get(i));
+            for (int i = 0; i < path.length(); i++) {
+                unregisterListener(cache[i], path.get(i));
+                cache[i] = null;
             }
         }
 
-        for (int i = 1; i < sources.length; i++) {
-            sources[i] = null;
-        }
-
-        changeHandler = null;*/
+        cachedValue = null;
+        changeHandler = null;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -219,7 +231,7 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     public String toString() {
-        String className = (cache[0] == null ? "" : cache[0].getClass().getName());
+        String className = (source == null ? "" : source.getClass().getName());
         return className + path;
     }
 
@@ -254,16 +266,16 @@ public final class BeanProperty implements Property<Object, Object> {
 
                 throw new PropertyResolverException(
                         "Exception getting value " + string + " " + object,
-                        cache[0], path.toString(), reason);
+                        source, path.toString(), reason);
             } else {
                 throw new PropertyResolverException(
                         "Unable to find read method " + string + " " + object,
-                        cache[0], path.toString());
+                        source, path.toString());
             }
         } catch (IntrospectionException ex) {
             throw new PropertyResolverException(
                     "IntrospectionException getting read method " + string + " " + object,
-                    cache[0], path.toString(), ex);
+                    source, path.toString(), ex);
         }
     }
 
@@ -294,12 +306,12 @@ public final class BeanProperty implements Property<Object, Object> {
             } else {
                 throw new PropertyResolverException(
                         "Unable to determine type " + string + " " + object,
-                        cache[0], path.toString());
+                        source, path.toString());
             }
         } catch (IntrospectionException ex) {
             throw new PropertyResolverException(
                     "IntrospectionException getting read method " + string + " " + object,
-                    cache[0], path.toString(), ex);
+                    source, path.toString(), ex);
         }
     }
 
@@ -337,29 +349,30 @@ public final class BeanProperty implements Property<Object, Object> {
                 throw new PropertyResolverException(
                         "Unable to set value " + propertyName + " on " + object +
                         " value=" + value,
-                        cache[0], path.toString(), reason);
+                        source, path.toString(), reason);
             } else {
                 throw new PropertyResolverException(
                         "Unable to find setter " + propertyName + " on " + object,
-                        cache[0], path.toString());
+                        source, path.toString());
             }
         } catch (IntrospectionException ex) {
             throw new PropertyResolverException(
                     "Introspection exception " + propertyName + " on " + object,
-                    cache[0], path.toString(), ex);
+                    source, path.toString(), ex);
         } finally {
             ignoreChange = false;
         }
     }
 
-    private void updateListeners(int index, Object value, boolean initialBind) {
-        Object sourceValue = value;
-
-        if (initialBind) {
-            // forces installing listener (if necessary)
-            cache[0] = null;
+    private void updateListeners(int index) {
+        Object sourceValue;
+        
+        if (index == 0) {
+            sourceValue = source;
+        } else {
+            sourceValue = getProperty(cache[index - 1], path.get(index - 1));
         }
-
+        
         for (int i = index, max = path.length(); i < max; i++) {
             if (sourceValue != cache[i]) {
                 unregisterListener(cache[i], path.get(i));
@@ -443,7 +456,7 @@ public final class BeanProperty implements Property<Object, Object> {
         if (reason != null) {
             throw new PropertyResolverException(
                     "Unable to register propertyChangeListener " + property + " " + source,
-                    cache[0], path.toString(), reason);
+                    source, path.toString(), reason);
         }
     }
 
@@ -486,7 +499,7 @@ public final class BeanProperty implements Property<Object, Object> {
         if (reason != null) {
             throw new PropertyResolverException(
                     "Unable to remove propertyChangeListener " + property + " " + source,
-                    cache[0], path.toString(), reason);
+                    source, path.toString(), reason);
         }
     }
 
@@ -500,9 +513,44 @@ public final class BeanProperty implements Property<Object, Object> {
         return -1;
     }
 
-    private void sourceValueChanged(int index, Object value) {
-        updateListeners(index, value, false);
-//        updateCachedValue(true);
+    private void validateCache(int ignore) {
+        for (int i = 0; i < path.length() - 1; i++) {
+           if (i == ignore - 1) {
+               continue;
+           }
+            
+            Object source = cache[i];
+
+            if (source == null) {
+                return;
+            }
+
+            Object next = getProperty(source, path.get(i));
+
+            if (next != cache[i + 1]) {
+                throw new ConcurrentModificationException();
+            }
+        }
+
+        if (path.length() != ignore) {
+            Object next = getProperty(cache[path.length() - 1], path.getLast());
+            if (cachedValue != next) {
+                throw new ConcurrentModificationException();
+            }
+        }
+    }
+
+    private void updateCachedValue() {
+        Object oldValue = cachedValue;
+        cachedValue = getProperty(cache[path.length() - 1], path.getLast());
+        firePropertyChange("value", oldValue, cachedValue);
+    }
+
+    private void cachedValueChanged(int index) {
+        validateCache(index);
+        int pathLength = path.length();
+        updateListeners(index);
+        updateCachedValue();
     }
 
     private void mapValueChanged(ObservableMap map, Object key) {
@@ -510,11 +558,10 @@ public final class BeanProperty implements Property<Object, Object> {
             int index = getSourceIndex(map);
             if (index != -1) {
                 if (key.equals(path.get(index))) {
-                    sourceValueChanged(index + 1, map.get(key));
+                    cachedValueChanged(index + 1);
                 }
             } else {
-                // PENDING: Shouldn't get here, implies listener fired after
-                // we removed ourself. Log or assert.
+                throw new AssertionError();
             }
         }
     }
@@ -538,17 +585,10 @@ public final class BeanProperty implements Property<Object, Object> {
                     if (propertyName == null ||
                             path.get(index).equals(propertyName)) {
                         Object newValue = e.getNewValue();
-                        if (newValue == null) {
-                            // A PropertyChangeEvent with a null value can mean
-                            // two things: either the new value is null, or it's
-                            // too expensive to calculate the new value. This
-                            // assumes it's the later.
-                            sourceValueChanged(index, source);
-                        } else {
-                            sourceValueChanged(index + 1, newValue);
-                        }
-                    } // else case means a different property changes
+                        cachedValueChanged(index + 1);
+                    }
                 } else {
+                    throw new AssertionError();
                 }
             }
         }
