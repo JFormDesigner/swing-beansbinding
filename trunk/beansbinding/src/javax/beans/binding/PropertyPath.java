@@ -5,6 +5,9 @@
 
 package javax.beans.binding;
 
+import java.util.StringTokenizer;
+import java.util.ArrayList;
+
 /**
  *
  * @author sky
@@ -26,19 +29,26 @@ abstract class PropertyPath {
     public abstract String toString();
 
     public static PropertyPath createPropertyPath(String path) {
-        if (path == null || path.length() == 0) {
-            throw new IllegalArgumentException("path must be non-empty and non-null");
+        if (path == null) {
+            throw new IllegalArgumentException("path must be non-null");
         }
 
-        int dotIndex = path.indexOf('.');
-
-        if (dotIndex == -1) {
-            return new SinglePropertyPath(path);
+        StringTokenizer tokenizer = new StringTokenizer(path, ".");
+        ArrayList<String> list = new ArrayList<String>();
+        while (tokenizer.hasMoreTokens()) {
+            list.add(tokenizer.nextToken());
         }
 
-        // PENDING: optimize this, I suspect writing own split would
-        // be more effecient
-        return new MultiPropertyPath(path.split("\\."));
+        int size = list.size();
+
+        if (size == 0) {
+            throw new IllegalArgumentException("path must be non-empty");
+        } else if (list.size() == 1) {
+            return new SinglePropertyPath(list.get(0));
+        } else {
+            String[] multi = new String[list.size()];
+            return new MultiPropertyPath(list.toArray(multi));
+        }
     }
 
     public boolean equals(Object o) {
