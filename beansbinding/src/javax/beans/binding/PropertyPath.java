@@ -19,6 +19,10 @@ abstract class PropertyPath {
     // throws ArrayIndexOutBoundsException if not valid
     public abstract String get(int index);
 
+    public String getLast() {
+        return get(length() - 1);
+    }
+
     public abstract String toString();
 
     public static PropertyPath createPropertyPath(String path) {
