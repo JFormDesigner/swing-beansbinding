@@ -13,8 +13,6 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 
