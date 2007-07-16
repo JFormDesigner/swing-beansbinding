@@ -17,6 +17,9 @@ import java.util.ConcurrentModificationException;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 
+/**
+ * @author Shannon Hickey
+ */
 public final class BeanProperty implements Property<Object, Object> {
 
     private final PropertyPath path;
