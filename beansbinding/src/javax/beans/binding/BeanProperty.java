@@ -295,7 +295,6 @@ public final class BeanProperty implements Property<Object, Object> {
         }
 
         if (object instanceof Map) {
-            // PENDING: can we get type information at run time?
             return Object.class;
         }
 
