@@ -55,6 +55,30 @@ public final class BeanProperty implements Property<Object, Object> {
         return source;
     }
 
+    private Object getLastSource() {
+        if (source == null) {
+            System.err.println("LOG: source is null");
+            return null;
+        }
+
+        Object src = source;
+
+        for (int i = 0; i < path.length() - 1; i++) {
+            src = getProperty(src, path.get(i));
+            if (src == null) {
+                System.err.println("LOG: missing source");
+                return null;
+            }
+
+            if (src == UNREADABLE) {
+                System.err.println("LOG: missing read method in chain");
+                return null;
+            }
+        }
+
+        return src;
+    }
+
     public Class<?> getValueType() {
         int pathLength = path.length();
 
@@ -63,30 +87,15 @@ public final class BeanProperty implements Property<Object, Object> {
             return getType(cache[pathLength - 1], path.getLast());
         }
 
-        if (source == null) {
-            System.err.println("LOG: source is null");
+        Object src = getLastSource();
+        if (src == null) {
             throw new IllegalStateException("Unreadable and unwritable");
-        }
-
-        Object src = source;
-
-        for (int i = 0; i < pathLength - 1; i++) {
-            src = getProperty(src, path.get(i));
-            if (src == null) {
-                System.err.println("LOG: missing source");
-                throw new IllegalStateException("Unreadable and unwritable");
-            }
-
-            if (src == UNREADABLE) {
-                System.err.println("LOG: missing read method");
-                throw new IllegalStateException("Unreadable and unwritable");
-            }
         }
 
         src = getType(src, path.getLast());
         if (src == null) {
             System.err.println("LOG: missing read or write method");
-            throw new IllegalStateException("Unreadable");
+            throw new IllegalStateException("Unreadable and unwritable");
         }
 
         return (Class<?>)src;
@@ -100,24 +109,9 @@ public final class BeanProperty implements Property<Object, Object> {
             return cachedValue;
         }
 
-        if (source == null) {
-            System.err.println("LOG: source is null");
+        Object src = getLastSource();
+        if (src == null) {
             throw new IllegalStateException("Unreadable");
-        }
-
-        Object src = source;
-
-        for (int i = 0; i < pathLength - 1; i++) {
-            src = getProperty(src, path.get(i));
-            if (src == null) {
-                System.err.println("LOG: missing source");
-                throw new IllegalStateException("Unreadable");
-            }
-
-            if (src == UNREADABLE) {
-                System.err.println("LOG: missing read method");
-                throw new IllegalStateException("Unreadable");
-            }
         }
 
         src = getProperty(src, path.getLast());
@@ -142,31 +136,49 @@ public final class BeanProperty implements Property<Object, Object> {
                 throw new IllegalStateException("Unwritable");
             }
 
-            Object src = source;
-            
-            for (int i = 0; i < pathLength - 1; i++) {
-                src = getProperty(src, path.get(i));
-                if (src == null) {
-                    System.err.println("LOG: missing source");
-                    throw new IllegalStateException("Unwritable");
-                }
-                
-                if (src == UNREADABLE) {
-                    System.err.println("LOG: missing read method");
-                    throw new IllegalStateException("Unwritable");
-                }
+            Object src = getLastSource();
+            if (src == null) {
+                throw new IllegalStateException("Unwritable");
             }
-
-            setProperty(src, path.get(pathLength - 1), value);
+            
+            setProperty(src, path.getLast(), value);
         }
     }
 
     public boolean isReadable() {
-        return false;
+        if (isListening) {
+        }
+
+        Object src = getLastSource();
+        if (src == null) {
+            return false;
+        }
+
+        PropertyDescriptor pd = getPropertyDescriptor(src, path.getLast());
+        if (pd == null || pd.getReadMethod() == null) {
+            System.err.println("LOG: missing read method");
+            return false;
+        }
+
+        return true;
     }
 
     public boolean isWriteable() {
-        return false;
+        if (isListening) {
+        }
+
+        Object src = getLastSource();
+        if (src == null) {
+            return false;
+        }
+
+        PropertyDescriptor pd = getPropertyDescriptor(src, path.getLast());
+        if (pd == null || pd.getWriteMethod() == null) {
+            System.err.println("LOG: missing write method");
+            return false;
+        }
+
+        return true;
     }
 
     private void maybeStartListening() {
