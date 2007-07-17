@@ -5,11 +5,7 @@
 
 package javax.beans.binding;
 
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
+import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -30,6 +26,7 @@ public final class BeanProperty implements Property<Object, Object> {
     private boolean isListening = false;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
+    private static final Object UNREADABLE = new Object();
 
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
@@ -66,17 +63,33 @@ public final class BeanProperty implements Property<Object, Object> {
             return getType(cache[pathLength - 1], path.getLast());
         }
 
+        if (source == null) {
+            System.err.println("LOG: source is null");
+            throw new IllegalStateException("Unreadable and unwritable");
+        }
+
         Object src = source;
 
         for (int i = 0; i < pathLength - 1; i++) {
+            src = getProperty(src, path.get(i));
             if (src == null) {
-                return null;
+                System.err.println("LOG: missing source");
+                throw new IllegalStateException("Unreadable and unwritable");
             }
 
-            src = getProperty(src, path.get(i));
+            if (src == UNREADABLE) {
+                System.err.println("LOG: missing read method");
+                throw new IllegalStateException("Unreadable and unwritable");
+            }
         }
 
-        return getType(src, path.getLast());
+        src = getType(src, path.getLast());
+        if (src == null) {
+            System.err.println("LOG: missing read or write method");
+            throw new IllegalStateException("Unreadable");
+        }
+
+        return (Class<?>)src;
     }
 
     public Object getValue() {
@@ -87,14 +100,30 @@ public final class BeanProperty implements Property<Object, Object> {
             return cachedValue;
         }
 
+        if (source == null) {
+            System.err.println("LOG: source is null");
+            throw new IllegalStateException("Unreadable");
+        }
+
         Object src = source;
 
-        for (int i = 0; i < pathLength; i++) {
+        for (int i = 0; i < pathLength - 1; i++) {
+            src = getProperty(src, path.get(i));
             if (src == null) {
-                return null;
+                System.err.println("LOG: missing source");
+                throw new IllegalStateException("Unreadable");
             }
 
-            src = getProperty(src, path.get(i));
+            if (src == UNREADABLE) {
+                System.err.println("LOG: missing read method");
+                throw new IllegalStateException("Unreadable");
+            }
+        }
+
+        src = getProperty(src, path.getLast());
+        if (src == UNREADABLE) {
+            System.err.println("LOG: missing read method");
+            throw new IllegalStateException("Unreadable");
         }
 
         return src;
@@ -108,16 +137,26 @@ public final class BeanProperty implements Property<Object, Object> {
             setProperty(cache[pathLength - 1], path.getLast(), value);
             updateCachedValue();
         } else {
+            if (source == null) {
+                System.err.println("LOG: source is null");
+                throw new IllegalStateException("Unwritable");
+            }
+
             Object src = source;
             
             for (int i = 0; i < pathLength - 1; i++) {
+                src = getProperty(src, path.get(i));
                 if (src == null) {
-                    return;
+                    System.err.println("LOG: missing source");
+                    throw new IllegalStateException("Unwritable");
                 }
                 
-                src = getProperty(src, path.get(i));
+                if (src == UNREADABLE) {
+                    System.err.println("LOG: missing read method");
+                    throw new IllegalStateException("Unwritable");
+                }
             }
-            
+
             setProperty(src, path.get(pathLength - 1), value);
         }
     }
@@ -241,6 +280,29 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
+    private PropertyDescriptor getPropertyDescriptor(Object object, String string) {
+        BeanInfo info;
+
+        try {
+            info = Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
+        } catch (IntrospectionException ie) {
+            throw new PropertyResolverException("Exception accessing " + object.getClass().getName() + "." + string,
+                                                source, path.toString(), ie);
+        }
+
+        PropertyDescriptor[] pds = info.getPropertyDescriptors();
+        for (PropertyDescriptor pd : pds) {
+            if (!(pd instanceof IndexedPropertyDescriptor) && pd.getName().equals(string)) {
+                return pd;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
     private Object getProperty(Object object, String string) {
         if (object == null) {
             return null;
@@ -250,36 +312,25 @@ public final class BeanProperty implements Property<Object, Object> {
             return ((Map)object).get(string);
         }
 
-        try {
-            PropertyDescriptor pd =
-                new PropertyDescriptor(string, object.getClass(),
-                                       "is" + capitalize(string), null);
-            Method readMethod = pd.getReadMethod();
-            if (readMethod != null) {
-                Exception reason;
-                try {
-                    return readMethod.invoke(object);
-                } catch (IllegalArgumentException ex) {
-                    reason = ex;
-                } catch (IllegalAccessException ex) {
-                    reason = ex;
-                } catch (InvocationTargetException ex) {
-                    reason = ex;
-                }
-
-                throw new PropertyResolverException(
-                        "Exception getting value " + string + " " + object,
-                        source, path.toString(), reason);
-            } else {
-                throw new PropertyResolverException(
-                        "Unable to find read method " + string + " " + object,
-                        source, path.toString());
-            }
-        } catch (IntrospectionException ex) {
-            throw new PropertyResolverException(
-                    "IntrospectionException getting read method " + string + " " + object,
-                    source, path.toString(), ex);
+        PropertyDescriptor pd = getPropertyDescriptor(object, string);
+        Method readMethod = null;
+        if (pd == null || (readMethod = pd.getReadMethod()) == null) {
+            return UNREADABLE;
         }
+
+        Exception reason = null;
+        try {
+            return readMethod.invoke(object);
+        } catch (IllegalArgumentException ex) {
+            reason = ex;
+        } catch (IllegalAccessException ex) {
+            reason = ex;
+        } catch (InvocationTargetException ex) {
+            reason = ex;
+        }
+
+        throw new PropertyResolverException("Exception reading " + object.getClass().getName() + "." + string,
+                                            source, path.toString(), reason);
     }
 
     private static String capitalize(String name) {
@@ -290,38 +341,27 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws PropertyResolverException
      */
     private Class<?> getType(Object object, String string) {
-        if (object == null) {
-            return null;
-        }
+        assert object != null;
 
         if (object instanceof Map) {
             return Object.class;
         }
 
-        try {
-            PropertyDescriptor pd
-                = new PropertyDescriptor(string, object.getClass(),
-                                         null, "set" + capitalize(string));
-            Method writeMethod = pd.getWriteMethod();
-            if (writeMethod != null) {
-                return writeMethod.getParameterTypes()[0];
-            } else {
-                throw new PropertyResolverException(
-                        "Unable to determine type " + string + " " + object,
-                        source, path.toString());
-            }
-        } catch (IntrospectionException ex) {
-            throw new PropertyResolverException(
-                    "IntrospectionException getting read method " + string + " " + object,
-                    source, path.toString(), ex);
+        PropertyDescriptor pd = getPropertyDescriptor(object, string);
+        if (pd == null) {
+            return null;
         }
+
+        return pd.getPropertyType();
     }
 
+    /**
+     * @throws PropertyResolverException
+     * @throws IllegalStateException
+     */
     @SuppressWarnings("unchecked")
     private void setProperty(Object object, String propertyName, Object value) {
-        if (object == null)  {
-            return;
-        }
+        assert object != null;
 
         try {
             ignoreChange = true;
@@ -331,36 +371,27 @@ public final class BeanProperty implements Property<Object, Object> {
                 return;
             }
 
-            // set value
-            PropertyDescriptor pd = new PropertyDescriptor(
-                    propertyName, object.getClass(), null, 
-                    "set" + capitalize(propertyName));
-            Method setMethod = pd.getWriteMethod();
-            if (setMethod != null) {
-                Exception reason;
-                try {
-                    setMethod.invoke(object, value);
-                    return;
-                } catch (IllegalArgumentException ex) {
-                    reason = ex;
-                } catch (InvocationTargetException ex) {
-                    reason = ex;
-                } catch (IllegalAccessException ex) {
-                    reason = ex;
-                }
-                throw new PropertyResolverException(
-                        "Unable to set value " + propertyName + " on " + object +
-                        " value=" + value,
-                        source, path.toString(), reason);
-            } else {
-                throw new PropertyResolverException(
-                        "Unable to find setter " + propertyName + " on " + object,
-                        source, path.toString());
+            PropertyDescriptor pd = getPropertyDescriptor(object, propertyName);
+            Method writeMethod = null;
+            if (pd == null || (writeMethod = pd.getWriteMethod()) == null) {
+                System.err.println("missing write method");
+                throw new IllegalStateException("Unwritable");
             }
-        } catch (IntrospectionException ex) {
-            throw new PropertyResolverException(
-                    "Introspection exception " + propertyName + " on " + object,
-                    source, path.toString(), ex);
+
+            Exception reason;
+            try {
+                writeMethod.invoke(object, value);
+                return;
+            } catch (IllegalArgumentException ex) {
+                reason = ex;
+            } catch (InvocationTargetException ex) {
+                reason = ex;
+            } catch (IllegalAccessException ex) {
+                reason = ex;
+            }
+
+            throw new PropertyResolverException("Exception writing " + object.getClass().getName() + "." + propertyName,
+                                                source, path.toString(), reason);
         } finally {
             ignoreChange = false;
         }
