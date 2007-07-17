@@ -192,6 +192,7 @@ public final class BeanProperty implements Property<Object, Object> {
         if (cache == null) {
             cache = new Object[path.length()];
         }
+        cache[0] = UNREADABLE;
         updateListeners(0);
         cachedValue = getProperty(cache[path.length() - 1], path.getLast());
     }
@@ -316,7 +317,7 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws PropertyResolverException
      */
     private Object getProperty(Object object, String string) {
-        if (object == null) {
+        if (object == null || object == UNREADABLE) {
             return null;
         }
 
@@ -371,7 +372,6 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws PropertyResolverException
      * @throws IllegalStateException
      */
-    @SuppressWarnings("unchecked")
     private void setProperty(Object object, String propertyName, Object value) {
         assert object != null;
 
@@ -410,32 +410,53 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     private void updateListeners(int index) {
-        Object sourceValue;
-        
-        if (index == 0) {
-            sourceValue = source;
-        } else {
-            sourceValue = getProperty(cache[index - 1], path.get(index - 1));
-        }
-        
-        for (int i = index, max = path.length(); i < max; i++) {
-            if (sourceValue != cache[i]) {
-                unregisterListener(cache[i], path.get(i));
-                cache[i] = sourceValue;
+        boolean loggedYet = false;
 
-                if (sourceValue != null) {
-                    registerListener(sourceValue, path.get(i));
+        if (index == 0) {
+            if (cache[0] != source) {
+                unregisterListener(cache[0], path.get(0));
+
+                cache[0] = source;
+
+                if (source == null) {
+                    loggedYet = true;
+                    System.err.println("LOG: source is null");
+                } else {
+                    registerListener(source, path.get(0));
                 }
             }
 
-            if (i + 1 < max) {
-                sourceValue = getProperty(sourceValue, path.get(i));
+            index++;
+        }
+
+        for (int i = index; i < path.length(); i++) {
+            Object old = cache[i];
+            Object sourceValue = getProperty(cache[index - 1], path.get(index - 1));
+            if (sourceValue != old) {
+                unregisterListener(old, path.get(i));
+                
+                cache[i] = sourceValue;
+                
+                if (sourceValue == null) {
+                    if (!loggedYet) {
+                        loggedYet = true;
+                        System.err.println("LOG: missing source");
+                    }
+                } else if (sourceValue == UNREADABLE) {
+                    if (!loggedYet) {
+                        loggedYet = true;
+                        System.err.println("LOG: missing read method");
+                    }
+                } else {
+                    registerListener(sourceValue, path.get(i));
+                }
             }
         }
     }
 
     private void registerListener(Object source, String property) {
-        if (source != null) {
+        System.out.println("Added listener for " + gs(source) + "." + property);
+        if (source != null && source != UNREADABLE) {
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).addObservableMapListener(
                         getChangeHandler());
@@ -445,11 +466,22 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
+    private static String gs(Object source) {
+        if (source == null) {
+            return "null";
+        } else if (source == UNREADABLE) {
+            return "UNREADABLE";
+        } else {
+            return source.getClass().getName();
+        }
+    }
+    
     /**
      * @throws PropertyResolverException
      */
     private void unregisterListener(Object source, String property) {
-        if (changeHandler != null && source != null) {
+        System.out.println("Removed listener for " + gs(source) + "." + property);
+        if (changeHandler != null && source != null && source != UNREADABLE) {
             // PENDING: optimize this and cache
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).removeObservableMapListener(
