@@ -71,8 +71,7 @@ public final class BeanProperty implements Property<Object, Object> {
             }
 
             if (src == UNREADABLE) {
-                System.err.println("LOG: missing read method in chain");
-                return null;
+                return UNREADABLE;
             }
         }
 
@@ -80,43 +79,26 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     public Class<?> getValueType() {
-        int pathLength = path.length();
-
         if (isListening) {
             validateCache(-1);
-            return getType(cache[pathLength - 1], path.getLast());
+            return getType(cache[path.length() - 1], path.getLast());
         }
 
-        Object src = getLastSource();
-        if (src == null) {
-            throw new IllegalStateException("Unreadable and unwritable");
-        }
-
-        src = getType(src, path.getLast());
-        if (src == null) {
-            System.err.println("LOG: missing read or write method");
-            throw new IllegalStateException("Unreadable and unwritable");
-        }
-
-        return (Class<?>)src;
+        return getType(getLastSource(), path.getLast());
     }
 
     public Object getValue() {
-        int pathLength = path.length();
-
         if (isListening) {
             validateCache(-1);
+            if (cachedValue == UNREADABLE) {
+                throw new IllegalStateException("Unreadable");
+            }
+
             return cachedValue;
         }
 
-        Object src = getLastSource();
-        if (src == null) {
-            throw new IllegalStateException("Unreadable");
-        }
-
-        src = getProperty(src, path.getLast());
+        Object src = getProperty(getLastSource(), path.getLast());
         if (src == UNREADABLE) {
-            System.err.println("LOG: missing read method");
             throw new IllegalStateException("Unreadable");
         }
 
@@ -131,26 +113,18 @@ public final class BeanProperty implements Property<Object, Object> {
             setProperty(cache[pathLength - 1], path.getLast(), value);
             updateCachedValue(true);
         } else {
-            if (source == null) {
-                System.err.println("LOG: source is null");
-                throw new IllegalStateException("Unwritable");
-            }
-
-            Object src = getLastSource();
-            if (src == null) {
-                throw new IllegalStateException("Unwritable");
-            }
-            
-            setProperty(src, path.getLast(), value);
+            setProperty(getLastSource(), path.getLast(), value);
         }
     }
 
     public boolean isReadable() {
         if (isListening) {
+            validateCache(-1);
+            return cachedValue != UNREADABLE;
         }
 
         Object src = getLastSource();
-        if (src == null) {
+        if (src == null || src == UNREADABLE) {
             return false;
         }
 
@@ -164,11 +138,16 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     public boolean isWriteable() {
+        Object src;
+
         if (isListening) {
+            validateCache(-1);
+            src = cache[path.length() - 1];
+        } else {
+            src = getLastSource();
         }
 
-        Object src = getLastSource();
-        if (src == null) {
+        if (src == null || src == UNREADABLE) {
             return false;
         }
 
@@ -193,6 +172,7 @@ public final class BeanProperty implements Property<Object, Object> {
             cache = new Object[path.length()];
         }
 
+        cache[0] = UNREADABLE;
         updateCachedSources(0);
         updateCachedValue(false);
     }
@@ -294,6 +274,8 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws PropertyResolverException
      */
     private PropertyDescriptor getPropertyDescriptor(Object object, String string) {
+        assert object != null;
+
         BeanInfo info;
 
         try {
@@ -317,9 +299,7 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws PropertyResolverException
      */
     private Object getProperty(Object object, String string) {
-        assert object != null;
-
-        if (object == UNREADABLE) {
+        if (object == null || object == UNREADABLE) {
             return UNREADABLE;
         }
 
@@ -330,6 +310,7 @@ public final class BeanProperty implements Property<Object, Object> {
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         Method readMethod = null;
         if (pd == null || (readMethod = pd.getReadMethod()) == null) {
+            System.err.println("LOG: Missing read method");
             return UNREADABLE;
         }
 
@@ -356,7 +337,9 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws PropertyResolverException
      */
     private Class<?> getType(Object object, String string) {
-        assert object != null;
+        if (object == null || object == UNREADABLE) {
+            throw new IllegalStateException("Unreadable and unwritable");
+        }
 
         if (object instanceof Map) {
             return Object.class;
@@ -364,7 +347,8 @@ public final class BeanProperty implements Property<Object, Object> {
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         if (pd == null) {
-            return null;
+            System.err.println("LOG: missing read or write method");
+            throw new IllegalStateException("Unreadable and unwritable");
         }
 
         return pd.getPropertyType();
@@ -375,7 +359,9 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws IllegalStateException
      */
     private void setProperty(Object object, String propertyName, Object value) {
-        assert object != null;
+        if (object == null || object == UNREADABLE) {
+            throw new IllegalStateException("Unwritable");
+        }
 
         try {
             ignoreChange = true;
@@ -411,27 +397,20 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
-    private Object yesNull(Object src) {
+    private Object toNull(Object src) {
         return src == UNREADABLE ? null : src;
-    }
-    
-    private Object noNull(Object src) {
-        return src == null ? UNREADABLE : src;
     }
 
     private void updateCachedSources(int index) {
         boolean loggedYet = false;
-        Object sourceValue;
 
         if (index == 0) {
-            sourceValue = noNull(source);
-
-            if (cache[0] != sourceValue) {
+            if (cache[0] != source) {
                 unregisterListener(cache[0], path.get(0));
 
-                cache[0] = sourceValue;
+                cache[0] = source;
 
-                if (sourceValue == UNREADABLE) {
+                if (source == null) {
                     loggedYet = true;
                     System.err.println("LOG: source is null");
                 } else {
@@ -444,12 +423,13 @@ public final class BeanProperty implements Property<Object, Object> {
 
         for (int i = index; i < path.length(); i++) {
             Object old = cache[i];
-            sourceValue = noNull(getProperty(cache[i - 1], path.get(i - 1)));
+            Object sourceValue = getProperty(cache[i - 1], path.get(i - 1));
+
             if (sourceValue != old) {
                 unregisterListener(old, path.get(i));
-                
+
                 cache[i] = sourceValue;
-                
+
                 if (sourceValue == null) {
                     if (!loggedYet) {
                         loggedYet = true;
@@ -458,7 +438,6 @@ public final class BeanProperty implements Property<Object, Object> {
                 } else if (sourceValue == UNREADABLE) {
                     if (!loggedYet) {
                         loggedYet = true;
-                        System.err.println("LOG: missing read method");
                     }
                 } else {
                     registerListener(sourceValue, path.get(i));
@@ -611,7 +590,7 @@ public final class BeanProperty implements Property<Object, Object> {
             
             Object source = cache[i];
 
-            if (source == null) {
+            if (source == UNREADABLE) {
                 return;
             }
 
@@ -634,7 +613,7 @@ public final class BeanProperty implements Property<Object, Object> {
         Object oldValue = cachedValue;
         cachedValue = getProperty(cache[path.length() - 1], path.getLast());
         if (notify) {
-            firePropertyChange("value", yesNull(oldValue), yesNull(cachedValue));
+            firePropertyChange("value", toNull(oldValue), toNull(cachedValue));
         }
     }
 
