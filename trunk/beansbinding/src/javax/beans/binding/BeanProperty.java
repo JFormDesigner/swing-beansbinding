@@ -129,7 +129,7 @@ public final class BeanProperty implements Property<Object, Object> {
         if (isListening) {
             validateCache(-1);
             setProperty(cache[pathLength - 1], path.getLast(), value);
-            updateCachedValue();
+            updateCachedValue(true);
         } else {
             if (source == null) {
                 System.err.println("LOG: source is null");
@@ -192,9 +192,9 @@ public final class BeanProperty implements Property<Object, Object> {
         if (cache == null) {
             cache = new Object[path.length()];
         }
-        cache[0] = UNREADABLE;
-        updateListeners(0);
-        cachedValue = getProperty(cache[path.length() - 1], path.getLast());
+
+        updateCachedSources(0);
+        updateCachedValue(false);
     }
 
     private void maybeStopListening() {
@@ -317,8 +317,10 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws PropertyResolverException
      */
     private Object getProperty(Object object, String string) {
-        if (object == null || object == UNREADABLE) {
-            return null;
+        assert object != null;
+
+        if (object == UNREADABLE) {
+            return UNREADABLE;
         }
 
         if (object instanceof Map) {
@@ -409,16 +411,27 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
-    private void updateListeners(int index) {
+    private Object yesNull(Object src) {
+        return src == UNREADABLE ? null : src;
+    }
+    
+    private Object noNull(Object src) {
+        return src == null ? UNREADABLE : src;
+    }
+
+    private void updateCachedSources(int index) {
         boolean loggedYet = false;
+        Object sourceValue;
 
         if (index == 0) {
-            if (cache[0] != source) {
+            sourceValue = noNull(source);
+
+            if (cache[0] != sourceValue) {
                 unregisterListener(cache[0], path.get(0));
 
-                cache[0] = source;
+                cache[0] = sourceValue;
 
-                if (source == null) {
+                if (sourceValue == UNREADABLE) {
                     loggedYet = true;
                     System.err.println("LOG: source is null");
                 } else {
@@ -431,7 +444,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         for (int i = index; i < path.length(); i++) {
             Object old = cache[i];
-            Object sourceValue = getProperty(cache[i - 1], path.get(i - 1));
+            sourceValue = noNull(getProperty(cache[i - 1], path.get(i - 1)));
             if (sourceValue != old) {
                 unregisterListener(old, path.get(i));
                 
@@ -455,8 +468,9 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     private void registerListener(Object source, String property) {
-        System.out.println("Added listener for " + gs(source) + "." + property);
-        if (source != null && source != UNREADABLE) {
+        assert source != null;
+
+        if (source != UNREADABLE) {
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).addObservableMapListener(
                         getChangeHandler());
@@ -480,8 +494,7 @@ public final class BeanProperty implements Property<Object, Object> {
      * @throws PropertyResolverException
      */
     private void unregisterListener(Object source, String property) {
-        System.out.println("Removed listener for " + gs(source) + "." + property);
-        if (changeHandler != null && source != null && source != UNREADABLE) {
+        if (changeHandler != null && source!= null && source != UNREADABLE) {
             // PENDING: optimize this and cache
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).removeObservableMapListener(
@@ -617,17 +630,18 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
-    private void updateCachedValue() {
+    private void updateCachedValue(boolean notify) {
         Object oldValue = cachedValue;
         cachedValue = getProperty(cache[path.length() - 1], path.getLast());
-        firePropertyChange("value", oldValue, cachedValue);
+        if (notify) {
+            firePropertyChange("value", yesNull(oldValue), yesNull(cachedValue));
+        }
     }
 
     private void cachedValueChanged(int index) {
         validateCache(index);
-        int pathLength = path.length();
-        updateListeners(index);
-        updateCachedValue();
+        updateCachedSources(index);
+        updateCachedValue(true);
     }
 
     private void mapValueChanged(ObservableMap map, Object key) {
