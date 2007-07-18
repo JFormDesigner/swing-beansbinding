@@ -318,6 +318,26 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
+    private Object invokeMethod(Method method, Object object, Object... args) {
+        Exception reason = null;
+
+        try {
+            return method.invoke(object, args);
+        } catch (IllegalArgumentException ex) {
+            reason = ex;
+        } catch (IllegalAccessException ex) {
+            reason = ex;
+        } catch (InvocationTargetException ex) {
+            reason = ex;
+        }
+
+        throw new PropertyResolverException("Exception invoking method " + method + " on " + object,
+                                            source, path.toString(), reason);
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
     private Object getProperty(Object object, String string) {
         if (object == null || object == UNREADABLE) {
             return UNREADABLE;
@@ -334,19 +354,7 @@ public final class BeanProperty implements Property<Object, Object> {
             return UNREADABLE;
         }
 
-        Exception reason = null;
-        try {
-            return readMethod.invoke(object);
-        } catch (IllegalArgumentException ex) {
-            reason = ex;
-        } catch (IllegalAccessException ex) {
-            reason = ex;
-        } catch (InvocationTargetException ex) {
-            reason = ex;
-        }
-
-        throw new PropertyResolverException("Exception reading property " + string + " on " + object,
-                                            source, path.toString(), reason);
+        return invokeMethod(readMethod, object);
     }
 
     private static String capitalize(String name) {
@@ -398,20 +406,7 @@ public final class BeanProperty implements Property<Object, Object> {
                 throw new IllegalStateException("Unwritable");
             }
 
-            Exception reason;
-            try {
-                writeMethod.invoke(object, value);
-                return;
-            } catch (IllegalArgumentException ex) {
-                reason = ex;
-            } catch (InvocationTargetException ex) {
-                reason = ex;
-            } catch (IllegalAccessException ex) {
-                reason = ex;
-            }
-
-            throw new PropertyResolverException("Exception reading property " + propertyName + " on " + object,
-                    source, path.toString(), reason);
+            invokeMethod(writeMethod, object, value);
         } finally {
             ignoreChange = false;
         }
@@ -497,32 +492,16 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
-    private void addPropertyChangeListener(Object source) {
-        EventSetDescriptor ed = getEventSetDescriptor(source);
+    private void addPropertyChangeListener(Object object) {
+        EventSetDescriptor ed = getEventSetDescriptor(object);
         Method addPCMethod = null;
 
         if (ed == null || (addPCMethod = ed.getAddListenerMethod()) == null) {
-            System.err.println("LOG: can't add listener to source " + source);
+            System.err.println("LOG: can't add listener");
             return;
         }
-        
-        Exception reason = null;
-        try {
-            addPCMethod.invoke(source, getChangeHandler());
-        } catch (SecurityException ex) {
-            reason = ex;
-        } catch (IllegalArgumentException ex) {
-            reason = ex;
-        } catch (InvocationTargetException ex) {
-            reason = ex;
-        } catch (IllegalAccessException ex) {
-            reason = ex;
-        }
 
-        if (reason != null) {
-            throw new PropertyResolverException("Unable to register listener on " + source,
-                    source, path.toString(), reason);
-        }
+        invokeMethod(addPCMethod, object, getChangeHandler());
     }
 
     /**
