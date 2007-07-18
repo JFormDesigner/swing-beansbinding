@@ -431,7 +431,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         for (int i = index; i < path.length(); i++) {
             Object old = cache[i];
-            Object sourceValue = getProperty(cache[index - 1], path.get(index - 1));
+            Object sourceValue = getProperty(cache[i - 1], path.get(i - 1));
             if (sourceValue != old) {
                 unregisterListener(old, path.get(i));
                 
