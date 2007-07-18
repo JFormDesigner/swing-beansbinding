@@ -22,6 +22,7 @@ public final class BeanProperty implements Property<Object, Object> {
     private Object source;
     private Object[] cache;
     private Object cachedValue;
+    private Method cachedWriteMethod;
     private PropertyChangeSupport support;
     private boolean isListening = false;
     private ChangeHandler changeHandler;
@@ -194,6 +195,7 @@ public final class BeanProperty implements Property<Object, Object> {
         }
 
         cachedValue = null;
+        cachedWriteMethod = null;
         changeHandler = null;
     }
 
@@ -477,16 +479,6 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
-    private static String gs(Object source) {
-        if (source == null) {
-            return "null";
-        } else if (source == UNREADABLE) {
-            return "UNREADABLE";
-        } else {
-            return source.getClass().getName();
-        }
-    }
-    
     /**
      * @throws PropertyResolverException
      */
