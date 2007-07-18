@@ -188,7 +188,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         if (changeHandler != null) {
             for (int i = 0; i < path.length(); i++) {
-                unregisterListener(cache[i], path.get(i));
+                unregisterListener(cache[i]);
                 cache[i] = null;
             }
         }
@@ -273,22 +273,40 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
+    private BeanInfo getBeanInfo(Object object) {
+        assert object != null;
+
+        try {
+            return Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
+        } catch (IntrospectionException ie) {
+            throw new PropertyResolverException("Exception while introspecting " + object.getClass().getName(),
+                                                source, path.toString(), ie);
+        }
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
     private PropertyDescriptor getPropertyDescriptor(Object object, String string) {
         assert object != null;
 
-        BeanInfo info;
-
-        try {
-            info = Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
-        } catch (IntrospectionException ie) {
-            throw new PropertyResolverException("Exception accessing " + object.getClass().getName() + "." + string,
-                                                source, path.toString(), ie);
-        }
-
-        PropertyDescriptor[] pds = info.getPropertyDescriptors();
+        PropertyDescriptor[] pds = getBeanInfo(object).getPropertyDescriptors();
         for (PropertyDescriptor pd : pds) {
             if (!(pd instanceof IndexedPropertyDescriptor) && pd.getName().equals(string)) {
                 return pd;
+            }
+        }
+
+        return null;
+    }
+
+    private EventSetDescriptor getEventSetDescriptor(Object object) {
+        assert object != null;
+        
+        EventSetDescriptor[] eds = getBeanInfo(object).getEventSetDescriptors();
+        for (EventSetDescriptor ed : eds) {
+            if (ed.getListenerType() == PropertyChangeListener.class) {
+                return ed;
             }
         }
 
@@ -325,7 +343,7 @@ public final class BeanProperty implements Property<Object, Object> {
             reason = ex;
         }
 
-        throw new PropertyResolverException("Exception reading " + object.getClass().getName() + "." + string,
+        throw new PropertyResolverException("Exception reading property " + string + " on " + object,
                                             source, path.toString(), reason);
     }
 
@@ -390,8 +408,8 @@ public final class BeanProperty implements Property<Object, Object> {
                 reason = ex;
             }
 
-            throw new PropertyResolverException("Exception writing " + object.getClass().getName() + "." + propertyName,
-                                                source, path.toString(), reason);
+            throw new PropertyResolverException("Exception reading property " + propertyName + " on " + object,
+                    source, path.toString(), reason);
         } finally {
             ignoreChange = false;
         }
@@ -406,7 +424,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         if (index == 0) {
             if (cache[0] != source) {
-                unregisterListener(cache[0], path.get(0));
+                unregisterListener(cache[0]);
 
                 cache[0] = source;
 
@@ -414,7 +432,7 @@ public final class BeanProperty implements Property<Object, Object> {
                     loggedYet = true;
                     System.err.println("LOG: source is null");
                 } else {
-                    registerListener(source, path.get(0));
+                    registerListener(source);
                 }
             }
 
@@ -426,7 +444,7 @@ public final class BeanProperty implements Property<Object, Object> {
             Object sourceValue = getProperty(cache[i - 1], path.get(i - 1));
 
             if (sourceValue != old) {
-                unregisterListener(old, path.get(i));
+                unregisterListener(old);
 
                 cache[i] = sourceValue;
 
@@ -440,13 +458,13 @@ public final class BeanProperty implements Property<Object, Object> {
                         loggedYet = true;
                     }
                 } else {
-                    registerListener(sourceValue, path.get(i));
+                    registerListener(sourceValue);
                 }
             }
         }
     }
 
-    private void registerListener(Object source, String property) {
+    private void registerListener(Object source) {
         assert source != null;
 
         if (source != UNREADABLE) {
@@ -454,7 +472,7 @@ public final class BeanProperty implements Property<Object, Object> {
                 ((ObservableMap)source).addObservableMapListener(
                         getChangeHandler());
             } else {
-                addPropertyChangeListener(source, property);
+                addPropertyChangeListener(source);
             }
         }
     }
@@ -472,14 +490,14 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
-    private void unregisterListener(Object source, String property) {
+    private void unregisterListener(Object source) {
         if (changeHandler != null && source!= null && source != UNREADABLE) {
             // PENDING: optimize this and cache
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).removeObservableMapListener(
                         getChangeHandler());
             } else {
-                removePropertyChangeListener(source, property);
+                removePropertyChangeListener(source);
             }
         }
     }
@@ -487,14 +505,18 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
-    private void addPropertyChangeListener(Object source, String property) {
-        // PENDING: optimize this and cache
+    private void addPropertyChangeListener(Object source) {
+        EventSetDescriptor ed = getEventSetDescriptor(source);
+        Method addPCMethod = null;
+
+        if (ed == null || (addPCMethod = ed.getAddListenerMethod()) == null) {
+            System.err.println("LOG: can't add listener to source " + source);
+            return;
+        }
+        
         Exception reason = null;
         try {
-            Method addPCL = source.getClass().getMethod(
-                    "addPropertyChangeListener",
-                    String.class, PropertyChangeListener.class);
-            addPCL.invoke(source, property, getChangeHandler());
+            addPCMethod.invoke(source, getChangeHandler());
         } catch (SecurityException ex) {
             reason = ex;
         } catch (IllegalArgumentException ex) {
@@ -503,28 +525,10 @@ public final class BeanProperty implements Property<Object, Object> {
             reason = ex;
         } catch (IllegalAccessException ex) {
             reason = ex;
-        } catch (NoSuchMethodException ex) {
-            // No addPCL(String,PCL), look for addPCL(PCL)
-            try {
-                Method addPCL = source.getClass().getMethod(
-                        "addPropertyChangeListener",
-                        PropertyChangeListener.class);
-                addPCL.invoke(source, getChangeHandler());
-            } catch (SecurityException ex2) {
-                reason = ex2;
-            } catch (IllegalArgumentException ex2) {
-                reason = ex2;
-            } catch (InvocationTargetException ex2) {
-                reason = ex2;
-            } catch (IllegalAccessException ex2) {
-                reason = ex2;
-            } catch (NoSuchMethodException ex2) {
-                // No addPCL(String,PCL), or addPCL(PCL), should log.
-            }
         }
+
         if (reason != null) {
-            throw new PropertyResolverException(
-                    "Unable to register propertyChangeListener " + property + " " + source,
+            throw new PropertyResolverException("Unable to register listener on " + source,
                     source, path.toString(), reason);
         }
     }
@@ -532,13 +536,18 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
-    private void removePropertyChangeListener(Object source, String property) {
+    private void removePropertyChangeListener(Object source) {
+        EventSetDescriptor ed = getEventSetDescriptor(source);
+        Method removePCMethod = null;
+
+        if (ed == null || (removePCMethod = ed.getRemoveListenerMethod()) == null) {
+            System.err.println("LOG: can't remove listener from source");
+            return;
+        }
+        
         Exception reason = null;
         try {
-            Method removePCL = source.getClass().getMethod(
-                    "removePropertyChangeListener",
-                    String.class, PropertyChangeListener.class);
-            removePCL.invoke(source, property, changeHandler);
+            removePCMethod.invoke(source, getChangeHandler());
         } catch (SecurityException ex) {
             reason = ex;
         } catch (IllegalArgumentException ex) {
@@ -547,27 +556,10 @@ public final class BeanProperty implements Property<Object, Object> {
             reason = ex;
         } catch (IllegalAccessException ex) {
             reason = ex;
-        } catch (NoSuchMethodException ex) {
-            // No removePCL(String,PCL), try removePCL(PCL)
-            try {
-                Method removePCL = source.getClass().getMethod(
-                        "removePropertyChangeListener",
-                        PropertyChangeListener.class);
-                removePCL.invoke(source, changeHandler);
-            } catch (SecurityException ex2) {
-                reason = ex2;
-            } catch (IllegalArgumentException ex2) {
-                reason = ex2;
-            } catch (InvocationTargetException ex2) {
-                reason = ex2;
-            } catch (IllegalAccessException ex2) {
-                reason = ex2;
-            } catch (NoSuchMethodException ex2) {
-            }
         }
+
         if (reason != null) {
-            throw new PropertyResolverException(
-                    "Unable to remove propertyChangeListener " + property + " " + source,
+            throw new PropertyResolverException("Unable to remove listener from " + source,
                     source, path.toString(), reason);
         }
     }
