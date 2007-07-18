@@ -58,7 +58,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
     private Object getLastSource() {
         if (source == null) {
-            System.err.println("LOG: source is null");
+            System.err.println("LOG: getLastSource(): source is null");
             return null;
         }
 
@@ -67,11 +67,12 @@ public final class BeanProperty implements Property<Object, Object> {
         for (int i = 0; i < path.length() - 1; i++) {
             src = getProperty(src, path.get(i));
             if (src == null) {
-                System.err.println("LOG: missing source");
+                System.err.println("LOG: getLastSource(): missing source");
                 return null;
             }
 
             if (src == UNREADABLE) {
+                System.err.println("LOG: getLastSource(): missing read method");
                 return UNREADABLE;
             }
         }
@@ -91,6 +92,7 @@ public final class BeanProperty implements Property<Object, Object> {
     public Object getValue() {
         if (isListening) {
             validateCache(-1);
+
             if (cachedValue == UNREADABLE) {
                 throw new IllegalStateException("Unreadable");
             }
@@ -100,6 +102,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         Object src = getProperty(getLastSource(), path.getLast());
         if (src == UNREADABLE) {
+            System.err.println("LOG: getValue(): missing read method");
             throw new IllegalStateException("Unreadable");
         }
 
@@ -107,11 +110,14 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     public void setValue(Object value) {
-        int pathLength = path.length();
-
         if (isListening) {
             validateCache(-1);
-            setProperty(cache[pathLength - 1], path.getLast(), value);
+
+            if (cachedWriteMethod == null) {
+                throw new IllegalStateException("Unwritable");
+            }
+
+            invokeMethod(cachedWriteMethod, cache[path.length() - 1], value);
             updateCachedValue(true);
         } else {
             setProperty(getLastSource(), path.getLast(), value);
@@ -131,7 +137,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         PropertyDescriptor pd = getPropertyDescriptor(src, path.getLast());
         if (pd == null || pd.getReadMethod() == null) {
-            System.err.println("LOG: missing read method");
+            System.err.println("LOG: isReadable(): missing read method");
             return false;
         }
 
@@ -139,22 +145,19 @@ public final class BeanProperty implements Property<Object, Object> {
     }
 
     public boolean isWriteable() {
-        Object src;
-
         if (isListening) {
             validateCache(-1);
-            src = cache[path.length() - 1];
-        } else {
-            src = getLastSource();
+            return cachedWriteMethod != null;
         }
 
+        Object src = getLastSource();
         if (src == null || src == UNREADABLE) {
             return false;
         }
 
         PropertyDescriptor pd = getPropertyDescriptor(src, path.getLast());
         if (pd == null || pd.getWriteMethod() == null) {
-            System.err.println("LOG: missing write method");
+            System.err.println("LOG: isWritable(): missing write method");
             return false;
         }
 
@@ -350,7 +353,6 @@ public final class BeanProperty implements Property<Object, Object> {
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         Method readMethod = null;
         if (pd == null || (readMethod = pd.getReadMethod()) == null) {
-            System.err.println("LOG: Missing read method");
             return UNREADABLE;
         }
 
@@ -427,7 +429,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
                 if (source == null) {
                     loggedYet = true;
-                    System.err.println("LOG: source is null");
+                    System.err.println("LOG: updateCachedSources(): source is null");
                 } else {
                     registerListener(source);
                 }
@@ -448,11 +450,12 @@ public final class BeanProperty implements Property<Object, Object> {
                 if (sourceValue == null) {
                     if (!loggedYet) {
                         loggedYet = true;
-                        System.err.println("LOG: missing source");
+                        System.err.println("LOG: updateCachedSources(): missing source");
                     }
                 } else if (sourceValue == UNREADABLE) {
                     if (!loggedYet) {
                         loggedYet = true;
+                        System.err.println("LOG: updateCachedSources(): missing read method");
                     }
                 } else {
                     registerListener(sourceValue);
@@ -497,7 +500,7 @@ public final class BeanProperty implements Property<Object, Object> {
         Method addPCMethod = null;
 
         if (ed == null || (addPCMethod = ed.getAddListenerMethod()) == null) {
-            System.err.println("LOG: can't add listener");
+            System.err.println("LOG: addPropertyChangeListener(): can't add listener");
             return;
         }
 
@@ -512,7 +515,7 @@ public final class BeanProperty implements Property<Object, Object> {
         Method removePCMethod = null;
 
         if (ed == null || (removePCMethod = ed.getRemoveListenerMethod()) == null) {
-            System.err.println("LOG: can't remove listener from source");
+            System.err.println("LOG: removePropertyChangeListener(): can't remove listener from source");
             return;
         }
         
@@ -572,11 +575,21 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
+    private void updateCachedWriteMethod(boolean notify) {
+    }
+
     private void updateCachedValue(boolean notify) {
         Object oldValue = cachedValue;
+        Object src = cache[path.length() - 1];
+        boolean wasReadable = (cachedValue != UNREADABLE);
         cachedValue = getProperty(cache[path.length() - 1], path.getLast());
+        if (src != UNREADABLE && cachedValue == UNREADABLE) {
+            System.err.println("LOG: updateCachedValue(): missing read method");
+        }
+        boolean isReadable = (cachedValue != UNREADABLE);
         if (notify) {
             firePropertyChange("value", toNull(oldValue), toNull(cachedValue));
+            firePropertyChange("readable", wasReadable, isReadable);
         }
     }
 
