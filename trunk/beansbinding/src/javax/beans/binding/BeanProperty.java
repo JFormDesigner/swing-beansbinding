@@ -22,7 +22,7 @@ public final class BeanProperty implements Property<Object, Object> {
     private Object source;
     private Object[] cache;
     private Object cachedValue;
-    private Method cachedWriteMethod;
+    private Method cachedWriter;
     private PropertyChangeSupport support;
     private boolean isListening = false;
     private ChangeHandler changeHandler;
@@ -113,11 +113,11 @@ public final class BeanProperty implements Property<Object, Object> {
         if (isListening) {
             validateCache(-1);
 
-            if (cachedWriteMethod == null) {
+            if (cachedWriter == null) {
                 throw new IllegalStateException("Unwritable");
             }
 
-            invokeMethod(cachedWriteMethod, cache[path.length() - 1], value);
+            invokeMethod(cachedWriter, cache[path.length() - 1], value);
             updateCachedValue(true);
         } else {
             setProperty(getLastSource(), path.getLast(), value);
@@ -147,7 +147,7 @@ public final class BeanProperty implements Property<Object, Object> {
     public boolean isWriteable() {
         if (isListening) {
             validateCache(-1);
-            return cachedWriteMethod != null;
+            return cachedWriter != null;
         }
 
         Object src = getLastSource();
@@ -198,7 +198,7 @@ public final class BeanProperty implements Property<Object, Object> {
         }
 
         cachedValue = null;
-        cachedWriteMethod = null;
+        cachedWriter = null;
         changeHandler = null;
     }
 
@@ -575,7 +575,7 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
-    private void updateCachedWriteMethod(boolean notify) {
+    private void updateCachedWriter(boolean notify) {
     }
 
     private void updateCachedValue(boolean notify) {
