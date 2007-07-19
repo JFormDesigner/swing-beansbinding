@@ -123,7 +123,10 @@ public final class BeanProperty implements Property<Object, Object> {
             }
 
             write(cachedWriter, cache[path.length() - 1], path.getLast(), value);
-            updateCachedValue(true);
+
+            Object oldValue = cachedValue;
+            updateCachedValue();
+            firePropertyChange("value", toNull(oldValue), toNull(cachedValue));
         } else {
             setProperty(getLastSource(), path.getLast(), value);
         }
@@ -183,8 +186,8 @@ public final class BeanProperty implements Property<Object, Object> {
 
         cache[0] = UNREADABLE;
         updateCachedSources(0);
-        updateCachedValue(false);
-        updateCachedWriter(false);
+        updateCachedValue();
+        updateCachedWriter();
     }
 
     private void maybeStopListening() {
@@ -674,11 +677,8 @@ public final class BeanProperty implements Property<Object, Object> {
         }
     }
 
-    private void updateCachedWriter(boolean notify) {
-        Object oldValue = cachedWriter;
-        boolean wasWritable = (cachedWriter != null);
+    private void updateCachedWriter() {
         Object src = cache[path.length() - 1];
-
         if (src == null || src == UNREADABLE) {
             cachedWriter = null;
         } else {
@@ -687,17 +687,9 @@ public final class BeanProperty implements Property<Object, Object> {
                 System.err.println(hashCode() + ": LOG: updateCachedWriter(): missing write method");
             }
         }
-        
-        if (notify) {
-            boolean isWriteable = (cachedWriter != null);
-            firePropertyChange("writable", wasWritable, isWriteable);
-        }
     }
 
-    private void updateCachedValue(boolean notify) {
-        Object oldValue = cachedValue;
-        boolean wasReadable = (cachedValue != UNREADABLE);
-
+    private void updateCachedValue() {
         Object src = cache[path.length() - 1];
         if (src == null || src == UNREADABLE) {
             cachedValue = UNREADABLE;
@@ -707,19 +699,22 @@ public final class BeanProperty implements Property<Object, Object> {
                 System.err.println(hashCode() + ": LOG: updateCachedValue(): missing read method");
             }
         }
-
-        if (notify) {
-            firePropertyChange("value", toNull(oldValue), toNull(cachedValue));
-            boolean isReadable = (cachedValue != UNREADABLE);
-            firePropertyChange("readable", wasReadable, isReadable);
-        }
     }
 
     private void cachedValueChanged(int index) {
         validateCache(index);
+
+        Object oldValue = cachedValue;
+        boolean wasReadable = (cachedValue != UNREADABLE);
+        boolean wasWritable = (cachedWriter != null);
+
         updateCachedSources(index);
-        updateCachedValue(true);
-        updateCachedWriter(true);
+        updateCachedValue();
+        updateCachedWriter();
+
+        firePropertyChange("readable", wasReadable, cachedValue != UNREADABLE);
+        firePropertyChange("writeable", wasWritable, cachedWriter != null);
+        firePropertyChange("value", toNull(oldValue), toNull(cachedValue));
     }
 
     private void mapValueChanged(ObservableMap map, Object key) {
