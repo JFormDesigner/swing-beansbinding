@@ -160,8 +160,8 @@ public final class BeanProperty implements Property<Object, Object> {
             return false;
         }
 
-        PropertyDescriptor pd = getPropertyDescriptor(src, path.getLast());
-        if (pd == null || pd.getWriteMethod() == null) {
+        Object writer = getWriter(src, path.getLast());
+        if (writer == null) {
             System.err.println("LOG: isWritable(): missing write method");
             return false;
         }
@@ -410,11 +410,37 @@ public final class BeanProperty implements Property<Object, Object> {
         return pd.getPropertyType();
     }
 
+    private Object getWriter(Object object, String string) {
+        assert object != null;
+
+        if (object instanceof Map) {
+            return object;
+        }
+
+        PropertyDescriptor pd = getPropertyDescriptor(object, string);
+        Method writeMethod = null;
+        return pd == null ? null : pd.getWriteMethod();
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
+    private Object write(Object writer, Object object, String string, Object value) {
+        assert writer != null;
+
+        if (writer instanceof Map) {
+            assert writer == object;
+            return ((Map)writer).put(string, value);
+        }
+
+        return invokeMethod((Method)writer, object, value);
+    }
+
     /**
      * @throws PropertyResolverException
      * @throws IllegalStateException
      */
-    private void setProperty(Object object, String propertyName, Object value) {
+    private void setProperty(Object object, String string, Object value) {
         if (object == null || object == UNREADABLE) {
             throw new IllegalStateException("Unwritable");
         }
@@ -422,19 +448,13 @@ public final class BeanProperty implements Property<Object, Object> {
         try {
             ignoreChange = true;
 
-            if (object instanceof Map) {
-                ((Map)object).put(propertyName, value);
-                return;
-            }
-
-            PropertyDescriptor pd = getPropertyDescriptor(object, propertyName);
-            Method writeMethod = null;
-            if (pd == null || (writeMethod = pd.getWriteMethod()) == null) {
+            Object writer = getWriter(object, string);
+            if (writer == null) {
                 System.err.println("LOG: setProperty(): missing write method");
                 throw new IllegalStateException("Unwritable");
             }
 
-            invokeMethod(writeMethod, object, value);
+            write(writer, object, string, value);
         } finally {
             ignoreChange = false;
         }
