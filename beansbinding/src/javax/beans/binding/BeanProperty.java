@@ -140,8 +140,8 @@ public final class BeanProperty implements Property<Object, Object> {
             return false;
         }
 
-        PropertyDescriptor pd = getPropertyDescriptor(src, path.getLast());
-        if (pd == null || pd.getReadMethod() == null) {
+        Object reader = getReader(src, path.getLast());
+        if (reader == null) {
             System.err.println("LOG: isReadable(): missing read method");
             return false;
         }
@@ -343,6 +343,32 @@ public final class BeanProperty implements Property<Object, Object> {
                                             source, path.toString(), reason);
     }
 
+    private Object getReader(Object object, String string) {
+        assert object != null;
+
+        if (object instanceof Map) {
+            return object;
+        }
+
+        PropertyDescriptor pd = getPropertyDescriptor(object, string);
+        Method readMethod = null;
+        return pd == null ? null : pd.getReadMethod();
+    }
+
+    /**
+     * @throws PropertyResolverException
+     */
+    private Object read(Object reader, Object object, String string) {
+        assert reader != null;
+
+        if (reader instanceof Map) {
+            assert reader == object;
+            return ((Map)reader).get(string);
+        }
+
+        return invokeMethod((Method)reader, object);
+    }
+
     /**
      * @throws PropertyResolverException
      */
@@ -351,17 +377,12 @@ public final class BeanProperty implements Property<Object, Object> {
             return UNREADABLE;
         }
 
-        if (object instanceof Map) {
-            return ((Map)object).get(string);
-        }
-
-        PropertyDescriptor pd = getPropertyDescriptor(object, string);
-        Method readMethod = null;
-        if (pd == null || (readMethod = pd.getReadMethod()) == null) {
+        Object reader = getReader(object, string);
+        if (reader == null) {
             return UNREADABLE;
         }
-
-        return invokeMethod(readMethod, object);
+        
+        return read(reader, object, string);
     }
 
     private static String capitalize(String name) {
