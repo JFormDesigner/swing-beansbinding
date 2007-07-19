@@ -9,6 +9,8 @@ import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
@@ -16,14 +18,14 @@ import com.sun.java.util.ObservableMapListener;
 /**
  * @author Shannon Hickey
  */
-public final class BeanProperty implements Property<Object, Object> {
+public final class BeanProperty implements SourceableProperty<Object, Object> {
 
     private final PropertyPath path;
     private Object source;
     private Object[] cache;
     private Object cachedValue;
     private Object cachedWriter;
-    private PropertyChangeSupport support;
+    private List<PropertyStateListener<Object>> listeners;
     private boolean isListening = false;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
@@ -124,9 +126,13 @@ public final class BeanProperty implements Property<Object, Object> {
 
             write(cachedWriter, cache[path.length() - 1], path.getLast(), value);
 
-            Object oldValue = cachedValue;
+            Object oldValue = toNull(cachedValue);
             updateCachedValue();
-            firePropertyChange("value", toNull(oldValue), toNull(cachedValue));
+            Object newValue = toNull(cachedValue);
+
+            if (didValueChange(oldValue, newValue)) {
+                notifyListeners(new PropertyStateEvent(this, false, false, true, oldValue, newValue));
+            }
         } else {
             setProperty(getLastSource(), path.getLast(), value);
         }
@@ -172,12 +178,6 @@ public final class BeanProperty implements Property<Object, Object> {
         return true;
     }
 
-    private void maybeStartListening() {
-        if (!isListening && getPropertyChangeListeners().length != 0) {
-            startListening();
-        }
-    }
-
     private void startListening() {
         isListening = true;
         if (cache == null) {
@@ -190,18 +190,12 @@ public final class BeanProperty implements Property<Object, Object> {
         updateCachedWriter();
     }
 
-    private void maybeStopListening() {
-        if (isListening && getPropertyChangeListeners().length == 0) {
-            stopListening();
-        }
-    }
-
     private void stopListening() {
         isListening = false;
 
         if (changeHandler != null) {
             for (int i = 0; i < path.length(); i++) {
-                unregisterListener(cache[i]);
+                unregisterListener(cache[i], path.get(i));
                 cache[i] = null;
             }
         }
@@ -211,72 +205,52 @@ public final class BeanProperty implements Property<Object, Object> {
         changeHandler = null;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (support == null) {
-            support = new PropertyChangeSupport(this);
+    public void addPropertyStateListener(PropertyStateListener<Object> listener) {
+        if (listeners == null) {
+            listeners = new ArrayList<PropertyStateListener<Object>>(1);
         }
 
-        support.addPropertyChangeListener(listener);
+        listeners.add(listener);
 
-        maybeStartListening();
-    }
-
-    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        if (support == null) {
-            support = new PropertyChangeSupport(this);
+        if (!isListening && listeners.size() != 0) {
+            startListening();
         }
-
-        support.addPropertyChangeListener(propertyName, listener);
-
-        maybeStartListening();
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        if (support == null) {
+    public void removePropertyStateListener(PropertyStateListener<Object> listener) {
+        if (listeners == null) {
             return;
         }
 
-        support.removePropertyChangeListener(listener);
+        listeners.remove(listener);
 
-        maybeStopListening();
+        if (isListening && listeners.size() == 0) {
+            stopListening();
+        }
     }
 
-    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        if (support == null) {
+    public PropertyStateListener<Object>[] getPropertyStateListeners() {
+        if (listeners == null) {
+            return (PropertyStateListener<Object>[])(new PropertyStateListener[0]);
+        }
+
+        PropertyStateListener[] ret = new PropertyStateListener[listeners.size()];
+        ret = listeners.toArray(ret);
+        return (PropertyStateListener<Object>[])ret;
+    }
+
+    private boolean didValueChange(Object oldValue, Object newValue) {
+        return oldValue == null || newValue == null || !oldValue.equals(newValue);
+    }
+
+    private void notifyListeners(PropertyStateEvent<Object> pe) {
+        if (listeners == null || listeners.size() == 0) {
             return;
         }
 
-        support.removePropertyChangeListener(propertyName, listener);
-
-        maybeStopListening();
-    }
-
-    public PropertyChangeListener[] getPropertyChangeListeners() {
-        if (support == null) {
-            return new PropertyChangeListener[0];
+        for (PropertyStateListener<Object> listener : listeners) {
+            listener.propertyStateChanged(pe);
         }
-
-        return support.getPropertyChangeListeners();
-    }
-
-    public PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
-        if (support == null) {
-            return new PropertyChangeListener[0];
-        }
-
-        return support.getPropertyChangeListeners(propertyName);
-    }
-
-    protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        if (support == null || support.getPropertyChangeListeners().length == 0) {
-            return;
-        }
-
-        if (oldValue != null && newValue != null && oldValue.equals(newValue)) {
-            return;
-        }
-
-        support.firePropertyChange(propertyName, oldValue, newValue);
     }
 
     public String toString() {
@@ -456,20 +430,25 @@ public final class BeanProperty implements Property<Object, Object> {
     private void write(Object writer, Object object, String string, Object value) {
         assert writer != null;
 
-        if (writer instanceof Map) {
-            assert writer == object;
-            ((Map)writer).put(string, value);
-            return;
+        try {
+            ignoreChange = true;
+            if (writer instanceof Map) {
+                assert writer == object;
+                ((Map)writer).put(string, value);
+                return;
+            }
+            
+            if (writer instanceof Property) {
+                assert writer == object;
+                assert string.equals("value");
+                ((Property)writer).setValue(value);
+                return;
+            }
+            
+            invokeMethod((Method)writer, object, value);
+        } finally {
+            ignoreChange = false;
         }
-
-        if (writer instanceof Property) {
-            assert writer == object;
-            assert string.equals("value");
-            ((Property)writer).setValue(value);
-            return;
-        }
-
-        invokeMethod((Method)writer, object, value);
     }
 
     /**
@@ -481,19 +460,13 @@ public final class BeanProperty implements Property<Object, Object> {
             throw new IllegalStateException("Unwritable");
         }
 
-        try {
-            ignoreChange = true;
-
-            Object writer = getWriter(object, string);
-            if (writer == null) {
-                System.err.println(hashCode() + ": LOG: setProperty(): missing write method");
-                throw new IllegalStateException("Unwritable");
-            }
-
-            write(writer, object, string, value);
-        } finally {
-            ignoreChange = false;
+        Object writer = getWriter(object, string);
+        if (writer == null) {
+            System.err.println(hashCode() + ": LOG: setProperty(): missing write method");
+            throw new IllegalStateException("Unwritable");
         }
+
+        write(writer, object, string, value);
     }
 
     private Object toNull(Object src) {
@@ -509,7 +482,7 @@ public final class BeanProperty implements Property<Object, Object> {
             src = source;
 
             if (cache[0] != src) {
-                unregisterListener(cache[0]);
+                unregisterListener(cache[0], path.get(0));
 
                 cache[0] = src;
 
@@ -517,7 +490,7 @@ public final class BeanProperty implements Property<Object, Object> {
                     loggedYet = true;
                     System.err.println(hashCode() + ": LOG: updateCachedSources(): source is null");
                 } else {
-                    registerListener(src);
+                    registerListener(src, path.get(0));
                 }
             }
 
@@ -529,7 +502,7 @@ public final class BeanProperty implements Property<Object, Object> {
             src = getProperty(cache[i - 1], path.get(i - 1));
 
             if (src != old) {
-                unregisterListener(old);
+                unregisterListener(old, path.get(i));
 
                 cache[i] = src;
 
@@ -544,21 +517,21 @@ public final class BeanProperty implements Property<Object, Object> {
                         System.err.println(hashCode() + ": LOG: updateCachedSources(): missing read method");
                     }
                 } else {
-                    registerListener(src);
+                    registerListener(src, path.get(i));
                 }
             }
         }
     }
 
-    private void registerListener(Object object) {
+    private void registerListener(Object object, String string) {
         assert object != null;
 
         if (object != UNREADABLE) {
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).addObservableMapListener(
                         getChangeHandler());
-            } else if (object instanceof Property) {
-                ((Property)object).addPropertyChangeListener(getChangeHandler());
+            } else if (object instanceof Property && string.equals("value")) {
+                ((Property)object).addPropertyStateListener(getChangeHandler());
             } else if (!(object instanceof Map)) {
                 addPropertyChangeListener(object);
             }
@@ -568,14 +541,14 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
-    private void unregisterListener(Object object) {
+    private void unregisterListener(Object object, String string) {
         if (changeHandler != null && object!= null && object != UNREADABLE) {
             // PENDING: optimize this and cache
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).removeObservableMapListener(
                         getChangeHandler());
-            } else if (object instanceof Property) {
-                ((Property)object).addPropertyChangeListener(getChangeHandler());
+            } else if (object instanceof Property && string.equals("value")) {
+                ((Property)object).addPropertyStateListener(getChangeHandler());
             } else if (!(object instanceof Map)) {
                 removePropertyChangeListener(object);
             }
@@ -704,30 +677,82 @@ public final class BeanProperty implements Property<Object, Object> {
     private void cachedValueChanged(int index) {
         validateCache(index);
 
-        Object oldValue = cachedValue;
         boolean wasReadable = (cachedValue != UNREADABLE);
-        boolean wasWritable = (cachedWriter != null);
+        boolean wasWriteable = (cachedWriter != null);
+        Object oldValue = toNull(cachedValue);
 
         updateCachedSources(index);
         updateCachedValue();
-        updateCachedWriter();
+        if (index != path.length()) {
+            updateCachedWriter();
+        }
 
-        firePropertyChange("readable", wasReadable, cachedValue != UNREADABLE);
-        firePropertyChange("writeable", wasWritable, cachedWriter != null);
-        firePropertyChange("value", toNull(oldValue), toNull(cachedValue));
+        boolean isReadable = (cachedValue != UNREADABLE);
+        boolean isWriteable = (cachedWriter != null);
+        Object newValue = toNull(cachedValue);
+        boolean valueChanged = didValueChange(oldValue, newValue);
+
+        PropertyStateEvent<Object> pse
+                = new PropertyStateEvent<Object>(this,
+                                                 wasReadable != isReadable,
+                                                 wasWriteable != isWriteable,
+                                                 valueChanged,
+                                                 valueChanged ? oldValue : null,
+                                                 valueChanged ? newValue : null);
+
+        notifyListeners(pse);
     }
 
     private void mapValueChanged(ObservableMap map, Object key) {
-        if (!ignoreChange) {
-            int index = getSourceIndex(map);
-            if (index != -1) {
-                if (key.equals(path.get(index))) {
-                    cachedValueChanged(index + 1);
-                }
-            } else {
-                throw new AssertionError();
-            }
+        if (ignoreChange) {
+            return;
         }
+        
+        int index = getSourceIndex(map);
+
+        if (index == -1) {
+            throw new AssertionError();
+        }
+
+        if (key.equals(path.get(index))) {
+            cachedValueChanged(index + 1);
+        }
+    }
+
+    private void propertyValueChanged(PropertyChangeEvent pce) {
+        if (ignoreChange) {
+            return;
+        }
+
+        int index = getSourceIndex(pce.getSource());
+
+        if (index == -1) {
+            throw new AssertionError();
+        }
+
+        String propertyName = pce.getPropertyName();
+        if (propertyName == null || path.get(index).equals(propertyName)) {
+            cachedValueChanged(index + 1);
+        }
+    }
+
+    private void bindingPropertyChanged(PropertyStateEvent<? extends Object> pe) {
+        if (ignoreChange) {
+            return;
+        }
+
+        int index = getSourceIndex(pe.getSource());
+
+        if (index == -1) {
+            throw new AssertionError();
+        }
+
+        if (index != path.length()) {
+            cachedValueChanged(index + 1);
+            return;
+        }
+
+        // PENDING(shannonh) - special case when property is at the end of the path
     }
 
     private ChangeHandler getChangeHandler() {
@@ -739,21 +764,11 @@ public final class BeanProperty implements Property<Object, Object> {
 
 
     private final class ChangeHandler implements PropertyChangeListener,
-            ObservableMapListener {
+                                                 ObservableMapListener,
+                                                 PropertyStateListener<Object> {
+
         public void propertyChange(PropertyChangeEvent e) {
-            if (!ignoreChange) {
-                int index = getSourceIndex(e.getSource());
-                if (index != -1) {
-                    String propertyName = e.getPropertyName();
-                    if (propertyName == null ||
-                            path.get(index).equals(propertyName)) {
-                        Object newValue = e.getNewValue();
-                        cachedValueChanged(index + 1);
-                    }
-                } else {
-                    throw new AssertionError();
-                }
-            }
+           propertyValueChanged(e);
         }
 
         public void mapKeyValueChanged(ObservableMap map, Object key, Object lastValue) {
@@ -767,6 +782,11 @@ public final class BeanProperty implements Property<Object, Object> {
         public void mapKeyRemoved(ObservableMap map, Object key, Object value) {
             mapValueChanged(map, key);
         }
+
+        public void propertyStateChanged(PropertyStateEvent<? extends Object> pe) {
+            bindingPropertyChanged(pe);
+        }
+
     }
 
 }
