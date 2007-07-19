@@ -22,7 +22,7 @@ public final class BeanProperty implements Property<Object, Object> {
     private Object source;
     private Object[] cache;
     private Object cachedValue;
-    private Method cachedWriter;
+    private Object cachedWriter;
     private PropertyChangeSupport support;
     private boolean isListening = false;
     private ChangeHandler changeHandler;
@@ -122,7 +122,7 @@ public final class BeanProperty implements Property<Object, Object> {
                 throw new IllegalStateException("Unwritable");
             }
 
-            invokeMethod(cachedWriter, cache[path.length() - 1], value);
+            write(cachedWriter, cache[path.length() - 1], path.getLast(), value);
             updateCachedValue(true);
         } else {
             setProperty(getLastSource(), path.getLast(), value);
@@ -184,6 +184,7 @@ public final class BeanProperty implements Property<Object, Object> {
         cache[0] = UNREADABLE;
         updateCachedSources(0);
         updateCachedValue(false);
+        updateCachedWriter(false);
     }
 
     private void maybeStopListening() {
@@ -517,7 +518,7 @@ public final class BeanProperty implements Property<Object, Object> {
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).addObservableMapListener(
                         getChangeHandler());
-            } else {
+            } else if (!(source instanceof Map)) {
                 addPropertyChangeListener(source);
             }
         }
@@ -532,7 +533,7 @@ public final class BeanProperty implements Property<Object, Object> {
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).removeObservableMapListener(
                         getChangeHandler());
-            } else {
+            } else if (!(source instanceof Map)) {
                 removePropertyChangeListener(source);
             }
         }
@@ -618,23 +619,51 @@ public final class BeanProperty implements Property<Object, Object> {
             if (cachedValue != next) {
                 throw new ConcurrentModificationException();
             }
+
+            Object writer = getWriter(cache[path.length() - 1], path.getLast());
+            if (cachedWriter != writer) {
+                throw new ConcurrentModificationException();
+            }
         }
     }
 
     private void updateCachedWriter(boolean notify) {
+        Object oldValue = cachedWriter;
+        boolean wasWritable = (cachedWriter != null);
+        Object src = cache[path.length() - 1];
+
+        if (src == null || src == UNREADABLE) {
+            cachedWriter = null;
+        } else {
+            cachedWriter = getWriter(src, path.getLast());
+            if (cachedWriter == null) {
+                System.err.println("LOG: updateCachedWriter(): missing write method");
+            }
+        }
+        
+        if (notify) {
+            boolean isWriteable = (cachedWriter != null);
+            firePropertyChange("writable", wasWritable, isWriteable);
+        }
     }
 
     private void updateCachedValue(boolean notify) {
         Object oldValue = cachedValue;
-        Object src = cache[path.length() - 1];
         boolean wasReadable = (cachedValue != UNREADABLE);
-        cachedValue = getProperty(cache[path.length() - 1], path.getLast());
-        if (src != UNREADABLE && cachedValue == UNREADABLE) {
-            System.err.println("LOG: updateCachedValue(): missing read method");
+
+        Object src = cache[path.length() - 1];
+        if (src == null || src == UNREADABLE) {
+            cachedValue = UNREADABLE;
+        } else {
+            cachedValue = getProperty(cache[path.length() - 1], path.getLast());
+            if (cachedValue == UNREADABLE) {
+                System.err.println("LOG: updateCachedValue(): missing read method");
+            }
         }
-        boolean isReadable = (cachedValue != UNREADABLE);
+
         if (notify) {
             firePropertyChange("value", toNull(oldValue), toNull(cachedValue));
+            boolean isReadable = (cachedValue != UNREADABLE);
             firePropertyChange("readable", wasReadable, isReadable);
         }
     }
@@ -643,6 +672,7 @@ public final class BeanProperty implements Property<Object, Object> {
         validateCache(index);
         updateCachedSources(index);
         updateCachedValue(true);
+        updateCachedWriter(true);
     }
 
     private void mapValueChanged(ObservableMap map, Object key) {
