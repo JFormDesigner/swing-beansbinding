@@ -5,16 +5,10 @@
 
 package javax.beans.binding;
 
-import java.beans.PropertyChangeListener;
-
 /**
  * @author Shannon Hickey
  */
-public interface Property<S, V>  {
-
-    void setSource(S source);
-
-    S getSource();
+public interface Property<V>  {
 
     Class<? extends V> getValueType();
 
@@ -26,17 +20,11 @@ public interface Property<S, V>  {
 
     boolean isWriteable();
 
-    void addPropertyChangeListener(PropertyChangeListener listener);
+    void addPropertyStateListener(PropertyStateListener<? super V> listener);
 
-    void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
+    void removePropertyStateListener(PropertyStateListener<? super V> listener);
 
-    void removePropertyChangeListener(PropertyChangeListener listener);
-
-    void removePropertyChangeListener(String propertyName, PropertyChangeListener listener);
-
-    PropertyChangeListener[] getPropertyChangeListeners();
-    
-    PropertyChangeListener[] getPropertyChangeListeners(String propertyName);
+    PropertyStateListener<? super V>[] getPropertyStateListeners();
 
     String toString();
 
