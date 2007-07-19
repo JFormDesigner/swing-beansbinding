@@ -100,7 +100,12 @@ public final class BeanProperty implements Property<Object, Object> {
             return cachedValue;
         }
 
-        Object src = getProperty(getLastSource(), path.getLast());
+        Object src = getLastSource();
+        if (src == null || src == UNREADABLE) {
+            throw new IllegalStateException("Unreadable");
+        }
+
+        src = getProperty(getLastSource(), path.getLast());
         if (src == UNREADABLE) {
             System.err.println("LOG: getValue(): missing read method");
             throw new IllegalStateException("Unreadable");
@@ -404,7 +409,7 @@ public final class BeanProperty implements Property<Object, Object> {
             PropertyDescriptor pd = getPropertyDescriptor(object, propertyName);
             Method writeMethod = null;
             if (pd == null || (writeMethod = pd.getWriteMethod()) == null) {
-                System.err.println("missing write method");
+                System.err.println("LOG: setProperty(): missing write method");
                 throw new IllegalStateException("Unwritable");
             }
 
