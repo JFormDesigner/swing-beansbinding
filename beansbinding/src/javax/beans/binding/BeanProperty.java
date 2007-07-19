@@ -500,17 +500,21 @@ public final class BeanProperty implements Property<Object, Object> {
     private void updateCachedSources(int index) {
         boolean loggedYet = false;
 
+        Object src;
+
         if (index == 0) {
-            if (cache[0] != source) {
+            src = source;
+
+            if (cache[0] != src) {
                 unregisterListener(cache[0]);
 
-                cache[0] = source;
+                cache[0] = src;
 
-                if (source == null) {
+                if (src == null) {
                     loggedYet = true;
                     System.err.println(hashCode() + ": LOG: updateCachedSources(): source is null");
                 } else {
-                    registerListener(source);
+                    registerListener(src);
                 }
             }
 
@@ -519,41 +523,41 @@ public final class BeanProperty implements Property<Object, Object> {
 
         for (int i = index; i < path.length(); i++) {
             Object old = cache[i];
-            Object sourceValue = getProperty(cache[i - 1], path.get(i - 1));
+            src = getProperty(cache[i - 1], path.get(i - 1));
 
-            if (sourceValue != old) {
+            if (src != old) {
                 unregisterListener(old);
 
-                cache[i] = sourceValue;
+                cache[i] = src;
 
-                if (sourceValue == null) {
+                if (src == null) {
                     if (!loggedYet) {
                         loggedYet = true;
                         System.err.println(hashCode() + ": LOG: updateCachedSources(): missing source");
                     }
-                } else if (sourceValue == UNREADABLE) {
+                } else if (src == UNREADABLE) {
                     if (!loggedYet) {
                         loggedYet = true;
                         System.err.println(hashCode() + ": LOG: updateCachedSources(): missing read method");
                     }
                 } else {
-                    registerListener(sourceValue);
+                    registerListener(src);
                 }
             }
         }
     }
 
-    private void registerListener(Object source) {
-        assert source != null;
+    private void registerListener(Object object) {
+        assert object != null;
 
-        if (source != UNREADABLE) {
-            if (source instanceof ObservableMap) {
-                ((ObservableMap)source).addObservableMapListener(
+        if (object != UNREADABLE) {
+            if (object instanceof ObservableMap) {
+                ((ObservableMap)object).addObservableMapListener(
                         getChangeHandler());
-            } else if (source instanceof Property) {
-                ((Property)source).addPropertyChangeListener(getChangeHandler());
-            } else if (!(source instanceof Map)) {
-                addPropertyChangeListener(source);
+            } else if (object instanceof Property) {
+                ((Property)object).addPropertyChangeListener(getChangeHandler());
+            } else if (!(object instanceof Map)) {
+                addPropertyChangeListener(object);
             }
         }
     }
@@ -561,16 +565,16 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
-    private void unregisterListener(Object source) {
-        if (changeHandler != null && source!= null && source != UNREADABLE) {
+    private void unregisterListener(Object object) {
+        if (changeHandler != null && object!= null && object != UNREADABLE) {
             // PENDING: optimize this and cache
-            if (source instanceof ObservableMap) {
-                ((ObservableMap)source).removeObservableMapListener(
+            if (object instanceof ObservableMap) {
+                ((ObservableMap)object).removeObservableMapListener(
                         getChangeHandler());
-            } else if (source instanceof Property) {
-                ((Property)source).addPropertyChangeListener(getChangeHandler());
-            } else if (!(source instanceof Map)) {
-                removePropertyChangeListener(source);
+            } else if (object instanceof Property) {
+                ((Property)object).addPropertyChangeListener(getChangeHandler());
+            } else if (!(object instanceof Map)) {
+                removePropertyChangeListener(object);
             }
         }
     }
@@ -593,8 +597,8 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
-    private void removePropertyChangeListener(Object source) {
-        EventSetDescriptor ed = getEventSetDescriptor(source);
+    private void removePropertyChangeListener(Object object) {
+        EventSetDescriptor ed = getEventSetDescriptor(object);
         Method removePCMethod = null;
 
         if (ed == null || (removePCMethod = ed.getRemoveListenerMethod()) == null) {
@@ -604,7 +608,7 @@ public final class BeanProperty implements Property<Object, Object> {
         
         Exception reason = null;
         try {
-            removePCMethod.invoke(source, getChangeHandler());
+            removePCMethod.invoke(object, getChangeHandler());
         } catch (SecurityException ex) {
             reason = ex;
         } catch (IllegalArgumentException ex) {
@@ -616,14 +620,14 @@ public final class BeanProperty implements Property<Object, Object> {
         }
 
         if (reason != null) {
-            throw new PropertyResolverException("Unable to remove listener from " + source,
+            throw new PropertyResolverException("Unable to remove listener from " + object,
                     source, path.toString(), reason);
         }
     }
 
-    private int getSourceIndex(Object source) {
+    private int getSourceIndex(Object object) {
         for (int i = 0; i < cache.length; i++) {
-            if (cache[i] == source) {
+            if (cache[i] == object) {
                 return i;
             }
         }
@@ -637,13 +641,13 @@ public final class BeanProperty implements Property<Object, Object> {
                continue;
            }
             
-            Object source = cache[i];
+            Object src = cache[i];
 
-            if (source == UNREADABLE) {
+            if (src == UNREADABLE) {
                 return;
             }
 
-            Object next = getProperty(source, path.get(i));
+            Object next = getProperty(src, path.get(i));
 
             if (next != cache[i + 1]) {
                 throw new ConcurrentModificationException();
@@ -743,7 +747,6 @@ public final class BeanProperty implements Property<Object, Object> {
             ObservableMapListener {
         public void propertyChange(PropertyChangeEvent e) {
             if (!ignoreChange) {
-                Object source = e.getSource();
                 int index = getSourceIndex(e.getSource());
                 if (index != -1) {
                     String propertyName = e.getPropertyName();
