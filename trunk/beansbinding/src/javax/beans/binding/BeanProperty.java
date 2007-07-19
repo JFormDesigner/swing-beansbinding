@@ -58,7 +58,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
     private Object getLastSource() {
         if (source == null) {
-            System.err.println("LOG: getLastSource(): source is null");
+            System.err.println(hashCode() + ": LOG: getLastSource(): source is null");
             return null;
         }
 
@@ -67,12 +67,12 @@ public final class BeanProperty implements Property<Object, Object> {
         for (int i = 0; i < path.length() - 1; i++) {
             src = getProperty(src, path.get(i));
             if (src == null) {
-                System.err.println("LOG: getLastSource(): missing source");
+                System.err.println(hashCode() + ": LOG: getLastSource(): missing source");
                 return null;
             }
 
             if (src == UNREADABLE) {
-                System.err.println("LOG: getLastSource(): missing read method");
+                System.err.println(hashCode() + ": LOG: getLastSource(): missing read method");
                 return UNREADABLE;
             }
         }
@@ -107,7 +107,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         src = getProperty(getLastSource(), path.getLast());
         if (src == UNREADABLE) {
-            System.err.println("LOG: getValue(): missing read method");
+            System.err.println(hashCode() + ": LOG: getValue(): missing read method");
             throw new IllegalStateException("Unreadable");
         }
 
@@ -142,7 +142,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         Object reader = getReader(src, path.getLast());
         if (reader == null) {
-            System.err.println("LOG: isReadable(): missing read method");
+            System.err.println(hashCode() + ": LOG: isReadable(): missing read method");
             return false;
         }
 
@@ -162,7 +162,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         Object writer = getWriter(src, path.getLast());
         if (writer == null) {
-            System.err.println("LOG: isWritable(): missing write method");
+            System.err.println(hashCode() + ": LOG: isWritable(): missing write method");
             return false;
         }
 
@@ -351,6 +351,15 @@ public final class BeanProperty implements Property<Object, Object> {
             return object;
         }
 
+        if (object instanceof Property && string.equals("value")) {
+            Property prop = (Property)object;
+            if (!prop.isReadable()) {
+                return null;
+            }
+
+            return prop;
+        }
+
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         Method readMethod = null;
         return pd == null ? null : pd.getReadMethod();
@@ -367,6 +376,12 @@ public final class BeanProperty implements Property<Object, Object> {
             return ((Map)reader).get(string);
         }
 
+        if (reader instanceof Property) {
+            assert reader == object;
+            assert string.equals("value");
+            return ((Property)reader).getValue();
+        }
+        
         return invokeMethod((Method)reader, object);
     }
 
@@ -404,7 +419,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         if (pd == null) {
-            System.err.println("LOG: missing read or write method");
+            System.err.println(hashCode() + ": LOG: missing read or write method");
             throw new IllegalStateException("Unreadable and unwritable");
         }
 
@@ -418,6 +433,15 @@ public final class BeanProperty implements Property<Object, Object> {
             return object;
         }
 
+        if (object instanceof Property && string.equals("value")) {
+            Property prop = (Property)object;
+            if (!prop.isWriteable()) {
+                return null;
+            }
+
+            return prop;
+        }
+
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         Method writeMethod = null;
         return pd == null ? null : pd.getWriteMethod();
@@ -426,15 +450,23 @@ public final class BeanProperty implements Property<Object, Object> {
     /**
      * @throws PropertyResolverException
      */
-    private Object write(Object writer, Object object, String string, Object value) {
+    private void write(Object writer, Object object, String string, Object value) {
         assert writer != null;
 
         if (writer instanceof Map) {
             assert writer == object;
-            return ((Map)writer).put(string, value);
+            ((Map)writer).put(string, value);
+            return;
         }
 
-        return invokeMethod((Method)writer, object, value);
+        if (writer instanceof Property) {
+            assert writer == object;
+            assert string.equals("value");
+            ((Property)writer).setValue(value);
+            return;
+        }
+
+        invokeMethod((Method)writer, object, value);
     }
 
     /**
@@ -451,7 +483,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
             Object writer = getWriter(object, string);
             if (writer == null) {
-                System.err.println("LOG: setProperty(): missing write method");
+                System.err.println(hashCode() + ": LOG: setProperty(): missing write method");
                 throw new IllegalStateException("Unwritable");
             }
 
@@ -476,7 +508,7 @@ public final class BeanProperty implements Property<Object, Object> {
 
                 if (source == null) {
                     loggedYet = true;
-                    System.err.println("LOG: updateCachedSources(): source is null");
+                    System.err.println(hashCode() + ": LOG: updateCachedSources(): source is null");
                 } else {
                     registerListener(source);
                 }
@@ -497,12 +529,12 @@ public final class BeanProperty implements Property<Object, Object> {
                 if (sourceValue == null) {
                     if (!loggedYet) {
                         loggedYet = true;
-                        System.err.println("LOG: updateCachedSources(): missing source");
+                        System.err.println(hashCode() + ": LOG: updateCachedSources(): missing source");
                     }
                 } else if (sourceValue == UNREADABLE) {
                     if (!loggedYet) {
                         loggedYet = true;
-                        System.err.println("LOG: updateCachedSources(): missing read method");
+                        System.err.println(hashCode() + ": LOG: updateCachedSources(): missing read method");
                     }
                 } else {
                     registerListener(sourceValue);
@@ -518,6 +550,8 @@ public final class BeanProperty implements Property<Object, Object> {
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).addObservableMapListener(
                         getChangeHandler());
+            } else if (source instanceof Property) {
+                ((Property)source).addPropertyChangeListener(getChangeHandler());
             } else if (!(source instanceof Map)) {
                 addPropertyChangeListener(source);
             }
@@ -533,6 +567,8 @@ public final class BeanProperty implements Property<Object, Object> {
             if (source instanceof ObservableMap) {
                 ((ObservableMap)source).removeObservableMapListener(
                         getChangeHandler());
+            } else if (source instanceof Property) {
+                ((Property)source).addPropertyChangeListener(getChangeHandler());
             } else if (!(source instanceof Map)) {
                 removePropertyChangeListener(source);
             }
@@ -547,7 +583,7 @@ public final class BeanProperty implements Property<Object, Object> {
         Method addPCMethod = null;
 
         if (ed == null || (addPCMethod = ed.getAddListenerMethod()) == null) {
-            System.err.println("LOG: addPropertyChangeListener(): can't add listener");
+            System.err.println(hashCode() + ": LOG: addPropertyChangeListener(): can't add listener");
             return;
         }
 
@@ -562,7 +598,7 @@ public final class BeanProperty implements Property<Object, Object> {
         Method removePCMethod = null;
 
         if (ed == null || (removePCMethod = ed.getRemoveListenerMethod()) == null) {
-            System.err.println("LOG: removePropertyChangeListener(): can't remove listener from source");
+            System.err.println(hashCode() + ": LOG: removePropertyChangeListener(): can't remove listener from source");
             return;
         }
         
@@ -620,7 +656,14 @@ public final class BeanProperty implements Property<Object, Object> {
                 throw new ConcurrentModificationException();
             }
 
-            Object writer = getWriter(cache[path.length() - 1], path.getLast());
+            Object src = cache[path.length() - 1];
+            Object writer;
+            if (src == null || src == UNREADABLE) {
+                writer = null;
+            } else {
+                writer = getWriter(cache[path.length() - 1], path.getLast());
+            }
+
             if (cachedWriter != writer) {
                 throw new ConcurrentModificationException();
             }
@@ -637,7 +680,7 @@ public final class BeanProperty implements Property<Object, Object> {
         } else {
             cachedWriter = getWriter(src, path.getLast());
             if (cachedWriter == null) {
-                System.err.println("LOG: updateCachedWriter(): missing write method");
+                System.err.println(hashCode() + ": LOG: updateCachedWriter(): missing write method");
             }
         }
         
@@ -657,7 +700,7 @@ public final class BeanProperty implements Property<Object, Object> {
         } else {
             cachedValue = getProperty(cache[path.length() - 1], path.getLast());
             if (cachedValue == UNREADABLE) {
-                System.err.println("LOG: updateCachedValue(): missing read method");
+                System.err.println(hashCode() + ": LOG: updateCachedValue(): missing read method");
             }
         }
 
