@@ -747,7 +747,8 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             throw new AssertionError();
         }
 
-        if (index != path.length()) {
+        if (index == path.length() - 1) {
+        } else if (pe.getReadableChanged() || pe.getValueChanged()) {
             cachedValueChanged(index + 1);
             return;
         }
