@@ -126,22 +126,22 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
             write(cachedWriter, cache[path.length() - 1], path.getLast(), value);
 
-            Object oldValue = toNull(cachedValue);
+            Object oldValue = cachedValue;
             updateCachedValue();
-            Object newValue = toNull(cachedValue);
-
-            if (didValueChange(oldValue, newValue)) {
-                notifyListeners(new PropertyStateEvent(this, false, false, true, oldValue, newValue));
-            }
+            notifyListeners(cachedIsReadable(), cachedIsWriteable(), oldValue);
         } else {
             setProperty(getLastSource(), path.getLast(), value);
         }
     }
 
+    private boolean cachedIsReadable() {
+        return cachedValue != UNREADABLE;
+    }
+
     public boolean isReadable() {
         if (isListening) {
             validateCache(-1);
-            return cachedValue != UNREADABLE;
+            return cachedIsReadable();
         }
 
         Object src = getLastSource();
@@ -158,10 +158,14 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         return true;
     }
 
+    private boolean cachedIsWriteable() {
+        return cachedWriter != null;
+    }
+
     public boolean isWriteable() {
         if (isListening) {
             validateCache(-1);
-            return cachedWriter != null;
+            return cachedIsWriteable();
         }
 
         Object src = getLastSource();
@@ -243,13 +247,25 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
 
-    private void notifyListeners(PropertyStateEvent<Object> pe) {
+    private void notifyListeners(boolean wasReadable, boolean wasWriteable, Object oldValue) {
         if (listeners == null || listeners.size() == 0) {
             return;
         }
 
+        oldValue = toNull(oldValue);
+        Object newValue = toNull(cachedValue);
+        boolean valueChanged = didValueChange(oldValue, newValue);
+
+        PropertyStateEvent<Object> pse
+                = new PropertyStateEvent<Object>(this,
+                                                 wasReadable != cachedIsReadable(),
+                                                 wasWriteable != cachedIsWriteable(),
+                                                 valueChanged,
+                                                 valueChanged ? oldValue : null,
+                                                 valueChanged ? newValue : null);
+        
         for (PropertyStateListener<Object> listener : listeners) {
-            listener.propertyStateChanged(pe);
+            listener.propertyStateChanged(pse);
         }
     }
 
@@ -677,9 +693,9 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     private void cachedValueChanged(int index) {
         validateCache(index);
 
-        boolean wasReadable = (cachedValue != UNREADABLE);
-        boolean wasWriteable = (cachedWriter != null);
-        Object oldValue = toNull(cachedValue);
+        boolean wasReadable = cachedIsReadable();
+        boolean wasWriteable = cachedIsWriteable();
+        Object oldValue = cachedValue;
 
         updateCachedSources(index);
         updateCachedValue();
@@ -687,20 +703,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             updateCachedWriter();
         }
 
-        boolean isReadable = (cachedValue != UNREADABLE);
-        boolean isWriteable = (cachedWriter != null);
-        Object newValue = toNull(cachedValue);
-        boolean valueChanged = didValueChange(oldValue, newValue);
-
-        PropertyStateEvent<Object> pse
-                = new PropertyStateEvent<Object>(this,
-                                                 wasReadable != isReadable,
-                                                 wasWriteable != isWriteable,
-                                                 valueChanged,
-                                                 valueChanged ? oldValue : null,
-                                                 valueChanged ? newValue : null);
-
-        notifyListeners(pse);
+        notifyListeners(wasReadable, wasWriteable, oldValue);
     }
 
     private void mapValueChanged(ObservableMap map, Object key) {
@@ -748,12 +751,41 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
 
         if (index == path.length() - 1) {
+            validateCache(index + 1);
+
+            boolean writeableChanged = pe.getWriteableChanged();
+            boolean valueChanged = pe.getReadableChanged() || pe.getValueChanged();
+
+            if (writeableChanged && valueChanged) {
+                boolean wasReadable = cachedIsReadable();
+                boolean wasWriteable = cachedIsWriteable();
+                Object oldValue = cachedValue;
+                updateCachedValue();
+                updateCachedWriter();
+                notifyListeners(wasReadable, wasWriteable, oldValue);
+            } else if (valueChanged) {
+                Object writer = getWriter(pe.getSource(), path.getLast());
+                if (cachedWriter != writer) {
+                    throw new ConcurrentModificationException();
+                }
+                Object oldValue = cachedValue;
+                updateCachedValue();
+                notifyListeners(cachedIsReadable(), cachedIsWriteable(), oldValue);
+            } else {
+                Object value = pe.getSource().getValue();
+                if (cachedValue != value) {
+                    throw new ConcurrentModificationException();
+                }
+                boolean wasWriteable = cachedIsWriteable();
+                updateCachedWriter();
+                notifyListeners(cachedIsReadable(), wasWriteable, cachedValue);
+            }
+
+            
         } else if (pe.getReadableChanged() || pe.getValueChanged()) {
             cachedValueChanged(index + 1);
             return;
         }
-
-        // PENDING(shannonh) - special case when property is at the end of the path
     }
 
     private ChangeHandler getChangeHandler() {
