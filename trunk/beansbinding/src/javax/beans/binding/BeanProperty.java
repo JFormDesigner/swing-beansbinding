@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
+import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
 /**
  * @author Shannon Hickey
@@ -29,7 +30,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     private boolean isListening = false;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
-    private static final Object UNREADABLE = new Object();
+    private static final Object NOREAD = new Object();
 
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
@@ -73,9 +74,9 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
                 return null;
             }
 
-            if (src == UNREADABLE) {
+            if (src == NOREAD) {
                 System.err.println(hashCode() + ": LOG: getLastSource(): missing read method");
-                return UNREADABLE;
+                return NOREAD;
             }
         }
 
@@ -95,7 +96,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         if (isListening) {
             validateCache(-1);
 
-            if (cachedValue == UNREADABLE) {
+            if (cachedValue == NOREAD) {
                 throw new IllegalStateException("Unreadable");
             }
 
@@ -103,12 +104,12 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
 
         Object src = getLastSource();
-        if (src == null || src == UNREADABLE) {
+        if (src == null || src == NOREAD) {
             throw new IllegalStateException("Unreadable");
         }
 
         src = getProperty(getLastSource(), path.getLast());
-        if (src == UNREADABLE) {
+        if (src == NOREAD) {
             System.err.println(hashCode() + ": LOG: getValue(): missing read method");
             throw new IllegalStateException("Unreadable");
         }
@@ -128,14 +129,14 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
             Object oldValue = cachedValue;
             updateCachedValue();
-            notifyListeners(cachedIsReadable(), cachedIsWriteable(), oldValue);
+            notifyListeners(cachedIsWriteable(), oldValue);
         } else {
             setProperty(getLastSource(), path.getLast(), value);
         }
     }
 
     private boolean cachedIsReadable() {
-        return cachedValue != UNREADABLE;
+        return cachedValue != NOREAD;
     }
 
     public boolean isReadable() {
@@ -145,7 +146,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
 
         Object src = getLastSource();
-        if (src == null || src == UNREADABLE) {
+        if (src == null || src == NOREAD) {
             return false;
         }
 
@@ -169,7 +170,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
 
         Object src = getLastSource();
-        if (src == null || src == UNREADABLE) {
+        if (src == null || src == NOREAD) {
             return false;
         }
 
@@ -188,7 +189,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             cache = new Object[path.length()];
         }
 
-        cache[0] = UNREADABLE;
+        cache[0] = NOREAD;
         updateCachedSources(0);
         updateCachedValue();
         updateCachedWriter();
@@ -247,23 +248,27 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
 
-    private void notifyListeners(boolean wasReadable, boolean wasWriteable, Object oldValue) {
+    private void notifyListeners(boolean wasWriteable, Object oldValue) {
         if (listeners == null || listeners.size() == 0) {
             return;
         }
 
-        oldValue = toNull(oldValue);
-        Object newValue = toNull(cachedValue);
+        oldValue = toUNREADABLE(oldValue);
+        Object newValue = toUNREADABLE(cachedValue);
         boolean valueChanged = didValueChange(oldValue, newValue);
+        boolean writeableChanged = (wasWriteable != cachedIsWriteable());
 
-        PropertyStateEvent pse
-                = new PropertyStateEvent(this,
-                                         wasReadable != cachedIsReadable(),
-                                         wasWriteable != cachedIsWriteable(),
-                                         valueChanged,
-                                         valueChanged ? oldValue : null,
-                                         valueChanged ? newValue : null);
+        if (!valueChanged && !writeableChanged) {
+            return;
+        }
         
+        PropertyStateEvent pse = new PropertyStateEvent(this,
+                                                        valueChanged,
+                                                        oldValue,
+                                                        newValue,
+                                                        writeableChanged,
+                                                        cachedIsWriteable());
+
         for (PropertyStateListener listener : listeners) {
             listener.propertyStateChanged(pse);
         }
@@ -382,13 +387,13 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
      * @throws PropertyResolverException
      */
     private Object getProperty(Object object, String string) {
-        if (object == null || object == UNREADABLE) {
-            return UNREADABLE;
+        if (object == null || object == NOREAD) {
+            return NOREAD;
         }
 
         Object reader = getReader(object, string);
         if (reader == null) {
-            return UNREADABLE;
+            return NOREAD;
         }
         
         return read(reader, object, string);
@@ -402,7 +407,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
      * @throws PropertyResolverException
      */
     private Class<?> getType(Object object, String string) {
-        if (object == null || object == UNREADABLE) {
+        if (object == null || object == NOREAD) {
             throw new IllegalStateException("Unreadable and unwritable");
         }
 
@@ -472,7 +477,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
      * @throws IllegalStateException
      */
     private void setProperty(Object object, String string, Object value) {
-        if (object == null || object == UNREADABLE) {
+        if (object == null || object == NOREAD) {
             throw new IllegalStateException("Unwritable");
         }
 
@@ -485,8 +490,8 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         write(writer, object, string, value);
     }
 
-    private Object toNull(Object src) {
-        return src == UNREADABLE ? null : src;
+    private Object toUNREADABLE(Object src) {
+        return src == NOREAD ? UNREADABLE : src;
     }
 
     private void updateCachedSources(int index) {
@@ -527,7 +532,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
                         loggedYet = true;
                         System.err.println(hashCode() + ": LOG: updateCachedSources(): missing source");
                     }
-                } else if (src == UNREADABLE) {
+                } else if (src == NOREAD) {
                     if (!loggedYet) {
                         loggedYet = true;
                         System.err.println(hashCode() + ": LOG: updateCachedSources(): missing read method");
@@ -542,7 +547,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     private void registerListener(Object object, String string) {
         assert object != null;
 
-        if (object != UNREADABLE) {
+        if (object != NOREAD) {
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).addObservableMapListener(
                         getChangeHandler());
@@ -558,7 +563,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
      * @throws PropertyResolverException
      */
     private void unregisterListener(Object object, String string) {
-        if (changeHandler != null && object!= null && object != UNREADABLE) {
+        if (changeHandler != null && object!= null && object != NOREAD) {
             // PENDING: optimize this and cache
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).removeObservableMapListener(
@@ -635,7 +640,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             
             Object src = cache[i];
 
-            if (src == UNREADABLE) {
+            if (src == NOREAD) {
                 return;
             }
 
@@ -654,7 +659,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
             Object src = cache[path.length() - 1];
             Object writer;
-            if (src == null || src == UNREADABLE) {
+            if (src == null || src == NOREAD) {
                 writer = null;
             } else {
                 writer = getWriter(cache[path.length() - 1], path.getLast());
@@ -668,7 +673,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
     private void updateCachedWriter() {
         Object src = cache[path.length() - 1];
-        if (src == null || src == UNREADABLE) {
+        if (src == null || src == NOREAD) {
             cachedWriter = null;
         } else {
             cachedWriter = getWriter(src, path.getLast());
@@ -680,11 +685,11 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
     private void updateCachedValue() {
         Object src = cache[path.length() - 1];
-        if (src == null || src == UNREADABLE) {
-            cachedValue = UNREADABLE;
+        if (src == null || src == NOREAD) {
+            cachedValue = NOREAD;
         } else {
             cachedValue = getProperty(cache[path.length() - 1], path.getLast());
-            if (cachedValue == UNREADABLE) {
+            if (cachedValue == NOREAD) {
                 System.err.println(hashCode() + ": LOG: updateCachedValue(): missing read method");
             }
         }
@@ -693,7 +698,6 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     private void cachedValueChanged(int index) {
         validateCache(index);
 
-        boolean wasReadable = cachedIsReadable();
         boolean wasWriteable = cachedIsWriteable();
         Object oldValue = cachedValue;
 
@@ -703,7 +707,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             updateCachedWriter();
         }
 
-        notifyListeners(wasReadable, wasWriteable, oldValue);
+        notifyListeners(wasWriteable, oldValue);
     }
 
     private void mapValueChanged(ObservableMap map, Object key) {
@@ -739,48 +743,46 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
     }
 
-    private void bindingPropertyChanged(PropertyStateEvent pe) {
+    private void bindingPropertyChanged(PropertyStateEvent pse) {
         if (ignoreChange) {
             return;
         }
 
-        int index = getSourceIndex(pe.getSource());
+        int index = getSourceIndex(pse.getSource());
 
         if (index == -1) {
             throw new AssertionError();
         }
 
-        boolean valueChanged = pe.getReadableChanged() || pe.getValueChanged();
+        boolean valueChanged = pse.getValueChanged();
 
         if (index == path.length() - 1) {
             validateCache(index + 1);
 
-            boolean writeableChanged = pe.getWriteableChanged();
+            boolean writeableChanged = pse.getWriteableChanged();
 
             if (writeableChanged && valueChanged) {
-                boolean wasReadable = cachedIsReadable();
                 boolean wasWriteable = cachedIsWriteable();
                 Object oldValue = cachedValue;
                 updateCachedValue();
                 updateCachedWriter();
-                notifyListeners(wasReadable, wasWriteable, oldValue);
+                notifyListeners(wasWriteable, oldValue);
             } else if (valueChanged) {
-                Object writer = getWriter(pe.getSource(), path.getLast());
+                Object writer = getWriter(pse.getSource(), path.getLast());
                 if (cachedWriter != writer) {
                     throw new ConcurrentModificationException();
                 }
                 Object oldValue = cachedValue;
-                boolean wasReadable = cachedIsReadable();
                 updateCachedValue();
-                notifyListeners(wasReadable, cachedIsWriteable(), oldValue);
+                notifyListeners(cachedIsWriteable(), oldValue);
             } else {
-                Object value = pe.getSource().getValue();
+                Object value = pse.getSource().getValue();
                 if (cachedValue != value) {
                     throw new ConcurrentModificationException();
                 }
                 boolean wasWriteable = cachedIsWriteable();
                 updateCachedWriter();
-                notifyListeners(cachedIsReadable(), wasWriteable, cachedValue);
+                notifyListeners(wasWriteable, cachedValue);
             }
         } else if (valueChanged) {
             cachedValueChanged(index + 1);

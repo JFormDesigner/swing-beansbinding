@@ -78,15 +78,15 @@ public final class PropertyStateEvent extends EventObject {
         buffer.append("Property ").append(getSource()).append(" changed:\n");
         
         if (getValueChanged()) {
-            buffer.append("value changed from ").append(getOldValue()).append(" to ").append(getNewValue()).append('\n');
+            buffer.append("    value changed from ").append(getOldValue()).append(" to ").append(getNewValue()).append('\n');
         }
         
         if (getReadableChanged()) {
-            buffer.append("readable changed from ").append(!isReadable()).append(" to ").append(isReadable()).append('\n');
+            buffer.append("    readable changed from ").append(!isReadable()).append(" to ").append(isReadable()).append('\n');
         }
 
         if (getWriteableChanged()) {
-            buffer.append("writeable changed from ").append(!isWriteable()).append(" to ").append(isWriteable()).append('\n');
+            buffer.append("    writeable changed from ").append(!isWriteable()).append(" to ").append(isWriteable()).append('\n');
         }
 
         buffer.deleteCharAt(buffer.length() - 1);
