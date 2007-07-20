@@ -10,8 +10,8 @@ import java.util.EventListener;
 /**
  * @author Shannon Hickey
  */
-public interface PropertyStateListener<V> extends EventListener {
+public interface PropertyStateListener extends EventListener {
 
-    public void propertyStateChanged(PropertyStateEvent<? extends V> pe);
+    public void propertyStateChanged(PropertyStateEvent pse);
 
 }
