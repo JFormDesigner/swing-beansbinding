@@ -750,11 +750,12 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             throw new AssertionError();
         }
 
+        boolean valueChanged = pe.getReadableChanged() || pe.getValueChanged();
+
         if (index == path.length() - 1) {
             validateCache(index + 1);
 
             boolean writeableChanged = pe.getWriteableChanged();
-            boolean valueChanged = pe.getReadableChanged() || pe.getValueChanged();
 
             if (writeableChanged && valueChanged) {
                 boolean wasReadable = cachedIsReadable();
