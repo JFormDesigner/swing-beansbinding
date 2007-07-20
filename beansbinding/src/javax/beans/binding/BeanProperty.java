@@ -770,8 +770,9 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
                     throw new ConcurrentModificationException();
                 }
                 Object oldValue = cachedValue;
+                boolean wasReadable = cachedIsReadable();
                 updateCachedValue();
-                notifyListeners(cachedIsReadable(), cachedIsWriteable(), oldValue);
+                notifyListeners(wasReadable, cachedIsWriteable(), oldValue);
             } else {
                 Object value = pe.getSource().getValue();
                 if (cachedValue != value) {
