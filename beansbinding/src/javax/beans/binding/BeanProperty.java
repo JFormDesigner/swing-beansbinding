@@ -25,7 +25,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     private Object[] cache;
     private Object cachedValue;
     private Object cachedWriter;
-    private List<PropertyStateListener<Object>> listeners;
+    private List<PropertyStateListener> listeners;
     private boolean isListening = false;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
@@ -209,9 +209,9 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         changeHandler = null;
     }
 
-    public void addPropertyStateListener(PropertyStateListener<Object> listener) {
+    public void addPropertyStateListener(PropertyStateListener listener) {
         if (listeners == null) {
-            listeners = new ArrayList<PropertyStateListener<Object>>(1);
+            listeners = new ArrayList<PropertyStateListener>(1);
         }
 
         listeners.add(listener);
@@ -221,7 +221,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
     }
 
-    public void removePropertyStateListener(PropertyStateListener<Object> listener) {
+    public void removePropertyStateListener(PropertyStateListener listener) {
         if (listeners == null) {
             return;
         }
@@ -233,14 +233,14 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
     }
 
-    public PropertyStateListener<Object>[] getPropertyStateListeners() {
+    public PropertyStateListener[] getPropertyStateListeners() {
         if (listeners == null) {
-            return (PropertyStateListener<Object>[])(new PropertyStateListener[0]);
+            return new PropertyStateListener[0];
         }
 
         PropertyStateListener[] ret = new PropertyStateListener[listeners.size()];
         ret = listeners.toArray(ret);
-        return (PropertyStateListener<Object>[])ret;
+        return ret;
     }
 
     private boolean didValueChange(Object oldValue, Object newValue) {
@@ -256,15 +256,15 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         Object newValue = toNull(cachedValue);
         boolean valueChanged = didValueChange(oldValue, newValue);
 
-        PropertyStateEvent<Object> pse
-                = new PropertyStateEvent<Object>(this,
-                                                 wasReadable != cachedIsReadable(),
-                                                 wasWriteable != cachedIsWriteable(),
-                                                 valueChanged,
-                                                 valueChanged ? oldValue : null,
-                                                 valueChanged ? newValue : null);
+        PropertyStateEvent pse
+                = new PropertyStateEvent(this,
+                                         wasReadable != cachedIsReadable(),
+                                         wasWriteable != cachedIsWriteable(),
+                                         valueChanged,
+                                         valueChanged ? oldValue : null,
+                                         valueChanged ? newValue : null);
         
-        for (PropertyStateListener<Object> listener : listeners) {
+        for (PropertyStateListener listener : listeners) {
             listener.propertyStateChanged(pse);
         }
     }
@@ -739,7 +739,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
     }
 
-    private void bindingPropertyChanged(PropertyStateEvent<? extends Object> pe) {
+    private void bindingPropertyChanged(PropertyStateEvent pe) {
         if (ignoreChange) {
             return;
         }
@@ -798,7 +798,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
     private final class ChangeHandler implements PropertyChangeListener,
                                                  ObservableMapListener,
-                                                 PropertyStateListener<Object> {
+                                                 PropertyStateListener {
 
         public void propertyChange(PropertyChangeEvent e) {
            propertyValueChanged(e);
@@ -816,7 +816,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             mapValueChanged(map, key);
         }
 
-        public void propertyStateChanged(PropertyStateEvent<? extends Object> pe) {
+        public void propertyStateChanged(PropertyStateEvent pe) {
             bindingPropertyChanged(pe);
         }
 
