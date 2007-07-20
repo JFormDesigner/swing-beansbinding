@@ -780,7 +780,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
                 updateCachedWriter();
                 notifyListeners(cachedIsReadable(), wasWriteable, cachedValue);
             }
-        } else if (pe.getReadableChanged() || pe.getValueChanged()) {
+        } else if (valueChanged) {
             cachedValueChanged(index + 1);
             return;
         }
