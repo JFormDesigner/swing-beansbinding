@@ -18,7 +18,7 @@ public final class PropertyStateEvent extends EventObject {
     private final Object oldValue;
     private final Object newValue;
     private final boolean writeableChanged;
-    private booelean isWriteable;
+    private boolean isWriteable;
 
     public PropertyStateEvent(Property<?> source,
                               boolean valueChanged,
@@ -86,6 +86,10 @@ public final class PropertyStateEvent extends EventObject {
         if (getWriteableChanged()) {
             buffer.append("writeable changed from ").append(!isWriteable()).append(" to ").append(isWriteable()).append('\n');
         }
+
+        buffer.deleteCharAt(buffer.length() - 1);
+
+        return buffer.toString();
     }
 
 }
