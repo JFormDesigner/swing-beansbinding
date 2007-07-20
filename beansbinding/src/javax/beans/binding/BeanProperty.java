@@ -3,6 +3,25 @@
  * subject to license terms.
  */
 
+/*
+ *   TO DO LIST:
+ *
+ *   - Re-think use of PropertyResolverException.
+ *     Many of the cases should be AssertionErrors, because they shouldn't happen.
+ *     For the others, we should either use an Error subclass to indicate they're
+ *     unrecoverable, or we need to try to leave the object in a consistent state.
+ *     This is very difficult in methods like updateCachedSources where an
+ *     exception can occur at any time while processing the chain.
+ *
+ *   - Do testing with applets/security managers.
+ *
+ *   - Introspector/reflection doesn't work for non-public classes. EL handles this
+ *     by trying to find a version of the method in a public superclass/interface.
+ *     Looking at the code for Introspector (also used by EL), I got the idea that
+ *     it already does something like this. Investigate why EL handles this in an
+ *     extra step, and decide what we need to do in this class.
+ */
+
 package javax.beans.binding;
 
 import java.beans.*;
@@ -276,7 +295,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
     public String toString() {
         String className = (source == null ? "" : source.getClass().getName());
-        return className + path;
+        return getClass().getName() + "[" + className + path + "]";
     }
 
     /**
