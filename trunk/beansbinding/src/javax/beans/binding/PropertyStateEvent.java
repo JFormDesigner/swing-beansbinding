@@ -10,40 +10,39 @@ import java.util.EventObject;
 /**
  * @author Shannon Hickey
  */
-public final class PropertyStateEvent<V> extends EventObject {
+public final class PropertyStateEvent extends EventObject {
 
-    private final boolean readableChanged;
+    public static final Object UNREADABLE = new StringBuffer("UNREADABLE");
+
     private final boolean writeableChanged;
     private final boolean valueChanged;
-    private final V oldValue;
-    private final V newValue;
+    private final Object oldValue;
+    private final Object newValue;
 
-    public PropertyStateEvent(Property<? extends V> source,
-                              boolean readableChanged,
+    public PropertyStateEvent(Property<?> source,
                               boolean writeableChanged,
                               boolean valueChanged,
-                              V oldValue,
-                              V newValue) {
+                              Object oldValue,
+                              Object newValue) {
 
         super(source);
 
-        if (!readableChanged && !writeableChanged && ! valueChanged) {
+        if (!writeableChanged && !valueChanged) {
             throw new IllegalArgumentException("Nothing has changed");
         }
 
-        this.readableChanged = readableChanged;
         this.writeableChanged = writeableChanged;
         this.valueChanged = valueChanged;
         this.oldValue = oldValue;
         this.newValue = newValue;
     }
 
-    public Property<? extends V> getSource() {
-        return (Property<? extends V>)source;
+    public Property<?> getSource() {
+        return (Property<?>)source;
     }
 
     public boolean getReadableChanged() {
-        return readableChanged;
+        return valueChanged && oldValue != newValue && (oldValue == UNREADABLE || newValue == UNREADABLE);
     }
 
     public boolean getWriteableChanged() {
@@ -54,11 +53,11 @@ public final class PropertyStateEvent<V> extends EventObject {
         return valueChanged;
     }
     
-    public V getOldValue() {
+    public Object getOldValue() {
         return oldValue;
     }
 
-    public V getNewValue() {
+    public Object getNewValue() {
         return newValue;
     }
 

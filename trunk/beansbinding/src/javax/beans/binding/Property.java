@@ -20,11 +20,11 @@ public interface Property<V>  {
 
     boolean isWriteable();
 
-    void addPropertyStateListener(PropertyStateListener<? super V> listener);
+    void addPropertyStateListener(PropertyStateListener listener);
 
-    void removePropertyStateListener(PropertyStateListener<? super V> listener);
+    void removePropertyStateListener(PropertyStateListener listener);
 
-    PropertyStateListener<? super V>[] getPropertyStateListeners();
+    PropertyStateListener[] getPropertyStateListeners();
 
     String toString();
 
