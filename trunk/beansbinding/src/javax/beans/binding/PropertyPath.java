@@ -138,9 +138,13 @@ abstract class PropertyPath {
 
             throw new ArrayIndexOutOfBoundsException();
         }
-        
-        public String toString() {
+
+        public String getLast() {
             return path;
+        }
+
+        public String toString() {
+            return "." + path;
         }
     }
 }
