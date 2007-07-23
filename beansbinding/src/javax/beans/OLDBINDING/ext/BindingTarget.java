@@ -5,7 +5,7 @@
 
 package javax.beans.binding.ext;
 
-import javax.beans.binding.Binding.BindingController;
+import javax.beans.OLDBINDING.Binding.BindingController;
 
 /**
  * {@code BindingTarget} allows the target of a binding operation to

@@ -6,12 +6,12 @@
 package com.sun.java.swing.binding;
 
 import java.awt.Component;
-import javax.beans.binding.Binding;
-import javax.beans.binding.ext.BindingTarget;
-import javax.beans.binding.ext.BindingTargetProvider;
+import javax.beans.OLDBINDING.Binding;
+import javax.beans.OLDBINDING.ext.BindingTarget;
+import javax.beans.OLDBINDING.ext.BindingTargetProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import javax.beans.binding.Binding.BindingController;
+import javax.beans.OLDBINDING.Binding.BindingController;
 import javax.swing.binding.ParameterKeys;
 
 /**

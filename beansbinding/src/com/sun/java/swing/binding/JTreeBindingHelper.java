@@ -5,8 +5,8 @@
 
 package com.sun.java.swing.binding;
 
-import javax.beans.binding.Binding;
-import javax.beans.binding.ELPropertyResolver;
+import javax.beans.OLDBINDING.Binding;
+import javax.beans.OLDBINDING.ELPropertyResolver;
 import com.sun.java.util.ObservableList;
 import com.sun.java.util.ObservableListListener;
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.beans.binding.Binding.BindingController;
+import javax.beans.OLDBINDING.Binding.BindingController;
 import javax.el.Expression;
 import javax.swing.JTree;
 import javax.swing.binding.ParameterKeys;

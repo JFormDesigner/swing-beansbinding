@@ -5,7 +5,7 @@
 
 package com.sun.java.swing.binding;
 
-import javax.beans.binding.ext.PropertyDelegateProvider;
+import javax.beans.OLDBINDING.ext.PropertyDelegateProvider;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;

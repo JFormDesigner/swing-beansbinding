@@ -5,15 +5,15 @@
 
 package com.sun.java.swing.binding;
 
-import javax.beans.binding.Binding;
-import javax.beans.binding.ELPropertyResolver;
+import javax.beans.OLDBINDING.Binding;
+import javax.beans.OLDBINDING.ELPropertyResolver;
 import com.sun.java.util.ObservableList;
 import com.sun.java.util.ObservableListListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.beans.binding.Binding.BindingController;
+import javax.beans.OLDBINDING.Binding.BindingController;
 
 /**
  *
