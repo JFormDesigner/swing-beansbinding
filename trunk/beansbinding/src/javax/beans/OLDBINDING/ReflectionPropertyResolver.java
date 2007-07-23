@@ -7,7 +7,7 @@ package javax.beans.OLDBINDING;
 
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
-import javax.beans.binding.ext.PropertyDelegateFactory;
+import javax.beans.OLDBINDING.ext.PropertyDelegateFactory;
 import java.beans.IntrospectionException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

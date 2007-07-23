@@ -5,7 +5,7 @@
 
 package javax.swing.binding;
 
-import javax.beans.binding.Binding.ParameterKey;
+import javax.beans.OLDBINDING.Binding.ParameterKey;
 
 /**
  * This class contains constants for all keys used to put {@code Binding}

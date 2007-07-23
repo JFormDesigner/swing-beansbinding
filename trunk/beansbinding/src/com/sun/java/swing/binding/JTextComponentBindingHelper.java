@@ -6,14 +6,14 @@
 package com.sun.java.swing.binding;
 
 import java.awt.Component;
-import javax.beans.binding.Binding;
+import javax.beans.OLDBINDING.Binding;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import javax.beans.binding.Binding.BindingController;
+import javax.beans.OLDBINDING.Binding.BindingController;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;

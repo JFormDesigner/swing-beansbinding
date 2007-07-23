@@ -6,7 +6,7 @@
 package com.sun.java.swing.binding;
 
 import java.awt.Component;
-import javax.beans.binding.Binding;
+import javax.beans.OLDBINDING.Binding;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;

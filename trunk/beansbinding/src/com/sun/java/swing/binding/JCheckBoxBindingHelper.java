@@ -13,8 +13,8 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.util.ArrayList;
 import java.util.List;
-import javax.beans.binding.Binding;
-import javax.beans.binding.ext.PropertyDelegateProvider;
+import javax.beans.OLDBINDING.Binding;
+import javax.beans.OLDBINDING.ext.PropertyDelegateProvider;
 import javax.swing.JCheckBox;
 
 /**

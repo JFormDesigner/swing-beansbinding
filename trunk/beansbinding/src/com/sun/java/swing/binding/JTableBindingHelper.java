@@ -6,13 +6,13 @@
 package com.sun.java.swing.binding;
 
 import java.awt.Component;
-import javax.beans.binding.Binding;
+import javax.beans.OLDBINDING.Binding;
 import com.sun.java.swing.binding.ListBindingManager.ColumnDescription;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.beans.binding.Binding.BindingController;
+import javax.beans.OLDBINDING.Binding.BindingController;
 import javax.swing.CellEditor;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;

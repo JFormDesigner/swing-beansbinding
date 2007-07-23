@@ -10,7 +10,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.util.ArrayList;
 import java.util.List;
-import javax.beans.binding.ext.PropertyDelegateProvider;
+import javax.beans.OLDBINDING.ext.PropertyDelegateProvider;
 
 /**
  *

@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.beans.binding.ext.PropertyDelegateFactory;
+import javax.beans.OLDBINDING.ext.PropertyDelegateFactory;
 import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.Expression;
