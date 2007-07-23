@@ -6,7 +6,7 @@
 /*
  *   TO DO LIST:
  *
- *   - Re-think use of PropertyResolverException.
+ *   - Re-think use of PropertyResolutionException.
  *     Many of the cases should be AssertionErrors, because they shouldn't happen.
  *     For the others, we should either use an Error subclass to indicate they're
  *     unrecoverable, or we need to try to leave the object in a consistent state.
@@ -37,6 +37,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
 /**
  * @author Shannon Hickey
+ * @author Scott Violet
  */
 public final class BeanProperty implements SourceableProperty<Object, Object> {
 
@@ -299,7 +300,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private BeanInfo getBeanInfo(Object object) {
         assert object != null;
@@ -307,13 +308,13 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         try {
             return Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
         } catch (IntrospectionException ie) {
-            throw new PropertyResolverException("Exception while introspecting " + object.getClass().getName(),
-                                                source, path.toString(), ie);
+            throw new PropertyResolutionException("Exception while introspecting " + object.getClass().getName(),
+                                                  source, path.toString(), ie);
         }
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private PropertyDescriptor getPropertyDescriptor(Object object, String string) {
         assert object != null;
@@ -342,7 +343,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private Object invokeMethod(Method method, Object object, Object... args) {
         Exception reason = null;
@@ -357,8 +358,8 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             reason = ex;
         }
 
-        throw new PropertyResolverException("Exception invoking method " + method + " on " + object,
-                                            source, path.toString(), reason);
+        throw new PropertyResolutionException("Exception invoking method " + method + " on " + object,
+                                              source, path.toString(), reason);
     }
 
     private Object getReader(Object object, String string) {
@@ -383,7 +384,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private Object read(Object reader, Object object, String string) {
         assert reader != null;
@@ -403,7 +404,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private Object getProperty(Object object, String string) {
         if (object == null || object == NOREAD) {
@@ -423,7 +424,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private Class<?> getType(Object object, String string) {
         if (object == null || object == NOREAD) {
@@ -465,7 +466,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private void write(Object writer, Object object, String string, Object value) {
         assert writer != null;
@@ -492,7 +493,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      * @throws IllegalStateException
      */
     private void setProperty(Object object, String string, Object value) {
@@ -579,7 +580,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private void unregisterListener(Object object, String string) {
         if (changeHandler != null && object!= null && object != NOREAD) {
@@ -596,7 +597,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private void addPropertyChangeListener(Object object) {
         EventSetDescriptor ed = getEventSetDescriptor(object);
@@ -611,7 +612,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     }
 
     /**
-     * @throws PropertyResolverException
+     * @throws PropertyResolutionException
      */
     private void removePropertyChangeListener(Object object) {
         EventSetDescriptor ed = getEventSetDescriptor(object);
@@ -636,8 +637,8 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
 
         if (reason != null) {
-            throw new PropertyResolverException("Unable to remove listener from " + object,
-                    source, path.toString(), reason);
+            throw new PropertyResolutionException("Unable to remove listener from " + object,
+                                                  source, path.toString(), reason);
         }
     }
 

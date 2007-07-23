@@ -73,9 +73,9 @@ public final class PropertyStateEvent extends EventObject {
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer();
+        StringBuffer buffer = new StringBuffer(getClass().getName());
 
-        buffer.append("Property ").append(getSource()).append(" changed:\n");
+        buffer.append(": Property ").append(getSource()).append(" changed:\n");
         
         if (getValueChanged()) {
             buffer.append("    value changed from ").append(getOldValue()).append(" to ").append(getNewValue()).append('\n');

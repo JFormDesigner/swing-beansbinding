@@ -9,9 +9,8 @@ import java.util.StringTokenizer;
 import java.util.ArrayList;
 
 /**
- *
- * @author sky
  * @author Shannon Hickey
+ * @author Scott Violet
  */
 abstract class PropertyPath {
 
