@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.binding;
+package javax.beans.OLDBINDING;
 
 /**
  * {@code BindingValidator} is responsible for validating the value

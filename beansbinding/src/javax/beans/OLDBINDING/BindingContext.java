@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.binding;
+package javax.beans.OLDBINDING;
 
 import com.sun.el.lang.FunctionMapperImpl;
 import com.sun.el.lang.VariableMapperImpl;

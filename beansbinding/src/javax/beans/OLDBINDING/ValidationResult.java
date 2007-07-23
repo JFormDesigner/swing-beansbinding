@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.binding;
+package javax.beans.OLDBINDING;
 
 /**
  * A {@code ValidationResult} is returned from a {@code BindingValidator} to
