@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.binding.ext;
+package javax.beans.OLDBINDING.ext;
 
 import javax.beans.OLDBINDING.Binding.BindingController;
 
