@@ -159,7 +159,7 @@ public class Binding {
                ", sourceNullValue=" + sourceNullValue +
                ", targetNullValue=" + targetNullValue +
                ", sourceUnreadableValue=" + sourceUnreadableValue +
-               ", targetUnreadableValue=" + targetUnreadableValue
+               ", targetUnreadableValue=" + targetUnreadableValue +
                ", bound=" + isBound();// +
                //", sourceValueState=" + sourceValueState +
                //", targetValueState=" + targetValueState +
