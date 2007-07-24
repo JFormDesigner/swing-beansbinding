@@ -17,6 +17,7 @@ public class Binding {
     private boolean bound;
     private UpdateStrategy strategy;
     private Validator validator;
+    private Converter<?,?> converter;
 
     public enum UpdateStrategy {
         READ,
@@ -67,6 +68,15 @@ public class Binding {
 
     public final Validator getValidator() {
         return validator;
+    }
+
+    public final void setConverter(Converter<?, ?> converter) {
+        throwIfBound();
+        this.converter = converter;
+    }
+
+    public final Converter<?, ?> getConverter() {
+        return converter;
     }
 
     public void bind() {
