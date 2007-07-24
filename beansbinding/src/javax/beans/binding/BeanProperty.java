@@ -103,9 +103,14 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         return src;
     }
 
-    public Class<?> getValueType() {
+    public Class<?> getWriteType() {
         if (isListening) {
             validateCache(-1);
+
+            if (cachedWriter == null) {
+                throw new IllegalStateException("Unwriteable");
+            }
+
             return getType(cache[path.length() - 1], path.getLast());
         }
 
@@ -428,7 +433,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
      */
     private Class<?> getType(Object object, String string) {
         if (object == null || object == NOREAD) {
-            throw new IllegalStateException("Unreadable and unwritable");
+            throw new IllegalStateException("Unwritable");
         }
 
         if (object instanceof Map) {
@@ -436,9 +441,9 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
-        if (pd == null) {
-            System.err.println(hashCode() + ": LOG: missing read or write method");
-            throw new IllegalStateException("Unreadable and unwritable");
+        if (pd == null || pd.getWriteMethod() == null) {
+            System.err.println(hashCode() + ": LOG: missing write method");
+            throw new IllegalStateException("Unwritable");
         }
 
         return pd.getPropertyType();
