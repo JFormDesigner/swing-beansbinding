@@ -10,7 +10,7 @@ package javax.beans.binding;
  */
 public interface Property<V>  {
 
-    Class<? extends V> getValueType();
+    Class<? extends V> getWriteType();
 
     V getValue();
 
