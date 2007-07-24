@@ -14,10 +14,17 @@ public class Binding {
     private Property source;
     private Property target;
 
+    private boolean bound;
+    private UpdateStrategy strategy;
+
     public enum UpdateStrategy {
         READ,
         READ_ONCE,
         READ_WRITE
+    }
+
+    public Binding(Property source, Property target) {
+        this(null, source, target);
     }
 
     public Binding(String name, Property source, Property target) {
@@ -26,19 +33,54 @@ public class Binding {
         this.target = target;
     }
 
-    public Binding(Property source, Property targetProperty) {
-    }
-
-    public String getName() {
+    public final String getName() {
         return name;
     }
 
-    public Object getSource() {
+    public final Property getSource() {
         return source;
     }
 
-    public Property getTarget() {
+    public final Property getTarget() {
         return target;
+    }
+
+    public final void setUpdateStrategy(UpdateStrategy strategy) {
+        throwIfBound();
+
+        if (strategy == null) {
+            throw new IllegalArgumentException("Update strategy may not be null");
+        }
+
+        this.strategy = strategy;
+    }
+
+    public final UpdateStrategy getUpdateStrategy() {
+        return strategy;
+    }
+
+    public void bind() {
+        bound = true;
+    }
+
+    public void unbind() {
+        bound = false;
+    }
+
+    public boolean isBound() {
+        return bound;
+    }
+
+    protected final void throwIfBound() {
+        if (isBound()) {
+            throw new IllegalStateException("Can not call this method on a bound binding");
+        }
+    }
+
+    protected final void throwIfNotBound() {
+        if (!isBound()) {
+            throw new IllegalStateException("Can not call this method on an unbound binding");
+        }
     }
 
     public String toString() {
@@ -48,10 +90,11 @@ public class Binding {
     private String paramString() {
         return "name=" + getName() +
                ", source=" + getSource() +
-               ", target=" + getTarget();
-        
+               ", target=" + getTarget() +
+               ", bound=" + isBound();// +
+
                //", updateStrategy=" + updateStrategy +
-               //", bound=" + isBound() +
+
                //", validator=" + validator +
                //", converter=" + converter +
                //", valueForIncompleteTargetPath=" + incompleteTargetPathValue +
