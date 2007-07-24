@@ -18,6 +18,10 @@ public class Binding {
     private UpdateStrategy strategy;
     private Validator validator;
     private Converter<?,?> converter;
+    private Object sourceNullValue;
+    private Object targetNullValue;
+    private Object sourceUnreadableValue;
+    private Object targetUnreadableValue;
 
     public enum UpdateStrategy {
         READ,
@@ -79,6 +83,42 @@ public class Binding {
         return converter;
     }
 
+    public final void setSourceNullValue(Object value) {
+        throwIfBound();
+        sourceNullValue = value;
+    }
+
+    public final Object getSourceNullValue() {
+        return sourceNullValue;
+    }
+
+    public final void setTargetNullValue(Object value) {
+        throwIfBound();
+        targetNullValue = value;
+    }
+
+    public final Object getTargetNullValue() {
+        return targetNullValue;
+    }
+
+    public final void setSourceUnreadableValue(Object value) {
+        throwIfBound();
+        sourceUnreadableValue = value;
+    }
+
+    public final Object getSourceUnreadableValue() {
+        return sourceUnreadableValue;
+    }
+
+    public final void setTargetUnreadableValue(Object value) {
+        throwIfBound();
+        targetUnreadableValue = value;
+    }
+
+    public final Object getTargetUnreadableValue() {
+        return targetUnreadableValue;
+    }
+
     public void bind() {
         throwIfBound();
         bound = true;
@@ -115,21 +155,15 @@ public class Binding {
                ", target=" + target +
                ", updateStrategy=" + strategy +
                ", validator=" + validator +
+               ", converter=" + converter +
+               ", sourceNullValue=" + sourceNullValue +
+               ", targetNullValue=" + targetNullValue +
+               ", sourceUnreadableValue=" + sourceUnreadableValue +
+               ", targetUnreadableValue=" + targetUnreadableValue
                ", bound=" + isBound();// +
-                
-
-
-
-
-
-               //", converter=" + converter +
-               //", valueForIncompleteTargetPath=" + incompleteTargetPathValue +
-               //", valueForIncompleteSourcePath=" + incompleteSourcePathValue +
                //", sourceValueState=" + sourceValueState +
                //", targetValueState=" + targetValueState +
-               //", childBindings=" + childBindings +
                //", keepUncommited=" + keepUncommitted +
-               //", parameters=" + parameters;
     }
 
 }
