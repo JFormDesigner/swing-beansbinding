@@ -16,6 +16,7 @@ public class Binding {
 
     private boolean bound;
     private UpdateStrategy strategy;
+    private Validator validator;
 
     public enum UpdateStrategy {
         READ,
@@ -59,11 +60,22 @@ public class Binding {
         return strategy;
     }
 
+    public final void setValidator(Validator validator) {
+        throwIfBound();
+        this.validator = validator;
+    }
+
+    public final Validator getValidator() {
+        return validator;
+    }
+
     public void bind() {
+        throwIfBound();
         bound = true;
     }
 
     public void unbind() {
+        throwIfUnbound();
         bound = false;
     }
 
@@ -77,7 +89,7 @@ public class Binding {
         }
     }
 
-    protected final void throwIfNotBound() {
+    protected final void throwIfUnbound() {
         if (!isBound()) {
             throw new IllegalStateException("Can not call this method on an unbound binding");
         }
@@ -89,13 +101,17 @@ public class Binding {
 
     private String paramString() {
         return "name=" + getName() +
-               ", source=" + getSource() +
-               ", target=" + getTarget() +
+               ", source=" + source +
+               ", target=" + target +
+               ", updateStrategy=" + strategy +
+               ", validator=" + validator +
                ", bound=" + isBound();// +
+                
 
-               //", updateStrategy=" + updateStrategy +
 
-               //", validator=" + validator +
+
+
+
                //", converter=" + converter +
                //", valueForIncompleteTargetPath=" + incompleteTargetPathValue +
                //", valueForIncompleteSourcePath=" + incompleteSourcePathValue +
