@@ -15,15 +15,14 @@ public class Binding {
     private Property target;
 
     private boolean bound;
-    private UpdateStrategy strategy;
+    private AutoUpdateStrategy strategy;
     private Validator validator;
     private Converter<?,?> converter;
     private Object sourceNullValue;
     private Object targetNullValue;
     private Object sourceUnreadableValue;
-    private Object targetUnreadableValue;
 
-    public enum UpdateStrategy {
+    public enum AutoUpdateStrategy {
         READ,
         READ_ONCE,
         READ_WRITE
@@ -51,7 +50,7 @@ public class Binding {
         return target;
     }
 
-    public final void setUpdateStrategy(UpdateStrategy strategy) {
+    public final void setAutoUpdateStrategy(AutoUpdateStrategy strategy) {
         throwIfBound();
 
         if (strategy == null) {
@@ -61,7 +60,7 @@ public class Binding {
         this.strategy = strategy;
     }
 
-    public final UpdateStrategy getUpdateStrategy() {
+    public final AutoUpdateStrategy getAutoUpdateStrategy() {
         return strategy;
     }
 
@@ -110,15 +109,6 @@ public class Binding {
         return sourceUnreadableValue;
     }
 
-    public final void setTargetUnreadableValue(Object value) {
-        throwIfBound();
-        targetUnreadableValue = value;
-    }
-
-    public final Object getTargetUnreadableValue() {
-        return targetUnreadableValue;
-    }
-
     public void bind() {
         throwIfBound();
         bound = true;
@@ -153,17 +143,13 @@ public class Binding {
         return "name=" + getName() +
                ", source=" + source +
                ", target=" + target +
-               ", updateStrategy=" + strategy +
+               ", autoUpdateStrategy=" + strategy +
                ", validator=" + validator +
                ", converter=" + converter +
                ", sourceNullValue=" + sourceNullValue +
                ", targetNullValue=" + targetNullValue +
                ", sourceUnreadableValue=" + sourceUnreadableValue +
-               ", targetUnreadableValue=" + targetUnreadableValue +
-               ", bound=" + isBound();// +
-               //", sourceValueState=" + sourceValueState +
-               //", targetValueState=" + targetValueState +
-               //", keepUncommited=" + keepUncommitted +
+               ", bound=" + isBound();
     }
 
 }
