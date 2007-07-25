@@ -12,6 +12,6 @@ package javax.beans.binding;
  * @author Shannon Hickey
  */
 public abstract class Converter<S, T> {
-    public abstract S convertForward(T value);
-    public abstract T convertReverse(S value);
+    public abstract T convertForward(S value);
+    public abstract S convertReverse(T value);
 }
