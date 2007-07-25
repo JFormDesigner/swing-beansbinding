@@ -5,22 +5,26 @@
 
 package javax.beans.binding;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  * @author Shannon Hickey
  */
-public class Binding {
+public class Binding<S, T> {
 
     private String name;
-    private Property source;
-    private Property target;
+    private Property<S> source;
+    private Property<T> target;
 
     private boolean bound;
     private AutoUpdateStrategy strategy;
     private Validator validator;
-    private Converter<?,?> converter;
-    private Object sourceNullValue;
-    private Object targetNullValue;
-    private Object sourceUnreadableValue;
+    private Converter<S, T> converter;
+    private T sourceNullValue;
+    private S targetNullValue;
+    private T sourceUnreadableValue;
+    private List<BindingListener> listeners;
 
     public enum AutoUpdateStrategy {
         READ,
@@ -28,11 +32,11 @@ public class Binding {
         READ_WRITE
     }
 
-    public Binding(Property source, Property target) {
+    public Binding(Property<S> source, Property<T> target) {
         this(null, source, target);
     }
 
-    public Binding(String name, Property source, Property target) {
+    public Binding(String name, Property<S> source, Property<T> target) {
         this.name = name;
         this.source = source;
         this.target = target;
@@ -42,11 +46,11 @@ public class Binding {
         return name;
     }
 
-    public final Property getSource() {
+    public final Property<S> getSource() {
         return source;
     }
 
-    public final Property getTarget() {
+    public final Property<T> getTarget() {
         return target;
     }
 
@@ -73,40 +77,64 @@ public class Binding {
         return validator;
     }
 
-    public final void setConverter(Converter<?, ?> converter) {
+    public final void setConverter(Converter<S, T> converter) {
         throwIfBound();
         this.converter = converter;
     }
 
-    public final Converter<?, ?> getConverter() {
+    public final Converter<S, T> getConverter() {
         return converter;
     }
 
-    public final void setSourceNullValue(Object value) {
+    public final void setSourceNullValue(T value) {
         throwIfBound();
         sourceNullValue = value;
     }
 
-    public final Object getSourceNullValue() {
+    public final T getSourceNullValue() {
         return sourceNullValue;
     }
 
-    public final void setTargetNullValue(Object value) {
+    public final void setTargetNullValue(S value) {
         throwIfBound();
         targetNullValue = value;
     }
 
-    public final Object getTargetNullValue() {
+    public final S getTargetNullValue() {
         return targetNullValue;
     }
 
-    public final void setSourceUnreadableValue(Object value) {
+    public final void setSourceUnreadableValue(T value) {
         throwIfBound();
         sourceUnreadableValue = value;
     }
 
-    public final Object getSourceUnreadableValue() {
+    public final T getSourceUnreadableValue() {
         return sourceUnreadableValue;
+    }
+
+    public final void addBindingListener(BindingListener listener) {
+        if (listeners == null) {
+            listeners = new ArrayList<BindingListener>();
+        }
+
+        listeners.add(listener);
+    }
+
+    public final void removeBindingListener(BindingListener listener) {
+        if (listeners != null) {
+            listeners.remove(listener);
+        }
+    }
+
+    public final BindingListener[] getBindingListeners() {
+        if (listeners == null) {
+            return new BindingListener[0];
+        }
+
+        BindingListener[] ret = new BindingListener[listeners.size()];
+        ret = listeners.toArray(ret);
+        return ret;
     }
 
     public void bind() {
@@ -121,6 +149,49 @@ public class Binding {
 
     public boolean isBound() {
         return bound;
+    }
+
+    public final void refresh() {
+        throwIfUnbound();
+
+        if (!target.isWriteable()) {
+            for (BindingListener listener : listeners) {
+                listener.targetUnwriteable(this);
+            }
+
+            return;
+        }
+
+        T targetValue;
+
+        if (source.isReadable()) {
+            S sourceValue = source.getValue();
+
+            if (sourceValue == null) {
+                targetValue = sourceNullValue;
+            } else {
+                targetValue = convertForward(sourceValue);
+            }
+        } else {
+            targetValue = sourceUnreadableValue;
+        }
+
+        target.setValue(targetValue);
+        for (BindingListener listener : listeners) {
+            listener.bindingInSync(this);
+        }
+    }
+
+    public final void save() {
+    }
+
+    private final T convertForward(S value) {
+        if (converter == null) {
+            Class<? extends T> targetType = target.getWriteType();
+            return targetType.cast(value);
+        }
+
+        return converter.convertForward(value);
     }
 
     protected final void throwIfBound() {
