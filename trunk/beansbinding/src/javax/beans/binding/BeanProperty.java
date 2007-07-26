@@ -657,6 +657,38 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         return -1;
     }
 
+    private boolean wrapsPrimitive(Object o) {
+        assert o != null;
+
+        return o instanceof Byte ||
+               o instanceof Character ||
+               o instanceof Boolean ||
+               o instanceof Short ||
+               o instanceof Integer ||
+               o instanceof Long ||
+               o instanceof Float ||
+               o instanceof Double;
+    }
+
+    // need special match method because when using reflection
+    // to get a primitive value, the value is always wrapped in
+    // a new object
+    private boolean match(Object a, Object b) {
+        if (a == b) {
+            return true;
+        }
+
+        if (a == null) {
+            return false;
+        }
+
+        if (wrapsPrimitive(a)) {
+            return a.equals(b);
+        }
+
+        return false;
+    }
+
     private void validateCache(int ignore) {
         for (int i = 0; i < path.length() - 1; i++) {
            if (i == ignore - 1) {
@@ -671,14 +703,14 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
             Object next = getProperty(src, path.get(i));
 
-            if (next != cache[i + 1]) {
+            if (!match(next, cache[i + 1])) {
                 throw new ConcurrentModificationException();
             }
         }
 
         if (path.length() != ignore) {
             Object next = getProperty(cache[path.length() - 1], path.getLast());
-            if (cachedValue != next) {
+            if (!match(cachedValue, next)) {
                 throw new ConcurrentModificationException();
             }
 
@@ -690,7 +722,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
                 writer = getWriter(cache[path.length() - 1], path.getLast());
             }
 
-            if (cachedWriter != writer) {
+            if (cachedWriter != writer && (cachedWriter == null || !cachedWriter.equals(writer))) {
                 throw new ConcurrentModificationException();
             }
         }
@@ -846,7 +878,6 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         public void propertyStateChanged(PropertyStateEvent pe) {
             bindingPropertyChanged(pe);
         }
-
     }
 
 }
