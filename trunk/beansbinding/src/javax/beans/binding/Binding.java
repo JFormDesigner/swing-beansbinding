@@ -183,6 +183,7 @@ public class Binding<S, T> {
     }
 
     public final boolean isInSync() {
+        throwIfUnbound();
         return inSync;
     }
 
