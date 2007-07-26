@@ -19,7 +19,7 @@ public class Binding<S, T> {
 
     private boolean bound;
     private AutoUpdateStrategy strategy;
-    private Validator<? super T> validator;
+    private Validator<? super S> validator;
     private Converter<S, T> converter;
     private T sourceNullValue;
     private S targetNullValue;
@@ -69,12 +69,12 @@ public class Binding<S, T> {
         return strategy;
     }
 
-    public final void setValidator(Validator<? super T> validator) {
+    public final void setValidator(Validator<? super S> validator) {
         throwIfBound();
         this.validator = validator;
     }
 
-    public final Validator<? super T> getValidator() {
+    public final Validator<? super S> getValidator() {
         return validator;
     }
 
@@ -152,11 +152,15 @@ public class Binding<S, T> {
         return bound;
     }
 
+    public final boolean isInSync() {
+        return inSync;
+    }
+
     public final void refresh() {
         throwIfUnbound();
 
         if (!target.isWriteable()) {
-            // out of sync
+            inSync = false;
 
             for (BindingListener listener : listeners) {
                 listener.targetUnwriteable(this);
@@ -181,7 +185,7 @@ public class Binding<S, T> {
         }
 
         target.setValue(targetValue);
-        // in sync
+        inSync = true;
 
         for (BindingListener listener : listeners) {
             listener.bindingInSync(this);
@@ -192,22 +196,26 @@ public class Binding<S, T> {
         throwIfUnbound();
 
         if (!target.isReadable()) {
-            // mark in sync
-            // notify in sync
-            return;
-        }
-
-        if (!source.isWriteable()) {
-            // out of sync
+            inSync = false;
 
             for (BindingListener listener : listeners) {
-                // notify save failed because not writeable source
+                listener.targetUnreadable(this);
             }
 
             return;
         }
 
-        S sourceValue;
+        if (!source.isWriteable()) {
+            inSync = false;
+
+            for (BindingListener listener : listeners) {
+                listener.sourceUnwriteable(this);
+            }
+
+            return;
+        }
+
+        S sourceValue = null;
 
         T targetValue = target.getValue();
 
@@ -219,14 +227,31 @@ public class Binding<S, T> {
             } catch (ClassCastException cce) {
                 throw cce;
             } catch (RuntimeException rte) {
-                // notify conversion failed
-                // out of sync
+                inSync = false;
+
+                for (BindingListener listener : listeners) {
+                    listener.conversionFailed(this, rte);
+                }
+                
                 return;
+            }
+
+            if (validator != null) {
+                Validator.ValidationResult vr = validator.validate(this, sourceValue);
+                if (vr != null) {
+                    inSync = false;
+
+                    for (BindingListener listener : listeners) {
+                        listener.validationFailed(this, vr);
+                    }
+
+                    return;
+                }
             }
         }
 
         source.setValue(sourceValue);
-        // in sync
+        inSync = true;
 
         for (BindingListener listener : listeners) {
             listener.bindingInSync(this);
