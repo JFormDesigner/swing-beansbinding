@@ -108,7 +108,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             validateCache(-1);
 
             if (cachedWriter == null) {
-                throw new IllegalStateException("Unwriteable");
+                throw new UnsupportedOperationException("Unwriteable");
             }
 
             return getType(cache[path.length() - 1], path.getLast());
@@ -122,7 +122,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             validateCache(-1);
 
             if (cachedValue == NOREAD) {
-                throw new IllegalStateException("Unreadable");
+                throw new UnsupportedOperationException("Unreadable");
             }
 
             return cachedValue;
@@ -130,13 +130,13 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
 
         Object src = getLastSource();
         if (src == null || src == NOREAD) {
-            throw new IllegalStateException("Unreadable");
+            throw new UnsupportedOperationException("Unreadable");
         }
 
         src = getProperty(getLastSource(), path.getLast());
         if (src == NOREAD) {
             System.err.println(hashCode() + ": LOG: getValue(): missing read method");
-            throw new IllegalStateException("Unreadable");
+            throw new UnsupportedOperationException("Unreadable");
         }
 
         return src;
@@ -147,7 +147,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             validateCache(-1);
 
             if (cachedWriter == null) {
-                throw new IllegalStateException("Unwritable");
+                throw new UnsupportedOperationException("Unwritable");
             }
 
             write(cachedWriter, cache[path.length() - 1], path.getLast(), value);
@@ -433,7 +433,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
      */
     private Class<?> getType(Object object, String string) {
         if (object == null || object == NOREAD) {
-            throw new IllegalStateException("Unwritable");
+            throw new UnsupportedOperationException("Unwritable");
         }
 
         if (object instanceof Map) {
@@ -443,7 +443,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         if (pd == null || pd.getWriteMethod() == null) {
             System.err.println(hashCode() + ": LOG: missing write method");
-            throw new IllegalStateException("Unwritable");
+            throw new UnsupportedOperationException("Unwritable");
         }
 
         return pd.getPropertyType();
@@ -503,13 +503,13 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
      */
     private void setProperty(Object object, String string, Object value) {
         if (object == null || object == NOREAD) {
-            throw new IllegalStateException("Unwritable");
+            throw new UnsupportedOperationException("Unwritable");
         }
 
         Object writer = getWriter(object, string);
         if (writer == null) {
             System.err.println(hashCode() + ": LOG: setProperty(): missing write method");
-            throw new IllegalStateException("Unwritable");
+            throw new UnsupportedOperationException("Unwritable");
         }
 
         write(writer, object, string, value);
