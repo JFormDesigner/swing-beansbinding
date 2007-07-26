@@ -19,7 +19,7 @@ public class Binding<S, T> {
 
     private boolean bound;
     private AutoUpdateStrategy strategy;
-    private Validator validator;
+    private Validator<? super T> validator;
     private Converter<S, T> converter;
     private T sourceNullValue;
     private S targetNullValue;
@@ -68,12 +68,12 @@ public class Binding<S, T> {
         return strategy;
     }
 
-    public final void setValidator(Validator validator) {
+    public final void setValidator(Validator<? super T> validator) {
         throwIfBound();
         this.validator = validator;
     }
 
-    public final Validator getValidator() {
+    public final Validator<? super T> getValidator() {
         return validator;
     }
 

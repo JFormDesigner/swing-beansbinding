@@ -11,6 +11,6 @@ import java.util.EventListener;
  * @author Shannon Hickey
  */
 public interface BindingListener extends EventListener {
-    public void targetUnwriteable(Binding binding);
-    public void bindingInSync(Binding binding);
+    public void targetUnwriteable(Binding<?, ?> binding);
+    public void bindingInSync(Binding<?, ?> binding);
 }
