@@ -12,5 +12,12 @@ import java.util.EventListener;
  */
 public interface BindingListener extends EventListener {
     public void targetUnwriteable(Binding<?, ?> binding);
+
+    public void targetUnreadable(Binding<?, ?> binding);
+    public void sourceUnwriteable(Binding<?, ?> binding);
+
+    public void conversionFailed(Binding<?, ?> binding, RuntimeException exception);
+    public void validationFailed(Binding<?, ?> binding, Validator.ValidationResult result);
+
     public void bindingInSync(Binding<?, ?> binding);
 }

@@ -25,6 +25,7 @@ public class Binding<S, T> {
     private S targetNullValue;
     private T sourceUnreadableValue;
     private List<BindingListener> listeners;
+    private boolean inSync;
 
     public enum AutoUpdateStrategy {
         READ,
@@ -155,6 +156,8 @@ public class Binding<S, T> {
         throwIfUnbound();
 
         if (!target.isWriteable()) {
+            // out of sync
+
             for (BindingListener listener : listeners) {
                 listener.targetUnwriteable(this);
             }
@@ -170,6 +173,7 @@ public class Binding<S, T> {
             if (sourceValue == null) {
                 targetValue = sourceNullValue;
             } else {
+                // may throw ClassCastException or other RuntimeException here
                 targetValue = convertForward(sourceValue);
             }
         } else {
@@ -177,12 +181,56 @@ public class Binding<S, T> {
         }
 
         target.setValue(targetValue);
+        // in sync
+
         for (BindingListener listener : listeners) {
             listener.bindingInSync(this);
         }
     }
 
     public final void save() {
+        throwIfUnbound();
+
+        if (!target.isReadable()) {
+            // mark in sync
+            // notify in sync
+            return;
+        }
+
+        if (!source.isWriteable()) {
+            // out of sync
+
+            for (BindingListener listener : listeners) {
+                // notify save failed because not writeable source
+            }
+
+            return;
+        }
+
+        S sourceValue;
+
+        T targetValue = target.getValue();
+
+        if (targetValue == null) {
+            sourceValue = targetNullValue;
+        } else {
+            try {
+                sourceValue = convertReverse(targetValue);
+            } catch (ClassCastException cce) {
+                throw cce;
+            } catch (RuntimeException rte) {
+                // notify conversion failed
+                // out of sync
+                return;
+            }
+        }
+
+        source.setValue(sourceValue);
+        // in sync
+
+        for (BindingListener listener : listeners) {
+            listener.bindingInSync(this);
+        }
     }
 
     private final T convertForward(S value) {
@@ -192,6 +240,15 @@ public class Binding<S, T> {
         }
 
         return converter.convertForward(value);
+    }
+
+    private final S convertReverse(T value) {
+        if (converter == null) {
+            Class<? extends S> sourceType = source.getWriteType();
+            return sourceType.cast(value);
+        }
+
+        return converter.convertReverse(value);
     }
 
     protected final void throwIfBound() {
