@@ -11,7 +11,7 @@ package javax.beans.binding;
  * 
  * @author Shannon Hickey
  */ 
-public abstract class Validator {
+public abstract class Validator<T> {
 
     /**
      * {@code ValidationResult} is returned from {@code Validator} to
@@ -76,5 +76,5 @@ public abstract class Validator {
      * @param value the value to validate, may be {@code null}
      * @throws IllegalArgumentException if {@code binding} is {@code null}
      */
-    public abstract ValidationResult validate(Binding binding, Object value);
+    public abstract ValidationResult validate(Binding<?, ? extends T> binding, T value);
 }
