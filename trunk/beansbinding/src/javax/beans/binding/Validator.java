@@ -17,7 +17,7 @@ public abstract class Validator<S> {
      * {@code ValidationResult} is returned from {@code Validator} to
      * indicate an invalid value.
      */
-    public class ValidationResult {
+    public class Result {
         private final Object errorCode;
         private final String description;
 
@@ -27,7 +27,7 @@ public abstract class Validator<S> {
          * @param errorCode an identifier for this {@code ValidationResult}
          * @param description a textual description of the {@code ValidationResult}
          */
-        public ValidationResult(Object errorCode, String description) {
+        public Result(Object errorCode, String description) {
             this.description = description;
             this.errorCode = errorCode;
         }
@@ -76,5 +76,5 @@ public abstract class Validator<S> {
      * @param value the value to validate, may be {@code null}
      * @throws IllegalArgumentException if {@code binding} is {@code null}
      */
-    public abstract ValidationResult validate(Binding<? extends S, ?> binding, S value);
+    public abstract Result validate(Binding<? extends S, ?> binding, S value);
 }
