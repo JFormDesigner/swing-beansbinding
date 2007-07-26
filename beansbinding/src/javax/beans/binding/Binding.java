@@ -18,7 +18,7 @@ public class Binding<S, T> {
     private Property<T> target;
 
     private boolean bound;
-    private AutoUpdateStrategy strategy;
+    private AutoUpdateStrategy strategy = AutoUpdateStrategy.READ_WRITE;
     private Validator<? super S> validator;
     private Converter<S, T> converter;
     private T sourceNullValue;
@@ -26,6 +26,7 @@ public class Binding<S, T> {
     private T sourceUnreadableValue;
     private List<BindingListener> listeners;
     private boolean inSync;
+    private PropertyStateListener psl;
 
     public enum AutoUpdateStrategy {
         READ,
@@ -38,6 +39,14 @@ public class Binding<S, T> {
     }
 
     public Binding(String name, Property<S> source, Property<T> target) {
+        if (source == null || target == null) {
+            throw new IllegalArgumentException("source and target must be non-null");
+        }
+
+        if (source == target) {
+            throw new IllegalArgumentException("can't bind a property to itself");
+        }
+
         this.name = name;
         this.source = source;
         this.target = target;
@@ -141,10 +150,31 @@ public class Binding<S, T> {
     public void bind() {
         throwIfBound();
         bound = true;
+
+        if (strategy == AutoUpdateStrategy.READ_ONCE) {
+            refresh();
+        } else if (strategy == AutoUpdateStrategy.READ) {
+            refresh();
+            psl = new PSL();
+            source.addPropertyStateListener(psl);
+        } else {
+            refresh();
+            if (!inSync) {
+                save();
+            }
+            psl = new PSL();
+            source.addPropertyStateListener(psl);
+            target.addPropertyStateListener(psl);
+        }
     }
 
     public void unbind() {
         throwIfUnbound();
+        if (psl != null) {
+            source.removePropertyStateListener(psl);
+            target.removePropertyStateListener(psl);
+            psl = null;
+        }
         bound = false;
     }
 
@@ -237,7 +267,7 @@ public class Binding<S, T> {
             }
 
             if (validator != null) {
-                Validator.ValidationResult vr = validator.validate(this, sourceValue);
+                Validator.Result vr = validator.validate(this, sourceValue);
                 if (vr != null) {
                     inSync = false;
 
@@ -303,6 +333,12 @@ public class Binding<S, T> {
                ", targetNullValue=" + targetNullValue +
                ", sourceUnreadableValue=" + sourceUnreadableValue +
                ", bound=" + isBound();
+    }
+
+    private class PSL implements PropertyStateListener {
+        public void propertyStateChanged(PropertyStateEvent pse) {
+            System.out.println(pse);
+        }
     }
 
 }
