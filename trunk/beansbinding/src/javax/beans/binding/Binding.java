@@ -25,7 +25,7 @@ public class Binding<S, T> {
     private S targetNullValue;
     private T sourceUnreadableValue;
     private List<BindingListener> listeners;
-    private boolean inSync;
+    private boolean targetEdited;
     private PropertyStateListener psl;
 
     public enum AutoUpdateStrategy {
@@ -153,15 +153,18 @@ public class Binding<S, T> {
 
         if (strategy == AutoUpdateStrategy.READ_ONCE) {
             refresh();
+            psl = new PSL();
+            target.addPropertyStateListener(psl);
         } else if (strategy == AutoUpdateStrategy.READ) {
             refresh();
             psl = new PSL();
             source.addPropertyStateListener(psl);
+            target.addPropertyStateListener(psl);
         } else {
-            refresh();
-            if (!inSync) {
+            if (!refresh()) {
                 save();
             }
+
             psl = new PSL();
             source.addPropertyStateListener(psl);
             target.addPropertyStateListener(psl);
@@ -170,11 +173,9 @@ public class Binding<S, T> {
 
     public void unbind() {
         throwIfUnbound();
-        if (psl != null) {
-            source.removePropertyStateListener(psl);
-            target.removePropertyStateListener(psl);
-            psl = null;
-        }
+        source.removePropertyStateListener(psl);
+        target.removePropertyStateListener(psl);
+        psl = null;
         bound = false;
     }
 
@@ -182,22 +183,22 @@ public class Binding<S, T> {
         return bound;
     }
 
-    public final boolean isInSync() {
+    public final boolean isTargetEdited() {
         throwIfUnbound();
-        return inSync;
+        return targetEdited;
     }
 
-    public final void refresh() {
+    public final boolean refresh() {
         throwIfUnbound();
-
+        
         if (!target.isWriteable()) {
-            inSync = false;
-
-            for (BindingListener listener : listeners) {
-                listener.targetUnwriteable(this);
+            if (listeners != null) {
+                for (BindingListener listener : listeners) {
+                    listener.targetUnwriteable(this);
+                }
             }
-
-            return;
+            
+            return false;
         }
 
         T targetValue;
@@ -216,34 +217,37 @@ public class Binding<S, T> {
         }
 
         target.setValue(targetValue);
-        inSync = true;
 
-        for (BindingListener listener : listeners) {
-            listener.bindingInSync(this);
+        if (listeners != null) {
+            for (BindingListener listener : listeners) {
+                listener.bindingSynced(this);
+            }
         }
+
+        return true;
     }
 
-    public final void save() {
+    public final boolean save() {
         throwIfUnbound();
 
         if (!target.isReadable()) {
-            inSync = false;
-
-            for (BindingListener listener : listeners) {
-                listener.targetUnreadable(this);
+            if (listeners != null) {
+                for (BindingListener listener : listeners) {
+                    listener.targetUnreadable(this);
+                }
             }
 
-            return;
+            return false;
         }
 
         if (!source.isWriteable()) {
-            inSync = false;
-
-            for (BindingListener listener : listeners) {
-                listener.sourceUnwriteable(this);
+            if (listeners != null) {
+                for (BindingListener listener : listeners) {
+                    listener.sourceUnwriteable(this);
+                }
             }
 
-            return;
+            return false;
         }
 
         S sourceValue = null;
@@ -258,35 +262,38 @@ public class Binding<S, T> {
             } catch (ClassCastException cce) {
                 throw cce;
             } catch (RuntimeException rte) {
-                inSync = false;
-
-                for (BindingListener listener : listeners) {
-                    listener.conversionFailed(this, rte);
+                if (listeners != null) {
+                    for (BindingListener listener : listeners) {
+                        listener.conversionFailed(this, rte);
+                    }
                 }
                 
-                return;
+                return false;
             }
 
             if (validator != null) {
                 Validator.Result vr = validator.validate(this, sourceValue);
                 if (vr != null) {
-                    inSync = false;
-
-                    for (BindingListener listener : listeners) {
-                        listener.validationFailed(this, vr);
+                    if (listeners != null) {
+                        for (BindingListener listener : listeners) {
+                            listener.validationFailed(this, vr);
+                        }
                     }
 
-                    return;
+                    return false;
                 }
             }
         }
 
         source.setValue(sourceValue);
-        inSync = true;
 
-        for (BindingListener listener : listeners) {
-            listener.bindingInSync(this);
+        if (listeners != null) {
+            for (BindingListener listener : listeners) {
+                listener.bindingSynced(this);
+            }
         }
+
+        return true;
     }
 
     private final T convertForward(S value) {
@@ -338,7 +345,21 @@ public class Binding<S, T> {
 
     private class PSL implements PropertyStateListener {
         public void propertyStateChanged(PropertyStateEvent pse) {
-            System.out.println(pse);
+            if (pse.getSource() == source) {
+                if (strategy == AutoUpdateStrategy.READ) {
+                    if (pse.getValueChanged()) {
+                        refresh();
+                    }
+                } else if (strategy == AutoUpdateStrategy.READ_WRITE) {
+                    if (pse.getValueChanged()) {
+                        if (!refresh()) {
+                            save();
+                        }
+                    } else if (pse.getWriteableChanged()) {
+                        save();
+                    }
+                }
+            }
         }
     }
 
