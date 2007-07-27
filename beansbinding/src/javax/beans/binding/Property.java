@@ -8,7 +8,7 @@ package javax.beans.binding;
 /**
  * @author Shannon Hickey
  */
-public interface Property<V>  {
+public interface Property<V> {
 
     Class<? extends V> getWriteType();
 
