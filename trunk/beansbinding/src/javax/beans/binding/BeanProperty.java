@@ -657,10 +657,11 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         return -1;
     }
 
-    private boolean wrapsPrimitive(Object o) {
+    private boolean wrapsLiteral(Object o) {
         assert o != null;
 
-        return o instanceof Byte ||
+        return o instanceof String ||
+               o instanceof Byte ||
                o instanceof Character ||
                o instanceof Boolean ||
                o instanceof Short ||
@@ -682,7 +683,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             return false;
         }
 
-        if (wrapsPrimitive(a)) {
+        if (wrapsLiteral(a)) {
             return a.equals(b);
         }
 
