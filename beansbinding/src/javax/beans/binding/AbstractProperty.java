@@ -29,7 +29,7 @@ public abstract class AbstractProperty<V> implements Property<V> {
     
     protected abstract void listeningStopped();
     
-    public void addPropertyStateListener(PropertyStateListener listener) {
+    public final void addPropertyStateListener(PropertyStateListener listener) {
         if (listeners == null) {
             listeners = new ArrayList<PropertyStateListener>(1);
         }
@@ -42,7 +42,7 @@ public abstract class AbstractProperty<V> implements Property<V> {
         }
     }
 
-    public void removePropertyStateListener(PropertyStateListener listener) {
+    public final void removePropertyStateListener(PropertyStateListener listener) {
         if (listeners == null) {
             return;
         }
@@ -55,7 +55,7 @@ public abstract class AbstractProperty<V> implements Property<V> {
         }
     }
 
-    public PropertyStateListener[] getPropertyStateListeners() {
+    public final PropertyStateListener[] getPropertyStateListeners() {
         if (listeners == null) {
             return new PropertyStateListener[0];
         }
@@ -65,7 +65,7 @@ public abstract class AbstractProperty<V> implements Property<V> {
         return ret;
     }
 
-    protected void firePropertyStateChange(PropertyStateEvent pse) {
+    protected final void firePropertyStateChange(PropertyStateEvent pse) {
         if (listeners == null) {
             return;
         }
