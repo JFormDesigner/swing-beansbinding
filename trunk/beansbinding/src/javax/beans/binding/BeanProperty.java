@@ -39,15 +39,13 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
+public final class BeanProperty<S, V> extends AbstractProperty<V> implements SourceableProperty<S, V> {
 
     private final PropertyPath path;
     private S source;
     private Object[] cache;
     private Object cachedValue;
     private Object cachedWriter;
-    private List<PropertyStateListener> listeners;
-    private boolean isListening = false;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
     private static final Object NOREAD = new Object();
@@ -70,7 +68,7 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
     public void setSource(S source) {
         this.source = source;
 
-        if (isListening) {
+        if (isListening()) {
             cachedValueChanged(0);
         }
     };
@@ -104,7 +102,7 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
     }
 
     public Class<? extends V> getWriteType() {
-        if (isListening) {
+        if (isListening()) {
             validateCache(-1);
 
             if (cachedWriter == null) {
@@ -118,7 +116,7 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
     }
 
     public V getValue() {
-        if (isListening) {
+        if (isListening()) {
             validateCache(-1);
 
             if (cachedValue == NOREAD) {
@@ -143,7 +141,7 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
     }
 
     public void setValue(V value) {
-        if (isListening) {
+        if (isListening()) {
             validateCache(-1);
 
             if (cachedWriter == null) {
@@ -165,7 +163,7 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
     }
 
     public boolean isReadable() {
-        if (isListening) {
+        if (isListening()) {
             validateCache(-1);
             return cachedIsReadable();
         }
@@ -189,7 +187,7 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
     }
 
     public boolean isWriteable() {
-        if (isListening) {
+        if (isListening()) {
             validateCache(-1);
             return cachedIsWriteable();
         }
@@ -208,8 +206,11 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
         return true;
     }
 
-    private void startListening() {
-        isListening = true;
+    protected final void listeningStarted() {
+        if (isListening()) {
+            return;
+        }
+
         if (cache == null) {
             cache = new Object[path.length()];
         }
@@ -220,8 +221,10 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
         updateCachedWriter();
     }
 
-    private void stopListening() {
-        isListening = false;
+    protected final void listeningStopped() {
+        if (!isListening()) {
+            return;
+        }
 
         if (changeHandler != null) {
             for (int i = 0; i < path.length(); i++) {
@@ -235,46 +238,14 @@ public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
         changeHandler = null;
     }
 
-    public void addPropertyStateListener(PropertyStateListener listener) {
-        if (listeners == null) {
-            listeners = new ArrayList<PropertyStateListener>(1);
-        }
-
-        listeners.add(listener);
-
-        if (!isListening && listeners.size() != 0) {
-            startListening();
-        }
-    }
-
-    public void removePropertyStateListener(PropertyStateListener listener) {
-        if (listeners == null) {
-            return;
-        }
-
-        listeners.remove(listener);
-
-        if (isListening && listeners.size() == 0) {
-            stopListening();
-        }
-    }
-
-    public PropertyStateListener[] getPropertyStateListeners() {
-        if (listeners == null) {
-            return new PropertyStateListener[0];
-        }
-
-        PropertyStateListener[] ret = new PropertyStateListener[listeners.size()];
-        ret = listeners.toArray(ret);
-        return ret;
-    }
-
     private boolean didValueChange(Object oldValue, Object newValue) {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
 
     private void notifyListeners(boolean wasWriteable, Object oldValue) {
-        if (listeners == null || listeners.size() == 0) {
+        PropertyStateListener[] listeners = getPropertyStateListeners();
+
+        if (listeners == null || listeners.length == 0) {
             return;
         }
 
