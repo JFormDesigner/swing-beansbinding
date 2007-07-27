@@ -29,10 +29,16 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
 
     public void setSource(JTextComponent component) {
         source = component;
+
+        if (isListening()) {
+        }
     }
 
     public void setSource(Property<? extends JTextComponent> property) {
         source = property;
+
+        if (isListening()) {
+        }
     }
 
     public Class<String> getWriteType() {
