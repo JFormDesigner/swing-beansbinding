@@ -39,10 +39,10 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class BeanProperty implements SourceableProperty<Object, Object> {
+public final class BeanProperty<S, V> implements SourceableProperty<S, V> {
 
     private final PropertyPath path;
-    private Object source;
+    private S source;
     private Object[] cache;
     private Object cachedValue;
     private Object cachedWriter;
@@ -62,12 +62,12 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    public BeanProperty(String path, Object source) {
+    public BeanProperty(String path, S source) {
         this.path = PropertyPath.createPropertyPath(path);
         this.source = source;
     }
 
-    public void setSource(Object source) {
+    public void setSource(S source) {
         this.source = source;
 
         if (isListening) {
@@ -75,7 +75,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         }
     };
 
-    public Object getSource() {
+    public S getSource() {
         return source;
     }
 
@@ -103,7 +103,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
         return src;
     }
 
-    public Class<?> getWriteType() {
+    public Class<? extends V> getWriteType() {
         if (isListening) {
             validateCache(-1);
 
@@ -111,13 +111,13 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
                 throw new UnsupportedOperationException("Unwriteable");
             }
 
-            return getType(cache[path.length() - 1], path.getLast());
+            return (Class<? extends V>)getType(cache[path.length() - 1], path.getLast());
         }
 
-        return getType(getLastSource(), path.getLast());
+        return (Class<? extends V>)getType(getLastSource(), path.getLast());
     }
 
-    public Object getValue() {
+    public V getValue() {
         if (isListening) {
             validateCache(-1);
 
@@ -125,7 +125,7 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
                 throw new UnsupportedOperationException("Unreadable");
             }
 
-            return cachedValue;
+            return (V)cachedValue;
         }
 
         Object src = getLastSource();
@@ -139,10 +139,10 @@ public final class BeanProperty implements SourceableProperty<Object, Object> {
             throw new UnsupportedOperationException("Unreadable");
         }
 
-        return src;
+        return (V)src;
     }
 
-    public void setValue(Object value) {
+    public void setValue(V value) {
         if (isListening) {
             validateCache(-1);
 
