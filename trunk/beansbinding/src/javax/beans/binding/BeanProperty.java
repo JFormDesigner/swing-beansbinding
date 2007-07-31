@@ -263,9 +263,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
                                                         writeableChanged,
                                                         cachedIsWriteable());
 
-        for (PropertyStateListener listener : listeners) {
-            listener.propertyStateChanged(pse);
-        }
+        this.firePropertyStateChange(pse);
     }
 
     public String toString() {
@@ -774,10 +772,6 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
     }
 
     private void bindingPropertyChanged(PropertyStateEvent pse) {
-        if (ignoreChange) {
-            return;
-        }
-
         int index = getSourceIndex(pse.getSource());
 
         if (index == -1) {
