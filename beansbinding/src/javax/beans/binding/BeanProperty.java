@@ -213,10 +213,6 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
     }
 
     protected final void listeningStarted() {
-        if (isListening()) {
-            return;
-        }
-
         if (cache == null) {
             cache = new Object[path.length()];
         }
@@ -228,10 +224,6 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
     }
 
     protected final void listeningStopped() {
-        if (!isListening()) {
-            return;
-        }
-
         if (changeHandler != null) {
             for (int i = 0; i < path.length(); i++) {
                 unregisterListener(cache[i], path.get(i));
