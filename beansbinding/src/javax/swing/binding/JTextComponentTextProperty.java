@@ -14,52 +14,75 @@ import javax.swing.text.*;
  */
 public final class JTextComponentTextProperty extends AbstractProperty<String> implements Property<String> {
 
-    private Object source;
+    private Property<? extends JTextComponent> property;
+    private JTextComponent component;
 
     public JTextComponentTextProperty() {
     }
 
     public JTextComponentTextProperty(JTextComponent component) {
-        source = component;
+        this.component = component;
     }
 
     public JTextComponentTextProperty(Property<? extends JTextComponent> property) {
-        source = property;
+        this.property = property;
     }
 
     public void setSource(JTextComponent component) {
-        source = component;
-
-        if (isListening()) {
-        }
+        this.property = null;
+        this.component = component;
     }
 
     public void setSource(Property<? extends JTextComponent> property) {
-        source = property;
-
-        if (isListening()) {
-        }
+        this.component = null;
+        this.property = property;
     }
 
     public Class<String> getWriteType() {
-        // if not writeable - throw error
+        JTextComponent comp = getComponent();
+        if (comp == null || !comp.isEditable()) {
+            throw new UnsupportedOperationException("Unwriteable");
+        }
+
         return String.class;
     }
 
     public String getValue() {
-        return null;
+        JTextComponent comp = getComponent();
+        if (comp == null) {
+            throw new UnsupportedOperationException("Unwriteable");
+        }
+
+        return comp.getText();
     }
 
     public void setValue(String value) {
-        // set value if writeable
+        JTextComponent comp = getComponent();
+        if (comp == null || !comp.isEditable()) {
+            throw new UnsupportedOperationException("Unwriteable");
+        }
+
+        comp.setText(value);
     }
 
     public boolean isReadable() {
-        return false;
+        JTextComponent comp = getComponent();
+        return comp != null;
     }
 
     public boolean isWriteable() {
-        return false;
+        JTextComponent comp = getComponent();
+        return comp != null && comp.isEditable();
+    }
+
+    private JTextComponent getComponent() {
+        if (property == null) {
+            return component;
+        } else if (property.isReadable()) {
+            return property.getValue();
+        } else {
+            return null;
+        }
     }
 
     protected void listeningStarted() {
