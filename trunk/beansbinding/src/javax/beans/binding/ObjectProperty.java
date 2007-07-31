@@ -25,7 +25,7 @@ public final class ObjectProperty<S> extends AbstractProperty<S> implements Sour
     }
 
     public void setSource(S source) {
-        S oldSource = source;
+        S oldSource = this.source;
 
         this.source = source;
 
