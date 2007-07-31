@@ -25,9 +25,11 @@ public abstract class AbstractProperty<V> implements Property<V> {
 
     public abstract boolean isWriteable();
 
-    protected abstract void listeningStarted();
+    protected void listeningStarted() {
+    }
     
-    protected abstract void listeningStopped();
+    protected void listeningStopped() {
+    }
     
     public final void addPropertyStateListener(PropertyStateListener listener) {
         if (listeners == null) {
