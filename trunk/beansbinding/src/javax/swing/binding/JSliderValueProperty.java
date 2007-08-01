@@ -129,28 +129,19 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
             return cachedIsReadable();
         }
 
-        JTextComponent comp = getJSliderFromSource(true);
-        return comp != null;
+        return (getJSliderFromSource(true) != null);
     }
 
     public boolean isWriteable() {
         if (isListening()) {
             validateCache(-1);
-            return cachedIsWriteable;
+            return cachedIsWriteable();
         }
 
-        JTextComponent comp = getJSliderFromSource(true);
-        if (comp == null) {
-            return false;
-        } else if (!comp.isEditable()) {
-            System.err.println(hashCode() + ": LOG: isWriteable(): target JTextComponent is non-editable");
-            return false;
-        }
-
-        return true;
+        return (getJSliderFromSource(true) != null);
     }
 
-    private JTextComponent getJSliderFromSource(boolean logErrors) {
+    private JSlider getJSliderFromSource(boolean logErrors) {
         if (source == null) {
             if (logErrors) {
                 System.err.println(hashCode() + ": LOG: getJTextComponentFromSource(): source is null");
@@ -178,7 +169,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
             return slider;
         }
 
-        return (JTextComponent)source;
+        return (JSlider)source;
     }
 
     protected final void listeningStarted() {
@@ -188,33 +179,26 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
 
         updateCachedComponent();
         updateCachedValue();
-        updateCachedIsWriteable();
     }
 
     protected final void listeningStopped() {
         if (changeHandler != null) {
 
-            // unregister listener on text component
+            // unregister listener on slider
 
             if (source instanceof Property) {
                 ((Property)source).removePropertyStateListener(changeHandler);
-            }
-
-            if (cachedComponent != null) {
-                cachedComponent.removePropertyChangeListener("editable", changeHandler);
             }
         }
 
         cachedComponent = null;
         cachedValue = null;
-        cachedIsWriteable = false;
         changeHandler = null;
     }
 
     // flag -1 - validate all
     // level 0 - source property changed value or readability
     // level 1 - value changed
-    // level 2 - editability of text field changed
     private void validateCache(int flag) {
         // PENDING(shannonh) - enable this via a property
         //if (true) {
@@ -225,60 +209,38 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
             throw new ConcurrentModificationException();
         }
 
-        Object value;
-        boolean writeable;
-
-        if (cachedComponent == null) {
-            value = NOREAD;
-            writeable = false;
-        } else {
-            value = cachedComponent.getText();
-            writeable = cachedComponent.isEditable();
-        }
-
-        if (flag != 1 && cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
-            throw new ConcurrentModificationException();
-        }
-
-        if (flag != 2 && writeable != cachedIsWriteable) {
-            throw new ConcurrentModificationException();
+        if (flag != 1) {
+            Object value = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
+            if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
+                throw new ConcurrentModificationException();
+            }
         }
     }
 
     private void updateCachedComponent() {
-        JTextComponent comp;
-
-        comp = getJSliderFromSource(true);
+        JSlider comp = getJSliderFromSource(true);
 
         if (comp != cachedComponent) {
-            if (cachedComponent != null) {
-                cachedComponent.removePropertyChangeListener("editable", changeHandler);
-            }
-
             // unregister listener on old
 
             cachedComponent = comp;
             
-            if (cachedComponent != null) {
-                cachedComponent.addPropertyChangeListener("editable", getChangeHandler());
-            }
-
             // register listener on new
         }
     }
 
     private void updateCachedValue() {
-        cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.getText());
-    }
-
-    private void updateCachedIsWriteable() {
-        cachedIsWriteable = (cachedComponent == null ? false : cachedComponent.isEditable());
+        cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
     }
 
     private boolean cachedIsReadable() {
         return cachedValue != NOREAD;
     }
-    
+
+    private boolean cachedIsWriteable() {
+        return cachedComponent != null;
+    }
+
     private boolean didValueChange(Object oldValue, Object newValue) {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
@@ -297,7 +259,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         oldValue = toUNREADABLE(oldValue);
         Object newValue = toUNREADABLE(cachedValue);
         boolean valueChanged = didValueChange(oldValue, newValue);
-        boolean writeableChanged = (wasWriteable != cachedIsWriteable);
+        boolean writeableChanged = (wasWriteable != cachedIsWriteable());
 
         if (!valueChanged && !writeableChanged) {
             return;
@@ -308,7 +270,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
                                                         oldValue,
                                                         newValue,
                                                         writeableChanged,
-                                                        cachedIsWriteable);
+                                                        cachedIsWriteable());
 
         this.firePropertyStateChange(pse);
     }
@@ -317,21 +279,14 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
         validateCache(0);
         Object oldValue = cachedValue;
+        boolean wasWriteable = cachedIsWriteable();
         updateCachedComponent();
         updateCachedValue();
-        updateCachedIsWriteable();
-        notifyListeners(cachedIsWriteable, oldValue);
+        notifyListeners(wasWriteable, oldValue);
     }
 
-    private void textComponentEditabilityChanged() {
-        validateCache(2);
-        boolean wasWriteable = cachedIsWriteable;
-        updateCachedIsWriteable();
-        notifyListeners(wasWriteable, cachedValue);
-    }
-    
     public String toString() {
-        return "JTextComponent.text";
+        return "JSlider.value";
     }
 
     private ChangeHandler getChangeHandler() {
@@ -341,15 +296,9 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         return changeHandler;
     }
     
-    private final class ChangeHandler implements PropertyStateListener, PropertyChangeListener {
+    private final class ChangeHandler implements PropertyStateListener {
         public void propertyStateChanged(PropertyStateEvent pe) {
             bindingPropertyChanged(pe);
-        }
-
-        public void propertyChange(PropertyChangeEvent pce) {
-            if (pce.getPropertyName() == "editable") {
-                textComponentEditabilityChanged();
-            }
         }
     }
 
