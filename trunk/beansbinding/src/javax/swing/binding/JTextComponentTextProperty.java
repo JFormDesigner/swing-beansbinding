@@ -141,11 +141,15 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
 
             try {
                 ignoreChange = true;
-                cachedComponent.setText(value);
-                Object oldValue = cachedValue;
-                updateLiveValue();
-                updateCachedValue();
-                notifyListeners(cachedIsWriteable, oldValue);
+                if (inDocumentListener) {
+                    throw new IllegalStateException("Not yet sure how to handle change from document listener");
+                } else {
+                    cachedComponent.setText(value);
+                    Object oldValue = cachedValue;
+                    updateLiveValue();
+                    updateCachedValue();
+                    notifyListeners(cachedIsWriteable, oldValue);
+                }
             } finally {
                 ignoreChange = false;
             }
@@ -447,19 +451,33 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
     }
 
     private void textComponentEditabilityChanged() {
-        validateCache(2);
+        validateCache(3);
         boolean wasWriteable = cachedIsWriteable;
         updateCachedIsWriteable();
         notifyListeners(wasWriteable, cachedValue);
     }
 
     private void documentChanged() {
+        validateCache(1);
+        updateCachedDocument();
+        updateLiveValue();
+        Object oldValue = cachedValue;
+        updateCachedValue();
+        notifyListeners(cachedIsWriteable, oldValue);
     }
 
     private void actionWasPerformed() {
+        validateCache(-1);
+        Object oldValue = cachedValue;
+        updateCachedValue();
+        notifyListeners(cachedIsWriteable, oldValue);
     }
     
     private void focusWasLost() {
+        validateCache(-1);
+        Object oldValue = cachedValue;
+        updateCachedValue();
+        notifyListeners(cachedIsWriteable, oldValue);
     }
 
     private void documentTextChanged() {
@@ -474,6 +492,14 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
     private void textChanged() {
         if (ignoreChange) {
             return;
+        }
+
+        validateCache(2);
+        updateLiveValue();
+        if (strategy == ChangeStrategy.ON_TYPE) {
+            Object oldValue = cachedValue;
+            updateCachedValue();
+            notifyListeners(cachedIsWriteable, oldValue);
         }
     }
 
