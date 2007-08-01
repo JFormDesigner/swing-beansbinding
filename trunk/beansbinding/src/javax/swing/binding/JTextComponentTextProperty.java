@@ -137,6 +137,9 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
             try {
                 ignoreChange = true;
                 cachedComponent.setText(value);
+                Object oldValue = cachedValue;
+                updateCachedValue();
+                notifyListeners(cachedIsWriteable, oldValue);
             } finally {
                 ignoreChange = false;
             }

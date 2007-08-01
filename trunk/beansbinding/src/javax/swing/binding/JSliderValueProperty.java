@@ -8,6 +8,7 @@ package javax.swing.binding;
 import javax.beans.binding.*;
 import java.beans.*;
 import javax.swing.*;
+import javax.swing.event.*;
 import java.util.ConcurrentModificationException;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
@@ -118,6 +119,11 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         try {
             ignoreChange = true;
             component.setValue(value);
+            if (isListening()) {
+                Object oldValue = cachedValue;
+                updateCachedValue();
+                notifyListeners(cachedIsWriteable(), oldValue);
+            }
         } finally {
             ignoreChange = false;
         }
@@ -184,7 +190,9 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
     protected final void listeningStopped() {
         if (changeHandler != null) {
 
-            // unregister listener on slider
+            if (cachedComponent != null) {
+                cachedComponent.removeChangeListener(changeHandler);
+            }
 
             if (source instanceof Property) {
                 ((Property)source).removePropertyStateListener(changeHandler);
@@ -221,11 +229,15 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         JSlider comp = getJSliderFromSource(true);
 
         if (comp != cachedComponent) {
-            // unregister listener on old
+            if (cachedComponent != null) {
+                cachedComponent.removeChangeListener(changeHandler);
+            }
 
             cachedComponent = comp;
             
-            // register listener on new
+            if (cachedComponent != null) {
+                cachedComponent.addChangeListener(getChangeHandler());
+            }
         }
     }
 
@@ -285,6 +297,17 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         notifyListeners(wasWriteable, oldValue);
     }
 
+    private void sliderValueChanged() {
+        if (ignoreChange) {
+            return;
+        }
+
+        validateCache(1);
+        Object oldValue = cachedValue;
+        updateCachedValue();
+        notifyListeners(cachedIsWriteable(), oldValue);
+    }
+
     public String toString() {
         return "JSlider.value";
     }
@@ -296,9 +319,13 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         return changeHandler;
     }
     
-    private final class ChangeHandler implements PropertyStateListener {
+    private final class ChangeHandler implements PropertyStateListener, ChangeListener {
         public void propertyStateChanged(PropertyStateEvent pe) {
             bindingPropertyChanged(pe);
+        }
+
+        public void stateChanged(ChangeEvent ce) {
+            sliderValueChanged();
         }
     }
 
