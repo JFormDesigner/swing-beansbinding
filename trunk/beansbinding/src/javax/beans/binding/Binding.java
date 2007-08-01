@@ -217,6 +217,7 @@ public class Binding<S, T> {
         }
 
         target.setValue(targetValue);
+        targetEdited = false;
 
         if (listeners != null) {
             for (BindingListener listener : listeners) {
@@ -286,6 +287,7 @@ public class Binding<S, T> {
         }
 
         source.setValue(sourceValue);
+        targetEdited = false;
 
         if (listeners != null) {
             for (BindingListener listener : listeners) {
@@ -356,6 +358,25 @@ public class Binding<S, T> {
                             save();
                         }
                     } else if (pse.getWriteableChanged()) {
+                        save();
+                    }
+                }
+            } else {
+                targetEdited = true;
+                if (listeners != null) {
+                    for (BindingListener listener : listeners) {
+                        listener.targetEdited(Binding.this);
+                    }
+                }
+
+                if (strategy == AutoUpdateStrategy.READ) {
+                    if (pse.getWriteableChanged() && pse.isWriteable()) {
+                        refresh();
+                    }
+                } else if (strategy == AutoUpdateStrategy.READ_WRITE) {
+                    if (pse.getWriteableChanged() && pse.isWriteable() && refresh()) {
+                        return;
+                    } else {
                         save();
                     }
                 }
