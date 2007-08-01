@@ -281,9 +281,7 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
     }
 
     private void updateCachedComponent() {
-        JTextComponent comp;
-
-        comp = getJTextComponentFromSource(true);
+        JTextComponent comp = getJTextComponentFromSource(true);
 
         if (comp != cachedComponent) {
             if (cachedComponent != null) {
@@ -352,10 +350,11 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
         boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
         validateCache(0);
         Object oldValue = cachedValue;
+        boolean wasWriteable = cachedIsWriteable;
         updateCachedComponent();
         updateCachedValue();
         updateCachedIsWriteable();
-        notifyListeners(cachedIsWriteable, oldValue);
+        notifyListeners(wasWriteable, oldValue);
     }
 
     private void textComponentEditabilityChanged() {
