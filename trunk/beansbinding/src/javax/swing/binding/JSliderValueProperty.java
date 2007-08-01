@@ -83,7 +83,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         return Integer.class;
     }
 
-    public String getValue() {
+    public Integer getValue() {
         if (isListening()) {
             validateCache(-1);
 
@@ -91,44 +91,41 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
                 throw new UnsupportedOperationException("Unreadable");
             }
 
-            return (String)cachedValue;
+            return (Integer)cachedValue;
         }
 
-        JTextComponent comp = getJSliderFromSource(true);
+        JSlider comp = getJSliderFromSource(true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
 
-        return comp.getText();
+        return comp.getValue();
     }
 
     public void setValue(String value) {
         if (isListening()) {
             validateCache(-1);
 
-            if (!cachedIsWriteable) {
+            if (cachedComponent == null) {
                 throw new UnsupportedOperationException("Unwriteable");
             }
 
             try {
                 ignoreChange = true;
-                cachedComponent.setText(value);
+                cachedComponent.setValue(value);
             } finally {
                 ignoreChange = false;
             }
         }
 
-        JTextComponent comp = getJSliderFromSource(true);
+        JSlider comp = getJSliderFromSource(true);
         if (comp == null) {
-            throw new UnsupportedOperationException("Unwriteable");
-        } else if (!comp.isEditable()) {
-            System.err.println(hashCode() + ": LOG: setValue(): target JTextComponent is non-editable");
             throw new UnsupportedOperationException("Unwriteable");
         }
 
         try {
             ignoreChange = true;
-            comp.setText(value);
+            comp.setValue(value);
         } finally {
             ignoreChange = false;
         }
