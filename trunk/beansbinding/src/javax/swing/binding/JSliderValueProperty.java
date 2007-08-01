@@ -7,7 +7,7 @@ package javax.swing.binding;
 
 import javax.beans.binding.*;
 import java.beans.*;
-import javax.swing.text.*;
+import javax.swing.*;
 import java.util.ConcurrentModificationException;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
@@ -15,51 +15,32 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class JSliderValueProperty extends AbstractProperty<String> implements Property<String> {
+public final class JSliderValueProperty extends AbstractProperty<Integer> implements Property<Integer> {
 
     private Object source;
-    private JTextComponent cachedComponent;
+    private JSlider cachedComponent;
     private Object cachedValue;
-    private boolean cachedIsWriteable;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
-    private ChangeStrategy strategy = ChangeStrategy.ON_ACTION_OR_FOCUS_LOST;
-
-    public enum ChangeStrategy {
-        ON_TYPE,
-        ON_ACTION_OR_FOCUS_LOST,
-        ON_FOCUS_LOST
-    };
 
     private static final Object NOREAD = new Object();
 
     public JSliderValueProperty() {
     }
 
-    public JSliderValueProperty(JTextComponent component) {
+    public JSliderValueProperty(JSlider component) {
         this.source = component;
     }
 
-    public JSliderValueProperty(Property<? extends JTextComponent> property) {
+    public JSliderValueProperty(Property<? extends JSlider> property) {
         this.source = property;
     }
 
-    public void setChangeStrategy(ChangeStrategy strategy) {
-        if (isListening()) {
-            throw new IllegalStateException("Can't change strategy when being observed");
-        }
-        this.strategy = strategy;
-    }
-
-    public ChangeStrategy getChangeStrategy() {
-        return strategy;
-    }
-
-    public void setSource(JTextComponent component) {
+    public void setSource(JSlider component) {
         setSource0(component);
     }
 
-    public void setSource(Property<? extends JTextComponent> property) {
+    public void setSource(Property<? extends JSlider> property) {
         setSource0(property);
     }
 
@@ -81,30 +62,25 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
 
             updateCachedComponent();
             updateCachedValue();
-            updateCachedIsWriteable();
         }
     }
 
-    public Class<String> getWriteType() {
+    public Class<Integer> getWriteType() {
         if (isListening()) {
             validateCache(-1);
 
-            if (!cachedIsWriteable) {
+            if (cachedComponent == null) {
                 throw new UnsupportedOperationException("Unwriteable");
             }
 
-            return String.class;
+            return Integer.class;
         }
 
-        JTextComponent comp = getJTextComponentFromSource(true);
-        if (comp == null) {
-            throw new UnsupportedOperationException("Unwriteable");
-        } else if (!comp.isEditable()) {
-            System.err.println(hashCode() + ": LOG: getWriteType(): target JTextComponent is non-editable");
+        if (getJSliderFromSource(true) == null) {
             throw new UnsupportedOperationException("Unwriteable");
         }
 
-        return String.class;
+        return Integer.class;
     }
 
     public String getValue() {
@@ -118,7 +94,7 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
             return (String)cachedValue;
         }
 
-        JTextComponent comp = getJTextComponentFromSource(true);
+        JTextComponent comp = getJSliderFromSource(true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
@@ -142,7 +118,7 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
             }
         }
 
-        JTextComponent comp = getJTextComponentFromSource(true);
+        JTextComponent comp = getJSliderFromSource(true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unwriteable");
         } else if (!comp.isEditable()) {
@@ -164,7 +140,7 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
             return cachedIsReadable();
         }
 
-        JTextComponent comp = getJTextComponentFromSource(true);
+        JTextComponent comp = getJSliderFromSource(true);
         return comp != null;
     }
 
@@ -174,7 +150,7 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
             return cachedIsWriteable;
         }
 
-        JTextComponent comp = getJTextComponentFromSource(true);
+        JTextComponent comp = getJSliderFromSource(true);
         if (comp == null) {
             return false;
         } else if (!comp.isEditable()) {
@@ -185,7 +161,7 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
         return true;
     }
 
-    private JTextComponent getJTextComponentFromSource(boolean logErrors) {
+    private JTextComponent getJSliderFromSource(boolean logErrors) {
         if (source == null) {
             if (logErrors) {
                 System.err.println(hashCode() + ": LOG: getJTextComponentFromSource(): source is null");
@@ -194,7 +170,7 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
         }
 
         if (source instanceof Property) {
-            Property<? extends JTextComponent> prop = (Property<? extends JTextComponent>)source;
+            Property<? extends JSlider> prop = (Property<? extends JSlider>)source;
             if (!prop.isReadable()) {
                 if (logErrors) {
                     System.err.println(hashCode() + ": LOG: getJTextComponentFromSource(): unreadable source property");
@@ -202,15 +178,15 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
                 return null;
             }
 
-            JTextComponent tc = prop.getValue();
-            if (tc == null) {
+            JSlider slider = prop.getValue();
+            if (slider == null) {
                 if (logErrors) {
                     System.err.println(hashCode() + ": LOG: getJTextComponentFromSource(): source property returned null");
                 }
                 return null;
             }
 
-            return tc;
+            return slider;
         }
 
         return (JTextComponent)source;
@@ -256,7 +232,7 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
         //    return;
         //}
 
-        if (flag != 0 && getJTextComponentFromSource(false) != cachedComponent) {
+        if (flag != 0 && getJSliderFromSource(false) != cachedComponent) {
             throw new ConcurrentModificationException();
         }
 
@@ -283,7 +259,7 @@ public final class JSliderValueProperty extends AbstractProperty<String> impleme
     private void updateCachedComponent() {
         JTextComponent comp;
 
-        comp = getJTextComponentFromSource(true);
+        comp = getJSliderFromSource(true);
 
         if (comp != cachedComponent) {
             if (cachedComponent != null) {
