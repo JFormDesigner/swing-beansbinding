@@ -66,6 +66,10 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         }
     }
 
+    public JSlider getJSlider() {
+        return getJSliderFromSource(true);
+    }
+    
     public Class<Integer> getWriteType() {
         JSlider component;
         

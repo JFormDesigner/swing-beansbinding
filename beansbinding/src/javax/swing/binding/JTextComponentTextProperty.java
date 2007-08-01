@@ -85,6 +85,10 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
         }
     }
 
+    public JTextComponent getJTextComponent() {
+        return getJTextComponentFromSource(true);
+    }
+    
     public Class<String> getWriteType() {
         if (isListening()) {
             validateCache(-1);
