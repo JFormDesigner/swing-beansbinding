@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+ Copyright (C) 2007 Sun Microsystems, Inc. All rights reserved. Use is
+ subject to license terms.
+-->
+
+<html>
+  <head>
+    <title></title>
+  </head>
+  <body>
+  <p>
+  The classes in this package provide a way to create a binding between two
+  properties. This is done by creating an instance of {@code Binding} with
+  two {@code Property} objects.
+  <p>
+  A {@code Property} is an interface representing the concept of a property.
+  Concrete implementations include {@code BeanProperty}, which uses reflection
+  to access JavaBean properties, and {@code ELProperty}, which uses the EL
+  expression language.
+  <p>
+  A {@code Binding} is initially unrealized, with no changes made, and no
+  listeners installed. To realize a binding, invoke the {@code bind} method.
+  Once bound, any changes to the value of either property is reflected by
+  setting the value of the opposite property, according to the Binding's
+  {@code AutoUpdateStrategy}.
+  <p>
+  The following example illustrates an minimal example of creating a binding
+  between two JavaBean properties:
+  <pre>
+    Property source = new BeanProperty(sourceBean, "sourcePath");
+    Property target = new BeanProperty(targetBean, "targetPath");
+    Binding binding = new Binding(source, target);
+    binding.bind();
+  </pre>
+  <p>
+  Before a value is applied to either the target, or source, it passes through
+  a {@code Converter}. Before a value is set on the source from the target,
+  it passes first through the {@code Converter}, and then through a
+  {@code Validator}, which may reject the change.
+  </body>
+</html>
