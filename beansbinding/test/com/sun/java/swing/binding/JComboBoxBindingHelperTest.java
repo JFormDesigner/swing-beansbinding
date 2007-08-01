@@ -8,7 +8,7 @@ package com.sun.java.swing.binding;
 import com.sun.java.util.BindingCollections;
 import java.util.ArrayList;
 import javax.beans.binding.TestBean;
-import javax.swing.binding.ParameterKeys;
+import javax.swing.OLDBINDING.ParameterKeys;
 import junit.framework.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

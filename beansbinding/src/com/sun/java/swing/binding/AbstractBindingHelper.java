@@ -12,7 +12,7 @@ import javax.beans.OLDBINDING.ext.BindingTargetProvider;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.beans.OLDBINDING.Binding.BindingController;
-import javax.swing.binding.ParameterKeys;
+import javax.swing.OLDBINDING.ParameterKeys;
 
 /**
  *
@@ -25,15 +25,11 @@ abstract class AbstractBindingHelper implements BindingTarget {
     static final String SELECTED_ELEMENTS_P = "selectedElements";
     static final String SELECTED_ELEMENT_P = "selectedElement";
     
-    static final String JCHECK_BOX_SELECTED_P = "selected";
-    
     static final String JCOMBO_BOX_SELECTED_ELEMENT_P = "selectedElementProperty";
 
     static final String JTEXT_COMPONENT_TEXT_P = "text";
     
     static final String JTREE_ROOT_P = "root";
-
-    static final String VALUE_P = "value";
     
     protected boolean shouldCreateBindingTarget(String property) {
         return false;
