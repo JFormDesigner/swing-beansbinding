@@ -16,6 +16,8 @@ public interface BindingListener extends EventListener {
     public void targetUnreadable(Binding<?, ?> binding);
     public void sourceUnwriteable(Binding<?, ?> binding);
 
+    public void targetEdited(Binding<?, ?> binding);
+
     public void conversionFailed(Binding<?, ?> binding, RuntimeException exception);
     public void validationFailed(Binding<?, ?> binding, Validator.Result result);
 
