@@ -18,7 +18,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class JTextComponentTextProperty extends AbstractProperty<String> implements Property<String> {
+public final class JTextComponentTextProperty extends AbstractProperty<String> implements SourceableProperty<JTextComponent, String> {
 
     private Object source;
     private JTextComponent cachedComponent;
@@ -70,6 +70,15 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
         setSource0(property);
     }
 
+    public JTextComponent getSource() {
+        if (isListening()) {
+            validateCache(-1);
+            return cachedComponent;
+        }
+
+        return getJTextComponentFromSource(false);
+    }
+    
     private void setSource0(Object object) {
         if (isListening()) {
             validateCache(-1);
