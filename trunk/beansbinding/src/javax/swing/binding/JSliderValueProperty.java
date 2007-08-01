@@ -65,10 +65,6 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
             updateCachedValue();
         }
     }
-
-    public JSlider getJSlider() {
-        return getJSliderFromSource(true);
-    }
     
     public Class<Integer> getWriteType() {
         JSlider component;
