@@ -13,7 +13,7 @@ import javax.swing.*;
  */
 public class SwingBinding<S, T> extends Binding<S, T> {
 
-    private boolean disableTargetOnUnwriteableSource;
+    private boolean disableTargetOnUnwriteableSource = true;
     private boolean originalEnabled;
 
     public SwingBinding(Property<S> source, Property<T> target) {
