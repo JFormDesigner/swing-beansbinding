@@ -66,17 +66,16 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
     }
 
     public Class<Integer> getWriteType() {
+        JSlider component;
+        
         if (isListening()) {
             validateCache(-1);
-
-            if (cachedComponent == null) {
-                throw new UnsupportedOperationException("Unwriteable");
-            }
-
-            return Integer.class;
+            component = cachedComponent;
+        } else {
+            component = getJSliderFromSource(true);
         }
 
-        if (getJSliderFromSource(true) == null) {
+        if (component == null) {
             throw new UnsupportedOperationException("Unwriteable");
         }
 
@@ -102,30 +101,23 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         return comp.getValue();
     }
 
-    public void setValue(String value) {
+    public void setValue(Integer value) {
+        JSlider component;
+
         if (isListening()) {
             validateCache(-1);
-
-            if (cachedComponent == null) {
-                throw new UnsupportedOperationException("Unwriteable");
-            }
-
-            try {
-                ignoreChange = true;
-                cachedComponent.setValue(value);
-            } finally {
-                ignoreChange = false;
-            }
+            component = cachedComponent;
+        } else {
+            component = getJSliderFromSource(true);
         }
 
-        JSlider comp = getJSliderFromSource(true);
-        if (comp == null) {
+        if (component == null) {
             throw new UnsupportedOperationException("Unwriteable");
         }
 
         try {
             ignoreChange = true;
-            comp.setValue(value);
+            component.setValue(value);
         } finally {
             ignoreChange = false;
         }
