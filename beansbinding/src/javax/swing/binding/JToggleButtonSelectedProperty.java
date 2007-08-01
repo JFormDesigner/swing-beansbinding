@@ -16,32 +16,32 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> implements Property<Boolean> {
+public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolean> implements Property<Boolean> {
 
     private Object source;
-    private JCheckBox cachedComponent;
+    private JToggleButton cachedComponent;
     private Object cachedValue;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
 
     private static final Object NOREAD = new Object();
 
-    public JCheckBoxSelectedProperty() {
+    public JToggleButtonSelectedProperty() {
     }
 
-    public JCheckBoxSelectedProperty(JCheckBox component) {
+    public JToggleButtonSelectedProperty(JToggleButton component) {
         this.source = component;
     }
 
-    public JCheckBoxSelectedProperty(Property<? extends JCheckBox> property) {
+    public JToggleButtonSelectedProperty(Property<? extends JToggleButton> property) {
         this.source = property;
     }
 
-    public void setSource(JCheckBox component) {
+    public void setSource(JToggleButton component) {
         setSource0(component);
     }
 
-    public void setSource(Property<? extends JCheckBox> property) {
+    public void setSource(Property<? extends JToggleButton> property) {
         setSource0(property);
     }
 
@@ -67,13 +67,13 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
     }
 
     public Class<Boolean> getWriteType() {
-        JCheckBox component;
+        JToggleButton component;
         
         if (isListening()) {
             validateCache(-1);
             component = cachedComponent;
         } else {
-            component = getJCheckBoxFromSource(true);
+            component = getJToggleButtonFromSource(true);
         }
 
         if (component == null) {
@@ -94,7 +94,7 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
             return (Boolean)cachedValue;
         }
 
-        JCheckBox comp = getJCheckBoxFromSource(true);
+        JToggleButton comp = getJToggleButtonFromSource(true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
@@ -103,13 +103,13 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
     }
 
     public void setValue(Boolean value) {
-        JCheckBox component;
+        JToggleButton component;
 
         if (isListening()) {
             validateCache(-1);
             component = cachedComponent;
         } else {
-            component = getJCheckBoxFromSource(true);
+            component = getJToggleButtonFromSource(true);
         }
 
         if (component == null) {
@@ -135,7 +135,7 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
             return cachedIsReadable();
         }
 
-        return (getJCheckBoxFromSource(true) != null);
+        return (getJToggleButtonFromSource(true) != null);
     }
 
     public boolean isWriteable() {
@@ -144,30 +144,30 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
             return cachedIsWriteable();
         }
 
-        return (getJCheckBoxFromSource(true) != null);
+        return (getJToggleButtonFromSource(true) != null);
     }
 
-    private JCheckBox getJCheckBoxFromSource(boolean logErrors) {
+    private JToggleButton getJToggleButtonFromSource(boolean logErrors) {
         if (source == null) {
             if (logErrors) {
-                System.err.println(hashCode() + ": LOG: getJCheckBoxFromSource(): source is null");
+                System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): source is null");
             }
             return null;
         }
 
         if (source instanceof Property) {
-            Property<? extends JCheckBox> prop = (Property<? extends JCheckBox>)source;
+            Property<? extends JToggleButton> prop = (Property<? extends JToggleButton>)source;
             if (!prop.isReadable()) {
                 if (logErrors) {
-                    System.err.println(hashCode() + ": LOG: getJCheckBoxFromSource(): unreadable source property");
+                    System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): unreadable source property");
                 }
                 return null;
             }
 
-            JCheckBox slider = prop.getValue();
+            JToggleButton slider = prop.getValue();
             if (slider == null) {
                 if (logErrors) {
-                    System.err.println(hashCode() + ": LOG: getJCheckBoxFromSource(): source property returned null");
+                    System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): source property returned null");
                 }
                 return null;
             }
@@ -175,7 +175,7 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
             return slider;
         }
 
-        return (JCheckBox)source;
+        return (JToggleButton)source;
     }
 
     protected final void listeningStarted() {
@@ -213,7 +213,7 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
         //    return;
         //}
 
-        if (flag != 0 && getJCheckBoxFromSource(false) != cachedComponent) {
+        if (flag != 0 && getJToggleButtonFromSource(false) != cachedComponent) {
             throw new ConcurrentModificationException();
         }
 
@@ -226,7 +226,7 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
     }
 
     private void updateCachedComponent() {
-        JCheckBox comp = getJCheckBoxFromSource(true);
+        JToggleButton comp = getJToggleButtonFromSource(true);
 
         if (comp != cachedComponent) {
             if (cachedComponent != null) {
@@ -309,7 +309,7 @@ public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> i
     }
 
     public String toString() {
-        return "JCheckBox.value";
+        return "JToggleButton.value";
     }
 
     private ChangeHandler getChangeHandler() {
