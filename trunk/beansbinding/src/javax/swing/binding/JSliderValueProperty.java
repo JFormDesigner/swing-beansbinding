@@ -16,7 +16,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class JSliderValueProperty extends AbstractProperty<Integer> implements Property<Integer> {
+public final class JSliderValueProperty extends AbstractProperty<Integer> implements SourceableProperty<JSlider, Integer> {
 
     private Object source;
     private JSlider cachedComponent;
@@ -43,6 +43,15 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
 
     public void setSource(Property<? extends JSlider> property) {
         setSource0(property);
+    }
+
+    public JSlider getSource() {
+        if (isListening()) {
+            validateCache(-1);
+            return cachedComponent;
+        }
+
+        return getJSliderFromSource(false);
     }
 
     private void setSource0(Object object) {

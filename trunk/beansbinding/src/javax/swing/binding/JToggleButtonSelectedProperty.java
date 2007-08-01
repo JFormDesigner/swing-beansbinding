@@ -16,7 +16,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolean> implements Property<Boolean> {
+public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolean> implements SourceableProperty<JToggleButton, Boolean> {
 
     private Object source;
     private JToggleButton cachedComponent;
@@ -45,6 +45,15 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
         setSource0(property);
     }
 
+    public JToggleButton getSource() {
+        if (isListening()) {
+            validateCache(-1);
+            return cachedComponent;
+        }
+
+        return getJToggleButtonFromSource(false);
+    }
+    
     private void setSource0(Object object) {
         if (isListening()) {
             validateCache(-1);
