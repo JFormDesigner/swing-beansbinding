@@ -66,6 +66,10 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
         }
     }
 
+    public JToggleButton getJToggleButton() {
+        return getJToggleButtonFromSource(true);
+    }
+
     public Class<Boolean> getWriteType() {
         JToggleButton component;
         
