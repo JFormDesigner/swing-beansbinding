@@ -205,22 +205,17 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
     }
 
     // flag -1 - validate all
-    // level 0 - source property changed value or readability
-    // level 1 - value changed
+    // flag  0 - source property changed value or readability
+    // flag  1 - value changed
     private void validateCache(int flag) {
-        // PENDING(shannonh) - enable this via a property
-        //if (true) {
-        //    return;
-        //}
-
         if (flag != 0 && getJSliderFromSource(false) != cachedComponent) {
-            throw new ConcurrentModificationException();
+            System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
         }
 
         if (flag != 1) {
             Object value = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
             if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
-                throw new ConcurrentModificationException();
+                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
             }
         }
     }

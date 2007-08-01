@@ -7,7 +7,10 @@ package javax.swing.binding;
 
 import javax.beans.binding.*;
 import java.beans.*;
+import javax.swing.*;
 import javax.swing.text.*;
+import javax.swing.event.*;
+import java.awt.event.*;
 import java.util.ConcurrentModificationException;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
@@ -19,10 +22,14 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
 
     private Object source;
     private JTextComponent cachedComponent;
+    private Document cachedDocument;
     private Object cachedValue;
+    private Object liveValue;
     private boolean cachedIsWriteable;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
+    private boolean inDocumentListener;
+    private boolean installedFilter;
     private ChangeStrategy strategy = ChangeStrategy.ON_ACTION_OR_FOCUS_LOST;
 
     public enum ChangeStrategy {
@@ -79,9 +86,7 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
                 ((Property)source).addPropertyStateListener(getChangeHandler());
             }
 
-            updateCachedComponent();
-            updateCachedValue();
-            updateCachedIsWriteable();
+            updateEntireCache();
         }
     }
     
@@ -138,6 +143,7 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
                 ignoreChange = true;
                 cachedComponent.setText(value);
                 Object oldValue = cachedValue;
+                updateLiveValue();
                 updateCachedValue();
                 notifyListeners(cachedIsWriteable, oldValue);
             } finally {
@@ -224,62 +230,70 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
             ((Property)source).addPropertyStateListener(getChangeHandler());
         }
 
-        updateCachedComponent();
-        updateCachedValue();
-        updateCachedIsWriteable();
+        updateEntireCache();
     }
 
     protected final void listeningStopped() {
         if (changeHandler != null) {
-
-            // unregister listener on text component
+            uninstallComponentListeners();
 
             if (source instanceof Property) {
                 ((Property)source).removePropertyStateListener(changeHandler);
             }
-
-            if (cachedComponent != null) {
-                cachedComponent.removePropertyChangeListener("editable", changeHandler);
-            }
         }
 
         cachedComponent = null;
+        liveValue = null;
         cachedValue = null;
         cachedIsWriteable = false;
         changeHandler = null;
     }
 
     // flag -1 - validate all
-    // level 0 - source property changed value or readability
-    // level 1 - value changed
-    // level 2 - editability of text field changed
+    // flag  0 - source property changed value or readability
+    // flag  1 - document changed
+    // flag  2 - value changed
+    // flag  3 - editability of text field changed
+    // 
     private void validateCache(int flag) {
-        // PENDING(shannonh) - enable this via a property
-        //if (true) {
-        //    return;
-        //}
-
         if (flag != 0 && getJTextComponentFromSource(false) != cachedComponent) {
-            throw new ConcurrentModificationException();
+            System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
         }
 
         Object value;
         boolean writeable;
+        Document document;
 
         if (cachedComponent == null) {
             value = NOREAD;
             writeable = false;
+            document = null;
         } else {
             value = cachedComponent.getText();
             writeable = cachedComponent.isEditable();
+            document = cachedComponent.getDocument();
         }
 
-        if (flag != 1 && cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
-            throw new ConcurrentModificationException();
+        if (flag != 1 && cachedDocument != document && (cachedDocument == null || !cachedDocument.equals(document))) {
+            System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
         }
 
-        if (flag != 2 && writeable != cachedIsWriteable) {
-            throw new ConcurrentModificationException();
+        if (flag != 2 && liveValue != value && (liveValue == null || !liveValue.equals(value))) {
+            System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
+        }
+
+        if (flag != 3 && writeable != cachedIsWriteable) {
+            System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
+        }
+    }
+
+    private void updateCachedDocument() {
+        Document d = (cachedComponent == null ? null : cachedComponent.getDocument());
+
+        if (d != cachedDocument) {
+            uninstallDocumentListener();
+            cachedDocument = d;
+            installDocumentListener();
         }
     }
 
@@ -287,24 +301,94 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
         JTextComponent comp = getJTextComponentFromSource(true);
 
         if (comp != cachedComponent) {
-            if (cachedComponent != null) {
-                cachedComponent.removePropertyChangeListener("editable", changeHandler);
-            }
-
-            // unregister listener on old
-
+            uninstallComponentListeners();
             cachedComponent = comp;
-            
-            if (cachedComponent != null) {
-                cachedComponent.addPropertyChangeListener("editable", getChangeHandler());
-            }
-
-            // register listener on new
+            installComponentListeners();
         }
     }
 
+    private void installDocumentListener() {
+        if (cachedDocument == null) {
+            return;
+        }
+
+        boolean useDocumentFilter = !(cachedComponent instanceof JFormattedTextField);
+
+        if (useDocumentFilter && (cachedDocument instanceof AbstractDocument) &&
+                                 ((AbstractDocument)cachedDocument).getDocumentFilter() == null) {
+            ((AbstractDocument)cachedDocument).setDocumentFilter(getChangeHandler());
+            installedFilter = true;
+        } else {
+            cachedDocument.addDocumentListener(getChangeHandler());
+            installedFilter = false;
+        }
+    }
+
+    private void uninstallDocumentListener() {
+        if (cachedDocument == null) {
+            return;
+        }
+
+        if (installedFilter) {
+            AbstractDocument ad = (AbstractDocument)cachedDocument;
+            if (ad.getDocumentFilter() == changeHandler) {
+                ad.setDocumentFilter(null);
+            }
+        } else {
+            cachedDocument.removeDocumentListener(changeHandler);
+        }
+    }
+    
+    private void installComponentListeners() {
+        if (cachedComponent == null) {
+            return;
+        }
+
+        cachedComponent.addPropertyChangeListener(getChangeHandler());
+
+        if (strategy != ChangeStrategy.ON_TYPE) {
+            cachedComponent.addFocusListener(getChangeHandler());
+        }
+
+        if (strategy == ChangeStrategy.ON_ACTION_OR_FOCUS_LOST
+                                   && (cachedComponent instanceof JTextField)) {
+
+            ((JTextField)cachedComponent).addActionListener(getChangeHandler());
+        }
+    }
+
+    private void uninstallComponentListeners() {
+        if (cachedComponent == null) {
+            return;
+        }
+
+        cachedComponent.removePropertyChangeListener(changeHandler);
+
+        if (strategy != ChangeStrategy.ON_TYPE) {
+            cachedComponent.removeFocusListener(changeHandler);
+        }
+
+        if (strategy == ChangeStrategy.ON_ACTION_OR_FOCUS_LOST
+                                   && (cachedComponent instanceof JTextField)) {
+
+            ((JTextField)cachedComponent).removeActionListener(changeHandler);
+        }
+    }
+
+    private void updateEntireCache() {
+        updateCachedComponent();
+        updateCachedDocument();
+        updateLiveValue();
+        updateCachedValue();
+        updateCachedIsWriteable();
+    }
+    
+    private void updateLiveValue() {
+        liveValue = (cachedComponent == null ? NOREAD : cachedComponent.getText());
+    }
+
     private void updateCachedValue() {
-        cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.getText());
+        cachedValue = liveValue;
     }
 
     private void updateCachedIsWriteable() {
@@ -355,6 +439,8 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
         Object oldValue = cachedValue;
         boolean wasWriteable = cachedIsWriteable;
         updateCachedComponent();
+        updateCachedDocument();
+        updateLiveValue();
         updateCachedValue();
         updateCachedIsWriteable();
         notifyListeners(wasWriteable, oldValue);
@@ -366,7 +452,31 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
         updateCachedIsWriteable();
         notifyListeners(wasWriteable, cachedValue);
     }
+
+    private void documentChanged() {
+    }
+
+    private void actionWasPerformed() {
+    }
     
+    private void focusWasLost() {
+    }
+
+    private void documentTextChanged() {
+        try {
+            inDocumentListener = true;
+            textChanged();
+        } finally {
+            inDocumentListener = false;
+        }
+    }
+
+    private void textChanged() {
+        if (ignoreChange) {
+            return;
+        }
+    }
+
     public String toString() {
         return "JTextComponent.text";
     }
@@ -378,16 +488,68 @@ public final class JTextComponentTextProperty extends AbstractProperty<String> i
         return changeHandler;
     }
     
-    private final class ChangeHandler implements PropertyStateListener, PropertyChangeListener {
+    private final class ChangeHandler extends DocumentFilter implements
+                        ActionListener, DocumentListener, FocusListener,
+                        PropertyChangeListener, PropertyStateListener {
+
         public void propertyStateChanged(PropertyStateEvent pe) {
             bindingPropertyChanged(pe);
         }
 
         public void propertyChange(PropertyChangeEvent pce) {
-            if (pce.getPropertyName() == "editable") {
+            String name = pce.getPropertyName();
+
+            if (name == "editable") {
                 textComponentEditabilityChanged();
+            } else if (name == "document") {
+                documentChanged();
             }
         }
+
+        public void actionPerformed(ActionEvent e) {
+            actionWasPerformed();
+        }
+
+        public void focusLost(FocusEvent e) {
+            if (!e.isTemporary()) {
+                focusWasLost();
+            }
+        }
+
+        public void insertUpdate(DocumentEvent e) {
+            documentTextChanged();
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            documentTextChanged();
+        }
+
+        public void replace(DocumentFilter.FilterBypass fb, int offset,
+                            int length, String text, AttributeSet attrs)
+                            throws BadLocationException {
+
+            super.replace(fb, offset, length, text, attrs);
+            textChanged();
+        }
+
+        public void insertString(DocumentFilter.FilterBypass fb, int offset,
+                                 String string, AttributeSet attr)
+                                 throws BadLocationException {
+
+            super.insertString(fb, offset, string, attr);
+            textChanged();
+        }
+
+        public void remove(DocumentFilter.FilterBypass fb, int offset, int length)
+                           throws BadLocationException {
+
+            super.remove(fb, offset, length);
+            textChanged();
+        }
+
+        public void focusGained(FocusEvent e) {}
+        public void changedUpdate(DocumentEvent e) {}
+
     }
 
 }

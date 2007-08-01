@@ -656,11 +656,6 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
     }
 
     private void validateCache(int ignore) {
-        // PENDING(shannonh) - add API to turn this on
-        if (true) {
-            return;
-        }
-
         for (int i = 0; i < path.length() - 1; i++) {
            if (i == ignore - 1) {
                continue;
@@ -675,14 +670,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             Object next = getProperty(src, path.get(i));
 
             if (!match(next, cache[i + 1])) {
-                throw new ConcurrentModificationException();
+                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
             }
         }
 
         if (path.length() != ignore) {
             Object next = getProperty(cache[path.length() - 1], path.getLast());
             if (!match(cachedValue, next)) {
-                throw new ConcurrentModificationException();
+                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
             }
 
             Object src = cache[path.length() - 1];
@@ -694,7 +689,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             }
 
             if (cachedWriter != writer && (cachedWriter == null || !cachedWriter.equals(writer))) {
-                throw new ConcurrentModificationException();
+                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
             }
         }
     }
@@ -794,7 +789,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             } else if (valueChanged) {
                 Object writer = getWriter(pse.getSource(), path.getLast());
                 if (cachedWriter != writer) {
-                    throw new ConcurrentModificationException();
+                    System.err.println(hashCode() + ": LOG: bindingPropertyChanged(): concurrent modification");
                 }
                 Object oldValue = cachedValue;
                 updateCachedValue();
@@ -802,7 +797,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             } else {
                 Object value = pse.getSource().getValue();
                 if (cachedValue != value) {
-                    throw new ConcurrentModificationException();
+                    System.err.println(hashCode() + ": LOG: bindingPropertyChanged(): concurrent modification");
                 }
                 boolean wasWriteable = cachedIsWriteable();
                 updateCachedWriter();
