@@ -8,7 +8,7 @@ package javax.swing.binding;
 import javax.beans.binding.*;
 import java.beans.*;
 import javax.swing.*;
-import javax.swing.event.*;
+import java.awt.event.*;
 import java.util.ConcurrentModificationException;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
@@ -16,32 +16,32 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class JSliderValueProperty extends AbstractProperty<Integer> implements Property<Integer> {
+public final class JCheckBoxSelectedProperty extends AbstractProperty<Boolean> implements Property<Boolean> {
 
     private Object source;
-    private JSlider cachedComponent;
+    private JCheckBox cachedComponent;
     private Object cachedValue;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
 
     private static final Object NOREAD = new Object();
 
-    public JSliderValueProperty() {
+    public JCheckBoxSelectedProperty() {
     }
 
-    public JSliderValueProperty(JSlider component) {
+    public JCheckBoxSelectedProperty(JCheckBox component) {
         this.source = component;
     }
 
-    public JSliderValueProperty(Property<? extends JSlider> property) {
+    public JCheckBoxSelectedProperty(Property<? extends JCheckBox> property) {
         this.source = property;
     }
 
-    public void setSource(JSlider component) {
+    public void setSource(JCheckBox component) {
         setSource0(component);
     }
 
-    public void setSource(Property<? extends JSlider> property) {
+    public void setSource(Property<? extends JCheckBox> property) {
         setSource0(property);
     }
 
@@ -66,24 +66,24 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         }
     }
 
-    public Class<Integer> getWriteType() {
-        JSlider component;
+    public Class<Boolean> getWriteType() {
+        JCheckBox component;
         
         if (isListening()) {
             validateCache(-1);
             component = cachedComponent;
         } else {
-            component = getJSliderFromSource(true);
+            component = getJCheckBoxFromSource(true);
         }
 
         if (component == null) {
             throw new UnsupportedOperationException("Unwriteable");
         }
 
-        return Integer.class;
+        return Boolean.class;
     }
 
-    public Integer getValue() {
+    public Boolean getValue() {
         if (isListening()) {
             validateCache(-1);
 
@@ -91,25 +91,25 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
                 throw new UnsupportedOperationException("Unreadable");
             }
 
-            return (Integer)cachedValue;
+            return (Boolean)cachedValue;
         }
 
-        JSlider comp = getJSliderFromSource(true);
+        JCheckBox comp = getJCheckBoxFromSource(true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
 
-        return comp.getValue();
+        return comp.isSelected();
     }
 
-    public void setValue(Integer value) {
-        JSlider component;
+    public void setValue(Boolean value) {
+        JCheckBox component;
 
         if (isListening()) {
             validateCache(-1);
             component = cachedComponent;
         } else {
-            component = getJSliderFromSource(true);
+            component = getJCheckBoxFromSource(true);
         }
 
         if (component == null) {
@@ -118,7 +118,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
 
         try {
             ignoreChange = true;
-            component.setValue(value);
+            component.setSelected(value);
             if (isListening()) {
                 Object oldValue = cachedValue;
                 updateCachedValue();
@@ -135,7 +135,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
             return cachedIsReadable();
         }
 
-        return (getJSliderFromSource(true) != null);
+        return (getJCheckBoxFromSource(true) != null);
     }
 
     public boolean isWriteable() {
@@ -144,30 +144,30 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
             return cachedIsWriteable();
         }
 
-        return (getJSliderFromSource(true) != null);
+        return (getJCheckBoxFromSource(true) != null);
     }
 
-    private JSlider getJSliderFromSource(boolean logErrors) {
+    private JCheckBox getJCheckBoxFromSource(boolean logErrors) {
         if (source == null) {
             if (logErrors) {
-                System.err.println(hashCode() + ": LOG: getJSliderFromSource(): source is null");
+                System.err.println(hashCode() + ": LOG: getJCheckBoxFromSource(): source is null");
             }
             return null;
         }
 
         if (source instanceof Property) {
-            Property<? extends JSlider> prop = (Property<? extends JSlider>)source;
+            Property<? extends JCheckBox> prop = (Property<? extends JCheckBox>)source;
             if (!prop.isReadable()) {
                 if (logErrors) {
-                    System.err.println(hashCode() + ": LOG: getJSliderFromSource(): unreadable source property");
+                    System.err.println(hashCode() + ": LOG: getJCheckBoxFromSource(): unreadable source property");
                 }
                 return null;
             }
 
-            JSlider slider = prop.getValue();
+            JCheckBox slider = prop.getValue();
             if (slider == null) {
                 if (logErrors) {
-                    System.err.println(hashCode() + ": LOG: getJSliderFromSource(): source property returned null");
+                    System.err.println(hashCode() + ": LOG: getJCheckBoxFromSource(): source property returned null");
                 }
                 return null;
             }
@@ -175,7 +175,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
             return slider;
         }
 
-        return (JSlider)source;
+        return (JCheckBox)source;
     }
 
     protected final void listeningStarted() {
@@ -191,7 +191,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         if (changeHandler != null) {
 
             if (cachedComponent != null) {
-                cachedComponent.removeChangeListener(changeHandler);
+                cachedComponent.removeItemListener(changeHandler);
             }
 
             if (source instanceof Property) {
@@ -213,12 +213,12 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         //    return;
         //}
 
-        if (flag != 0 && getJSliderFromSource(false) != cachedComponent) {
+        if (flag != 0 && getJCheckBoxFromSource(false) != cachedComponent) {
             throw new ConcurrentModificationException();
         }
 
         if (flag != 1) {
-            Object value = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
+            Object value = (cachedComponent == null ? NOREAD : cachedComponent.isSelected());
             if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
                 throw new ConcurrentModificationException();
             }
@@ -226,23 +226,23 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
     }
 
     private void updateCachedComponent() {
-        JSlider comp = getJSliderFromSource(true);
+        JCheckBox comp = getJCheckBoxFromSource(true);
 
         if (comp != cachedComponent) {
             if (cachedComponent != null) {
-                cachedComponent.removeChangeListener(changeHandler);
+                cachedComponent.removeItemListener(changeHandler);
             }
 
             cachedComponent = comp;
             
             if (cachedComponent != null) {
-                cachedComponent.addChangeListener(getChangeHandler());
+                cachedComponent.addItemListener(getChangeHandler());
             }
         }
     }
 
     private void updateCachedValue() {
-        cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
+        cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.isSelected());
     }
 
     private boolean cachedIsReadable() {
@@ -297,7 +297,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         notifyListeners(wasWriteable, oldValue);
     }
 
-    private void sliderValueChanged() {
+    private void checkBoxValueChanged() {
         if (ignoreChange) {
             return;
         }
@@ -309,7 +309,7 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
     }
 
     public String toString() {
-        return "JSlider.value";
+        return "JCheckBox.value";
     }
 
     private ChangeHandler getChangeHandler() {
@@ -319,13 +319,13 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         return changeHandler;
     }
     
-    private final class ChangeHandler implements PropertyStateListener, ChangeListener {
+    private final class ChangeHandler implements PropertyStateListener, ItemListener {
         public void propertyStateChanged(PropertyStateEvent pe) {
             bindingPropertyChanged(pe);
         }
 
-        public void stateChanged(ChangeEvent ce) {
-            sliderValueChanged();
+        public void itemStateChanged(ItemEvent ie) {
+            checkBoxValueChanged();
         }
     }
 
