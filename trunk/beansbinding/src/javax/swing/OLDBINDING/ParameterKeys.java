@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.swing.binding;
+package javax.swing.OLDBINDING;
 
 import javax.beans.OLDBINDING.Binding.ParameterKey;
 
@@ -35,16 +35,6 @@ public class ParameterKeys {
      */
     public static final ParameterKey<Boolean> EDITABLE =
             new ParameterKey<Boolean>("EDITABLE");
-
-    /**
-     * Key used to specify when the "text" property of text components should
-     * be considered changed. If not specified, the default value is
-     * {@code TextChangeStrategy.ON_ACTION_OR_FOCUS_LOST}.
-     *
-     * @see TextChangeStrategy
-     */
-    public static final ParameterKey<TextChangeStrategy> TEXT_CHANGE_STRATEGY =
-            new ParameterKey<TextChangeStrategy>("TEXT_CHANGE_STRATEGY");
 
     /**
      * Key used to specify the column that a binding applies to.

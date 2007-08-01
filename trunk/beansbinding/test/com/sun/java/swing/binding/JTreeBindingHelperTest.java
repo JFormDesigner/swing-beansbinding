@@ -13,7 +13,7 @@ import com.sun.java.util.BindingCollections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.binding.ParameterKeys;
+import javax.swing.OLDBINDING.ParameterKeys;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeSelectionModel;

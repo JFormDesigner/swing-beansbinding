@@ -11,7 +11,7 @@ import com.sun.java.util.BindingCollections;
 import java.awt.Component;
 import javax.beans.binding.Binding;
 import javax.swing.ListCellRenderer;
-import javax.swing.binding.ParameterKeys;
+import javax.swing.OLDBINDING.ParameterKeys;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import junit.framework.*;

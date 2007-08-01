@@ -20,7 +20,7 @@ import javax.el.Expression;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.binding.ParameterKeys;
+import javax.swing.OLDBINDING.ParameterKeys;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 

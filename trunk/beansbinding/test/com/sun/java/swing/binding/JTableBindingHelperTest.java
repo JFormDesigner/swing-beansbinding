@@ -7,7 +7,7 @@ package com.sun.java.swing.binding;
 
 import javax.swing.CellRendererPane;
 import javax.swing.JTextField;
-import javax.swing.binding.ParameterKeys;
+import javax.swing.OLDBINDING.ParameterKeys;
 import junit.framework.*;
 import javax.beans.binding.Binding;
 import javax.beans.binding.BindingContext;
