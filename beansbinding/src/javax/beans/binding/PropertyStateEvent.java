@@ -33,6 +33,10 @@ public final class PropertyStateEvent extends EventObject {
             throw new IllegalArgumentException("Nothing has changed");
         }
 
+        if (valueChanged && oldValue == UNREADABLE && newValue == UNREADABLE) {
+            throw new IllegalArgumentException("Value can't change from UNREADABLE to UNREADABLE");
+        }
+        
         this.valueChanged = valueChanged;
         this.oldValue = oldValue;
         this.newValue = newValue;
