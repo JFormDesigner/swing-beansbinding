@@ -341,7 +341,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             return object;
         }
 
-        if (object instanceof Property) {
+        if (object instanceof Property && string.equals("value")) {
             Property prop = (Property)object;
             if (!prop.isReadable()) {
                 return null;
@@ -368,6 +368,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
 
         if (reader instanceof Property) {
             assert reader == object;
+            assert string.equals("value");
             return ((Property)reader).getValue();
         }
         
@@ -422,7 +423,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             return object;
         }
 
-        if (object instanceof Property) {
+        if (object instanceof Property && string.equals("value")) {
             Property prop = (Property)object;
             if (!prop.isWriteable()) {
                 return null;
@@ -452,6 +453,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             
             if (writer instanceof Property) {
                 assert writer == object;
+                assert string.equals("value");
                 ((Property)writer).setValue(value);
                 return;
             }
@@ -541,7 +543,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).addObservableMapListener(
                         getChangeHandler());
-            } else if (object instanceof Property) {
+            } else if (object instanceof Property && string.equals("value")) {
                 ((Property)object).addPropertyStateListener(getChangeHandler());
             } else if (!(object instanceof Map)) {
                 addPropertyChangeListener(object);
@@ -558,7 +560,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).removeObservableMapListener(
                         getChangeHandler());
-            } else if (object instanceof Property) {
+            } else if (object instanceof Property && string.equals("value")) {
                 ((Property)object).addPropertyStateListener(getChangeHandler());
             } else if (!(object instanceof Map)) {
                 removePropertyChangeListener(object);
