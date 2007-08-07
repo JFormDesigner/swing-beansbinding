@@ -20,7 +20,7 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
     private List<T> elements;
     private boolean editable;
     private boolean editableSet;
-    private List columnBindings = new ArrayList<TableColumnBinding>();
+    private List<TableColumnBinding> columnBindings = new ArrayList<TableColumnBinding>();
 
     public JTableBinding(List<T> source, JTable target) {
         this(null, source, target);
@@ -72,19 +72,44 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
         return editableSet;
     }
 
-    public TableColumnBinding addColumnBinding(SourceableProperty source, int column) {
+    public TableColumnBinding addColumnBinding(SourceableProperty source) {
         throwIfBound();
-        TableColumnBinding binding = new TableColumnBinding(source, column);
+        if (source == null) {
+            throw new IllegalArgumentException("can't have null source");
+        }
+
+        TableColumnBinding binding = new TableColumnBinding(source);
         columnBindings.add(binding);
         return binding;
     }
 
-    public void removeColumnBinding(int column) {
+    public TableColumnBinding addColumnBinding(int index, SourceableProperty source) {
         throwIfBound();
+        if (source == null) {
+            throw new IllegalArgumentException("can't have null source");
+        }
+
+        TableColumnBinding binding = new TableColumnBinding(source);
+        columnBindings.add(index, binding);
+        return binding;
     }
 
-    public TableColumnBinding[] getColumnBindings() {
-        return null;
+    public boolean removeColumnBinding(TableColumnBinding binding) {
+        throwIfBound();
+        return columnBindings.remove(binding);
+    }
+    
+    public TableColumnBinding removeColumnBinding(int index) {
+        throwIfBound();
+        return columnBindings.remove(index);
+    }
+
+    public TableColumnBinding getColumnBinding(int index) {
+        return columnBindings.get(index);
+    }
+    
+    public List<TableColumnBinding> getColumnBindings() {
+        return Collections.unmodifiableList(columnBindings);
     }
 
     private void setup() {
@@ -102,17 +127,11 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
     public final class TableColumnBinding extends SwingBinding {
         private Class<?> columnClass;
         private boolean editable;
-        private int column;
 
-        public TableColumnBinding(SourceableProperty prop, int column) {
+        public TableColumnBinding(SourceableProperty prop) {
             super(prop, DUMMY_PROPERTY);
-            this.column = column;
         }
 
-        public int getColumn() {
-            return column;
-        }
-        
         public void setColumnClass(Class<?> columnClass) {
         }
 
