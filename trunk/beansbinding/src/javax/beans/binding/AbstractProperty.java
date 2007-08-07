@@ -81,6 +81,4 @@ public abstract class AbstractProperty<V> implements Property<V> {
         return listening;
     }
 
-    public abstract String toString();
-
 }
