@@ -27,6 +27,7 @@ public class Binding<S, T> {
     private List<BindingListener> listeners;
     private boolean targetEdited;
     private PropertyStateListener psl;
+    private boolean ignoreChange;
 
     public enum AutoUpdateStrategy {
         READ,
@@ -216,7 +217,13 @@ public class Binding<S, T> {
             targetValue = sourceUnreadableValue;
         }
 
-        target.setValue(targetValue);
+        try {
+            ignoreChange = true;
+            target.setValue(targetValue);
+        } finally {
+            ignoreChange = false;
+        }
+
         targetEdited = false;
 
         if (listeners != null) {
@@ -286,7 +293,13 @@ public class Binding<S, T> {
             }
         }
 
-        source.setValue(sourceValue);
+        try {
+            ignoreChange = true;
+            source.setValue(sourceValue);
+        } finally {
+            ignoreChange = false;
+        }
+
         targetEdited = false;
 
         if (listeners != null) {
@@ -347,6 +360,10 @@ public class Binding<S, T> {
 
     private class PSL implements PropertyStateListener {
         public void propertyStateChanged(PropertyStateEvent pse) {
+            if (ignoreChange) {
+                return;
+            }
+
             if (pse.getSource() == source) {
                 if (strategy == AutoUpdateStrategy.READ) {
                     if (pse.getValueChanged()) {
