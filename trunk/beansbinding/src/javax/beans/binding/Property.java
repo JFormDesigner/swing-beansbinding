@@ -26,6 +26,4 @@ public interface Property<V> {
 
     PropertyStateListener[] getPropertyStateListeners();
 
-    String toString();
-
 }
