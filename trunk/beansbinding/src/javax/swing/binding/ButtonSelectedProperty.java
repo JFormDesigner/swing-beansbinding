@@ -16,42 +16,42 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolean> implements SourceableProperty<JToggleButton, Boolean> {
+public final class ButtonSelectedProperty<T extends AbstractButton> extends AbstractProperty<Boolean> implements SourceableProperty<T, Boolean> {
 
     private Object source;
-    private JToggleButton cachedComponent;
+    private T cachedComponent;
     private Object cachedValue;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
 
     private static final Object NOREAD = new Object();
 
-    public JToggleButtonSelectedProperty() {
+    public ButtonSelectedProperty() {
     }
 
-    public JToggleButtonSelectedProperty(JToggleButton component) {
+    public ButtonSelectedProperty(T component) {
         this.source = component;
     }
 
-    public JToggleButtonSelectedProperty(Property<? extends JToggleButton> property) {
+    public ButtonSelectedProperty(Property<? extends T> property) {
         this.source = property;
     }
 
-    public void setSource(JToggleButton component) {
+    public void setSource(T component) {
         setSource0(component);
     }
 
-    public void setSource(Property<? extends JToggleButton> property) {
+    public void setSource(Property<? extends T> property) {
         setSource0(property);
     }
 
-    public JToggleButton getSource() {
+    public T getSource() {
         if (isListening()) {
             validateCache(-1);
             return cachedComponent;
         }
 
-        return getJToggleButtonFromSource(false);
+        return getButtonFromSource(false);
     }
     
     private void setSource0(Object object) {
@@ -76,13 +76,13 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
     }
 
     public Class<Boolean> getWriteType() {
-        JToggleButton component;
+        T component;
         
         if (isListening()) {
             validateCache(-1);
             component = cachedComponent;
         } else {
-            component = getJToggleButtonFromSource(true);
+            component = getButtonFromSource(true);
         }
 
         if (component == null) {
@@ -103,7 +103,7 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
             return (Boolean)cachedValue;
         }
 
-        JToggleButton comp = getJToggleButtonFromSource(true);
+        T comp = getButtonFromSource(true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
@@ -112,13 +112,13 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
     }
 
     public void setValue(Boolean value) {
-        JToggleButton component;
+        T component;
 
         if (isListening()) {
             validateCache(-1);
             component = cachedComponent;
         } else {
-            component = getJToggleButtonFromSource(true);
+            component = getButtonFromSource(true);
         }
 
         if (component == null) {
@@ -144,7 +144,7 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
             return cachedIsReadable();
         }
 
-        return (getJToggleButtonFromSource(true) != null);
+        return (getButtonFromSource(true) != null);
     }
 
     public boolean isWriteable() {
@@ -153,10 +153,10 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
             return cachedIsWriteable();
         }
 
-        return (getJToggleButtonFromSource(true) != null);
+        return (getButtonFromSource(true) != null);
     }
 
-    private JToggleButton getJToggleButtonFromSource(boolean logErrors) {
+    private T getButtonFromSource(boolean logErrors) {
         if (source == null) {
             if (logErrors) {
                 System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): source is null");
@@ -165,7 +165,7 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
         }
 
         if (source instanceof Property) {
-            Property<? extends JToggleButton> prop = (Property<? extends JToggleButton>)source;
+            Property<? extends T> prop = (Property<? extends T>)source;
             if (!prop.isReadable()) {
                 if (logErrors) {
                     System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): unreadable source property");
@@ -173,18 +173,18 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
                 return null;
             }
 
-            JToggleButton slider = prop.getValue();
-            if (slider == null) {
+            T button = prop.getValue();
+            if (button == null) {
                 if (logErrors) {
                     System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): source property returned null");
                 }
                 return null;
             }
 
-            return slider;
+            return button;
         }
 
-        return (JToggleButton)source;
+        return (T)source;
     }
 
     protected final void listeningStarted() {
@@ -217,7 +217,7 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
     // flag  0 - source property changed value or readability
     // flag  1 - value changed
     private void validateCache(int flag) {
-        if (flag != 0 && getJToggleButtonFromSource(false) != cachedComponent) {
+        if (flag != 0 && getButtonFromSource(false) != cachedComponent) {
             System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
         }
 
@@ -230,7 +230,7 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
     }
 
     private void updateCachedComponent() {
-        JToggleButton comp = getJToggleButtonFromSource(true);
+        T comp = getButtonFromSource(true);
 
         if (comp != cachedComponent) {
             if (cachedComponent != null) {
@@ -301,7 +301,7 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
         notifyListeners(wasWriteable, oldValue);
     }
 
-    private void checkBoxValueChanged() {
+    private void buttonSelectedChanged() {
         if (ignoreChange) {
             return;
         }
@@ -313,7 +313,7 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
     }
 
     public String toString() {
-        return "JToggleButton.value";
+        return "Button.isSelected";
     }
 
     private ChangeHandler getChangeHandler() {
@@ -329,7 +329,7 @@ public final class JToggleButtonSelectedProperty extends AbstractProperty<Boolea
         }
 
         public void itemStateChanged(ItemEvent ie) {
-            checkBoxValueChanged();
+            buttonSelectedChanged();
         }
     }
 
