@@ -33,8 +33,8 @@ public class SwingBinding<S, T> extends Binding<S, T> {
         return disableTargetOnUnwriteableSource;
     }
 
-    public void bind() {
-        super.bind();
+    protected void bindImpl() {
+        super.bindImpl();
         if (disableTargetOnUnwriteableSource && !getSource().isWriteable()) {
             JComponent comp = getComponentSource(getTarget());
             if (comp != null) {
@@ -44,8 +44,8 @@ public class SwingBinding<S, T> extends Binding<S, T> {
         }
     }
 
-    public void unbind() {
-        super.unbind();
+    protected void unbindImpl() {
+        super.unbindImpl();
         if (disableTargetOnUnwriteableSource) {
             JComponent comp = getComponentSource(getTarget());
             if (comp != null) {
