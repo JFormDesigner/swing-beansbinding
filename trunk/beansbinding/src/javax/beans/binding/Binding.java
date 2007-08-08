@@ -18,7 +18,7 @@ public class Binding<S, T> {
     private Property<T> target;
 
     private boolean bound;
-    private AutoUpdateStrategy strategy = AutoUpdateStrategy.READ_WRITE;
+    private AutoUpdateStrategy strategy;
     private Validator<? super S> validator;
     private Converter<S, T> converter;
     private T sourceNullValue;
@@ -27,6 +27,7 @@ public class Binding<S, T> {
     private List<BindingListener> listeners;
     private PropertyStateListener psl;
     private boolean ignoreChange;
+    private BindingGroup group;
 
     public enum AutoUpdateStrategy {
         READ,
@@ -101,7 +102,7 @@ public class Binding<S, T> {
         }
     }
 
-    public final class ValueResult<V> {
+    public static final class ValueResult<V> {
         private V value;
         private SyncFailure failure;
 
@@ -170,16 +171,17 @@ public class Binding<S, T> {
 
     public final void setAutoUpdateStrategy(AutoUpdateStrategy strategy) {
         throwIfBound();
-
-        if (strategy == null) {
-            throw new IllegalArgumentException("Update strategy may not be null");
-        }
-
         this.strategy = strategy;
     }
 
     public final AutoUpdateStrategy getAutoUpdateStrategy() {
-        return strategy;
+        if (strategy != null) {
+            return strategy;
+        } else if (group != null) {
+            return group.getAutoUpdateStrategy();
+        } else {
+            return AutoUpdateStrategy.READ_WRITE;
+        }
     }
 
     public final void setValidator(Validator<? super S> validator) {
@@ -339,16 +341,24 @@ public class Binding<S, T> {
         }
     }
 
-    public void bind() {
+    public final void bind() {
         throwIfBound();
         bound = true;
+        bindImpl();
+        if (group != null) {
+            group.bindingBound(this);
+        }
+    }
 
-        if (strategy == AutoUpdateStrategy.READ_ONCE) {
+    protected void bindImpl() {
+        AutoUpdateStrategy strat = getAutoUpdateStrategy();
+        
+        if (strat == AutoUpdateStrategy.READ_ONCE) {
             refresh();
             psl = new PSL();
             source.addPropertyStateListener(psl);
             target.addPropertyStateListener(psl);
-        } else if (strategy == AutoUpdateStrategy.READ) {
+        } else if (strat == AutoUpdateStrategy.READ) {
             refresh();
             psl = new PSL();
             source.addPropertyStateListener(psl);
@@ -361,16 +371,31 @@ public class Binding<S, T> {
         }
     }
 
-    public void unbind() {
+    public final void unbind() {
         throwIfUnbound();
+        bound = false;
+        unbindImpl();
+        if (group != null) {
+            group.bindingUnbound(this);
+        }
+    }
+
+    protected void unbindImpl() {
         source.removePropertyStateListener(psl);
         target.removePropertyStateListener(psl);
         psl = null;
-        bound = false;
     }
 
-    public boolean isBound() {
+    public final boolean isBound() {
         return bound;
+    }
+
+    void setBindingGroup(BindingGroup group) {
+        this.group = group;
+    }
+
+    public final BindingGroup getBindingGroup() {
+        return group;
     }
 
     private final void synced() {
@@ -505,7 +530,7 @@ public class Binding<S, T> {
         return "name=" + getName() +
                ", source=" + source +
                ", target=" + target +
-               ", autoUpdateStrategy=" + strategy +
+               ", autoUpdateStrategy=" + getAutoUpdateStrategy() +
                ", validator=" + validator +
                ", converter=" + converter +
                ", sourceNullValue=" + sourceNullValue +
@@ -520,16 +545,18 @@ public class Binding<S, T> {
                 return;
             }
 
+            AutoUpdateStrategy strat = getAutoUpdateStrategy();
+
             if (pse.getSource() == source) {
-                if (strategy == AutoUpdateStrategy.READ_ONCE) {
+                if (strat == AutoUpdateStrategy.READ_ONCE) {
                     if (pse.getValueChanged()) {
                         sourceChanged();
                     }
-                } else if (strategy == AutoUpdateStrategy.READ) {
+                } else if (strat == AutoUpdateStrategy.READ) {
                     if (pse.getValueChanged()) {
                         refresh();
                     }
-                } else if (strategy == AutoUpdateStrategy.READ_WRITE) {
+                } else if (strat == AutoUpdateStrategy.READ_WRITE) {
                     if (pse.getValueChanged()) {
                         tryRefreshThenSave();
                     } else if (pse.getWriteableChanged() && pse.isWriteable()) {
@@ -537,11 +564,11 @@ public class Binding<S, T> {
                     }
                 }
             } else {
-                if (strategy == AutoUpdateStrategy.READ_ONCE) {
+                if (strat == AutoUpdateStrategy.READ_ONCE) {
                     if (pse.getValueChanged()) {
                         targetChanged();
                     }
-                } else if (strategy == AutoUpdateStrategy.READ) {
+                } else if (strat == AutoUpdateStrategy.READ) {
                     if (pse.getWriteableChanged() && pse.isWriteable()) {
                         if (refresh() == null) {
                             return;
@@ -551,7 +578,7 @@ public class Binding<S, T> {
                     if (pse.getValueChanged()) {
                         targetChanged();
                     }
-                } else if (strategy == AutoUpdateStrategy.READ_WRITE) {
+                } else if (strat == AutoUpdateStrategy.READ_WRITE) {
                     if (pse.getWriteableChanged() && pse.isWriteable()) {
                         tryRefreshThenSave();
                     } else {
