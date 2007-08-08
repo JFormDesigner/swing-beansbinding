@@ -72,9 +72,8 @@ public abstract class Validator<S> {
      * Validates a value. An invalid value is identified by returning
      * a {@code non-null ValidationResult} from this method.
      *
-     * @param binding the binding, {@code non-null}
      * @param value the value to validate, may be {@code null}
      * @throws IllegalArgumentException if {@code binding} is {@code null}
      */
-    public abstract Result validate(Binding<? extends S, ?> binding, S value);
+    public abstract Result validate(S value);
 }

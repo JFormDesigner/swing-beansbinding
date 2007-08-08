@@ -11,15 +11,8 @@ import java.util.EventListener;
  * @author Shannon Hickey
  */
 public interface BindingListener extends EventListener {
-    public void targetUnwriteable(Binding<?, ?> binding);
-
-    public void targetUnreadable(Binding<?, ?> binding);
-    public void sourceUnwriteable(Binding<?, ?> binding);
-
-    public void targetEdited(Binding<?, ?> binding);
-
-    public void conversionFailed(Binding<?, ?> binding, RuntimeException exception);
-    public void validationFailed(Binding<?, ?> binding, Validator.Result result);
-
-    public void bindingSynced(Binding<?, ?> binding);
+    public void syncFailed(Binding<?, ?> binding, Binding.SyncFailure... failures);
+    public void synced(Binding<?, ?> binding);
+    public void sourceChanged(Binding<?, ?> binding);
+    public void targetChanged(Binding<?, ?> binding);
 }

@@ -25,7 +25,6 @@ public class Binding<S, T> {
     private S targetNullValue;
     private T sourceUnreadableValue;
     private List<BindingListener> listeners;
-    private boolean targetEdited;
     private PropertyStateListener psl;
     private boolean ignoreChange;
 
@@ -33,6 +32,110 @@ public class Binding<S, T> {
         READ,
         READ_ONCE,
         READ_WRITE
+    }
+
+    public enum SyncFailureType {
+        TARGET_UNWRITEABLE,
+        SOURCE_UNWRITEABLE,
+        TARGET_UNREADABLE,
+        CONVERSION_FAILED,
+        VALIDATION_FAILED
+    }
+
+    public static final class SyncFailure {
+        private SyncFailureType type;
+        private Object reason;
+
+        private static SyncFailure TARGET_UNWRITEABLE = new SyncFailure(SyncFailureType.TARGET_UNWRITEABLE);
+        private static SyncFailure SOURCE_UNWRITEABLE = new SyncFailure(SyncFailureType.SOURCE_UNWRITEABLE);
+        private static SyncFailure TARGET_UNREADABLE = new SyncFailure(SyncFailureType.TARGET_UNREADABLE);
+
+        private static SyncFailure conversionFailure(RuntimeException rte) {
+            return new SyncFailure(rte);
+        }
+
+        private static SyncFailure validationFailure(Validator.Result result) {
+            return new SyncFailure(result);
+        }
+
+        private SyncFailure(SyncFailureType type) {
+            if (type == SyncFailureType.CONVERSION_FAILED || type == SyncFailureType.VALIDATION_FAILED) {
+                throw new IllegalArgumentException();
+            }
+
+            this.type = type;
+        }
+
+        private SyncFailure(RuntimeException exception) {
+            this.type = SyncFailureType.CONVERSION_FAILED;
+            this.reason = exception;
+        }
+
+        private SyncFailure(Validator.Result result) {
+            this.type = SyncFailureType.VALIDATION_FAILED;
+            this.reason = result;
+        }
+
+        public SyncFailureType getType() {
+            return type;
+        }
+        
+        public RuntimeException getConversionException() {
+            if (type != SyncFailureType.CONVERSION_FAILED) {
+                throw new UnsupportedOperationException();
+            }
+            
+            return (RuntimeException)reason;
+        }
+
+        public Validator.Result getValidationResult() {
+            if (type != SyncFailureType.VALIDATION_FAILED) {
+                throw new UnsupportedOperationException();
+            }
+            
+            return (Validator.Result)reason;
+        }
+
+        public String toString() {
+            return type + (reason == null ? "" : ": " + reason.toString());
+        }
+    }
+
+    public final class ValueResult<V> {
+        private V value;
+        private SyncFailure failure;
+
+        private ValueResult(V value) {
+            this.value = value;
+        }
+
+        private ValueResult(SyncFailure failure) {
+            this.failure = failure;
+        }
+
+        public boolean failed() {
+            return failure != null;
+        }
+
+        public V getValue() {
+            if (value == null) {
+                throw new UnsupportedOperationException();
+            }
+
+            return value;
+        }
+
+        public SyncFailure getFailure() {
+            if (failure == null) {
+                throw new UnsupportedOperationException();
+            }
+            
+            return failure;
+        }
+
+        public String toString() {
+            return value == null ? "failure: " + failure : "value: " + value;
+        }
     }
 
     public Binding(Property<S> source, Property<T> target) {
@@ -148,6 +251,94 @@ public class Binding<S, T> {
         return ret;
     }
 
+    public final ValueResult<T> getSourceValueForTarget() {
+        if (!target.isWriteable()) {
+            return new ValueResult<T>(SyncFailure.TARGET_UNWRITEABLE);
+        }
+
+        T value;
+
+        if (source.isReadable()) {
+            S rawValue = source.getValue();
+
+            if (rawValue == null) {
+                value = sourceNullValue;
+            } else {
+                // may throw ClassCastException or other RuntimeException here;
+                // allow it to be propogated back to the user of Binding
+                value = convertForward(rawValue);
+            }
+        } else {
+            value = sourceUnreadableValue;
+        }
+
+        return new ValueResult<T>(value);
+    }
+
+    public final ValueResult<S> getTargetValueForSource() {
+        if (!target.isReadable()) {
+            return new ValueResult<S>(SyncFailure.TARGET_UNREADABLE);
+        }
+
+        if (!source.isWriteable()) {
+            return new ValueResult<S>(SyncFailure.SOURCE_UNWRITEABLE);
+        }
+
+        S value = null;
+        T rawValue = target.getValue();
+
+        if (rawValue == null) {
+            value = targetNullValue;
+        } else {
+            try {
+                value = convertReverse(rawValue);
+            } catch (ClassCastException cce) {
+                throw cce;
+            } catch (RuntimeException rte) {
+                return new ValueResult<S>(SyncFailure.conversionFailure(rte));
+            }
+
+            if (validator != null) {
+                Validator.Result vr = validator.validate(value);
+                if (vr != null) {
+                    return new ValueResult<S>(SyncFailure.validationFailure(vr));
+                }
+            }
+        }
+
+        return new ValueResult<S>(value);
+    }
+
+    private final void tryRefreshThenSave() {
+        SyncFailure refreshFailure = simpleRefresh();
+        if (refreshFailure == null) {
+            synced();
+        } else {
+            SyncFailure saveFailure = simpleSave();
+            if (saveFailure == null) {
+                synced();
+            } else {
+                syncFailed(refreshFailure, saveFailure);
+            }
+        }
+    }
+
+    private final void trySaveThenRefresh() {
+        SyncFailure saveFailure = simpleSave();
+        if (saveFailure == null) {
+            synced();
+        } else if (saveFailure.getType() == SyncFailureType.CONVERSION_FAILED || saveFailure.getType() == SyncFailureType.VALIDATION_FAILED) {
+            syncFailed(saveFailure);
+        } else {
+            SyncFailure refreshFailure = simpleRefresh();
+            if (refreshFailure == null) {
+                synced();
+            } else {
+                syncFailed(saveFailure, refreshFailure);
+            }
+        }
+    }
+
     public void bind() {
         throwIfBound();
         bound = true;
@@ -155,6 +346,7 @@ public class Binding<S, T> {
         if (strategy == AutoUpdateStrategy.READ_ONCE) {
             refresh();
             psl = new PSL();
+            source.addPropertyStateListener(psl);
             target.addPropertyStateListener(psl);
         } else if (strategy == AutoUpdateStrategy.READ) {
             refresh();
@@ -162,10 +354,7 @@ public class Binding<S, T> {
             source.addPropertyStateListener(psl);
             target.addPropertyStateListener(psl);
         } else {
-            if (!refresh()) {
-                save();
-            }
-
+            tryRefreshThenSave();
             psl = new PSL();
             source.addPropertyStateListener(psl);
             target.addPropertyStateListener(psl);
@@ -184,131 +373,98 @@ public class Binding<S, T> {
         return bound;
     }
 
-    public final boolean isTargetEdited() {
-        throwIfUnbound();
-        return targetEdited;
-    }
-
-    public final boolean refresh() {
-        throwIfUnbound();
-        
-        if (!target.isWriteable()) {
-            if (listeners != null) {
-                for (BindingListener listener : listeners) {
-                    listener.targetUnwriteable(this);
-                }
-            }
-            
-            return false;
+    private final void synced() {
+        if (listeners == null) {
+            return;
         }
 
-        T targetValue;
+        for (BindingListener listener : listeners) {
+            listener.synced(this);
+        }
+    }
 
-        if (source.isReadable()) {
-            S sourceValue = source.getValue();
+    private final void syncFailed(SyncFailure... failures) {
+        if (listeners == null) {
+            return;
+        }
 
-            if (sourceValue == null) {
-                targetValue = sourceNullValue;
-            } else {
-                // may throw ClassCastException or other RuntimeException here
-                targetValue = convertForward(sourceValue);
-            }
+        for (BindingListener listener : listeners) {
+            listener.syncFailed(this, failures);
+        }
+    }
+
+    private final void sourceChanged() {
+        if (listeners == null) {
+            return;
+        }
+
+        for (BindingListener listener : listeners) {
+            listener.sourceChanged(this);
+        }
+    }
+
+    private final void targetChanged() {
+        if (listeners == null) {
+            return;
+        }
+
+        for (BindingListener listener : listeners) {
+            listener.targetChanged(this);
+        }
+    }
+
+    private final SyncFailure notifyAndReturn(SyncFailure failure) {
+        if (failure == null) {
+            synced();
         } else {
-            targetValue = sourceUnreadableValue;
+            syncFailed(failure);
+        }
+
+        return failure;
+    }
+
+    public final SyncFailure refresh() {
+        return notifyAndReturn(simpleRefresh());
+    }
+
+    public final SyncFailure save() {
+        return notifyAndReturn(simpleSave());
+    }
+
+    protected final SyncFailure simpleRefresh() {
+        throwIfUnbound();
+
+        ValueResult<T> vr = getSourceValueForTarget();
+        if (vr.failed()) {
+            return vr.getFailure();
         }
 
         try {
             ignoreChange = true;
-            target.setValue(targetValue);
+            target.setValue(vr.getValue());
         } finally {
             ignoreChange = false;
         }
 
-        targetEdited = false;
-
-        if (listeners != null) {
-            for (BindingListener listener : listeners) {
-                listener.bindingSynced(this);
-            }
-        }
-
-        return true;
+        return null;
     }
-
-    public final boolean save() {
+    
+    protected final SyncFailure simpleSave() {
         throwIfUnbound();
 
-        if (!target.isReadable()) {
-            if (listeners != null) {
-                for (BindingListener listener : listeners) {
-                    listener.targetUnreadable(this);
-                }
-            }
-
-            return false;
-        }
-
-        if (!source.isWriteable()) {
-            if (listeners != null) {
-                for (BindingListener listener : listeners) {
-                    listener.sourceUnwriteable(this);
-                }
-            }
-
-            return false;
-        }
-
-        S sourceValue = null;
-
-        T targetValue = target.getValue();
-
-        if (targetValue == null) {
-            sourceValue = targetNullValue;
-        } else {
-            try {
-                sourceValue = convertReverse(targetValue);
-            } catch (ClassCastException cce) {
-                throw cce;
-            } catch (RuntimeException rte) {
-                if (listeners != null) {
-                    for (BindingListener listener : listeners) {
-                        listener.conversionFailed(this, rte);
-                    }
-                }
-                
-                return false;
-            }
-
-            if (validator != null) {
-                Validator.Result vr = validator.validate(this, sourceValue);
-                if (vr != null) {
-                    if (listeners != null) {
-                        for (BindingListener listener : listeners) {
-                            listener.validationFailed(this, vr);
-                        }
-                    }
-
-                    return false;
-                }
-            }
+        ValueResult<S> vr = getTargetValueForSource();
+        if (vr.failed()) {
+            return vr.getFailure();
         }
 
         try {
             ignoreChange = true;
-            source.setValue(sourceValue);
+            source.setValue(vr.getValue());
         } finally {
             ignoreChange = false;
         }
 
-        targetEdited = false;
-
-        if (listeners != null) {
-            for (BindingListener listener : listeners) {
-                listener.bindingSynced(this);
-            }
-        }
-
-        return true;
+        return null;
     }
 
     private final T convertForward(S value) {
@@ -365,36 +521,41 @@ public class Binding<S, T> {
             }
 
             if (pse.getSource() == source) {
-                if (strategy == AutoUpdateStrategy.READ) {
+                if (strategy == AutoUpdateStrategy.READ_ONCE) {
+                    if (pse.getValueChanged()) {
+                        sourceChanged();
+                    }
+                } else if (strategy == AutoUpdateStrategy.READ) {
                     if (pse.getValueChanged()) {
                         refresh();
                     }
                 } else if (strategy == AutoUpdateStrategy.READ_WRITE) {
                     if (pse.getValueChanged()) {
-                        if (!refresh()) {
-                            save();
-                        }
-                    } else if (pse.getWriteableChanged()) {
+                        tryRefreshThenSave();
+                    } else if (pse.getWriteableChanged() && pse.isWriteable()) {
                         save();
                     }
                 }
             } else {
-                targetEdited = true;
-                if (listeners != null) {
-                    for (BindingListener listener : listeners) {
-                        listener.targetEdited(Binding.this);
+                if (strategy == AutoUpdateStrategy.READ_ONCE) {
+                    if (pse.getValueChanged()) {
+                        targetChanged();
                     }
-                }
-
-                if (strategy == AutoUpdateStrategy.READ) {
+                } else if (strategy == AutoUpdateStrategy.READ) {
                     if (pse.getWriteableChanged() && pse.isWriteable()) {
-                        refresh();
+                        if (refresh() == null) {
+                            return;
+                        }
+                    }
+
+                    if (pse.getValueChanged()) {
+                        targetChanged();
                     }
                 } else if (strategy == AutoUpdateStrategy.READ_WRITE) {
-                    if (pse.getWriteableChanged() && pse.isWriteable() && refresh()) {
-                        return;
+                    if (pse.getWriteableChanged() && pse.isWriteable()) {
+                        tryRefreshThenSave();
                     } else {
-                        save();
+                        trySaveThenRefresh();
                     }
                 }
             }
