@@ -121,11 +121,15 @@ public final class ButtonSelectedProperty<S> extends AbstractProperty<S, Boolean
     }
 
     private ButtonSelectedProperty(Property<S, ? extends AbstractButton> sourceProperty) {
+        if (sourceProperty == null) {
+            throw new IllegalArgumentException("can't have null source property");
+        }
+
         this.sourceProperty = sourceProperty;
     }
 
     public static final ButtonSelectedProperty<AbstractButton> create() {
-        return new ButtonSelectedProperty<AbstractButton>(new ObjectProperty<AbstractButton>());
+        return createForProperty(new ObjectProperty<AbstractButton>());
     }
 
     public static final <S> ButtonSelectedProperty<S> createForProperty(Property<S, ? extends AbstractButton> sourceProperty) {
