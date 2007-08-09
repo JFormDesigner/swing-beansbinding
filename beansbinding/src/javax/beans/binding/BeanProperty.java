@@ -71,6 +71,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             cachedValue = null;
             cachedWriter = null;
         }
+
+        private boolean cachedIsReadable() {
+            return cachedValue != NOREAD;
+        }
+
+        private boolean cachedIsWriteable() {
+            return cachedWriter != null;
+        }
     }
 
     /**
@@ -105,7 +113,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     }
 
     public Class<? extends V> getWriteType(S source) {
-        if (isListening()) {
+/*        if (isListening()) {
             validateCache(-1);
 
             if (cachedWriter == null) {
@@ -113,13 +121,13 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             }
 
             return (Class<? extends V>)getType(cache[path.length() - 1], path.getLast());
-        }
+        }*/
 
-        return (Class<? extends V>)getType(getLastSource(), path.getLast());
+        return (Class<? extends V>)getType(getLastSource(source), path.getLast());
     }
 
     public V getValue(S source) {
-        if (isListening()) {
+/*        if (isListening()) {
             validateCache(-1);
 
             if (cachedValue == NOREAD) {
@@ -127,14 +135,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             }
 
             return (V)cachedValue;
-        }
+        } */
 
-        Object src = getLastSource();
+        Object src = getLastSource(source);
         if (src == null || src == NOREAD) {
             throw new UnsupportedOperationException("Unreadable");
         }
 
-        src = getProperty(getLastSource(), path.getLast());
+        src = getProperty(src, path.getLast());
         if (src == NOREAD) {
             System.err.println("LOG: getValue(): missing read method");
             throw new UnsupportedOperationException("Unreadable");
@@ -144,7 +152,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     }
 
     public void setValue(S source, V value) {
-        if (isListening()) {
+/*        if (isListening()) {
             validateCache(-1);
 
             if (cachedWriter == null) {
@@ -156,22 +164,18 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             Object oldValue = cachedValue;
             updateCachedValue();
             notifyListeners(cachedIsWriteable(), oldValue);
-        } else {
-            setProperty(getLastSource(), path.getLast(), value);
-        }
-    }
-
-    private boolean cachedIsReadable() {
-        return cachedValue != NOREAD;
+        } else { */
+            setProperty(getLastSource(source), path.getLast(), value);
+        /*}*/
     }
 
     public boolean isReadable(S source) {
-        if (isListening()) {
+/*        if (isListening()) {
             validateCache(-1);
             return cachedIsReadable();
-        }
+        }*/
 
-        Object src = getLastSource();
+        Object src = getLastSource(source);
         if (src == null || src == NOREAD) {
             return false;
         }
@@ -185,17 +189,13 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return true;
     }
 
-    private boolean cachedIsWriteable() {
-        return cachedWriter != null;
-    }
-
     public boolean isWriteable(S source) {
-        if (isListening()) {
+        /*if (isListening()) {
             validateCache(-1);
             return cachedIsWriteable();
-        }
+        }*/
 
-        Object src = getLastSource();
+        Object src = getLastSource(source);
         if (src == null || src == NOREAD) {
             return false;
         }
@@ -224,39 +224,38 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         }
     }
 
-    private boolean didValueChange(Object oldValue, Object newValue) {
+    private static boolean didValueChange(Object oldValue, Object newValue) {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
 
-    private void notifyListeners(boolean wasWriteable, Object oldValue) {
-        PropertyStateListener[] listeners = getPropertyStateListeners();
+    private void notifyListeners(boolean wasWriteable, Object oldValue, SourceEntry entry) {
+        PropertyStateListener[] listeners = getPropertyStateListeners(entry.source);
 
         if (listeners == null || listeners.length == 0) {
             return;
         }
 
         oldValue = toUNREADABLE(oldValue);
-        Object newValue = toUNREADABLE(cachedValue);
+        Object newValue = toUNREADABLE(entry.cachedValue);
         boolean valueChanged = didValueChange(oldValue, newValue);
-        boolean writeableChanged = (wasWriteable != cachedIsWriteable());
+        boolean writeableChanged = (wasWriteable != entry.cachedIsWriteable());
 
         if (!valueChanged && !writeableChanged) {
             return;
         }
-        
+
         PropertyStateEvent pse = new PropertyStateEvent(this,
                                                         valueChanged,
                                                         oldValue,
                                                         newValue,
                                                         writeableChanged,
-                                                        cachedIsWriteable());
+                                                        entry.cachedIsWriteable());
 
-        this.firePropertyStateChange(pse);
+        this.firePropertyStateChange(entry.source, pse);
     }
 
     public String toString() {
-        String className = (source == null ? "" : source.getClass().getName());
-        return getClass().getName() + "[" + className + path + "]";
+        return getClass().getName() + "[" + path + "]";
     }
 
     /**
