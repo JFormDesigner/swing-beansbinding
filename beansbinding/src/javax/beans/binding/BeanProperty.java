@@ -29,10 +29,7 @@ package javax.beans.binding;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
+import java.util.*;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
@@ -41,49 +38,49 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class BeanProperty<S, V> extends AbstractProperty<V> implements SourceableProperty<S, V> {
+public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
     private final PropertyPath path;
-    private S source;
-    private Object[] cache;
-    private Object cachedValue;
-    private Object cachedWriter;
-    private ChangeHandler changeHandler;
-    private boolean ignoreChange;
+    private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
+
+    private final class SourceEntry implements PropertyChangeListener,
+                                               ObservableMapListener {
+
+        private S source;
+        private Object[] cache;
+        private Object cachedValue;
+        private Object cachedWriter;
+        private boolean ignoreChange;
+
+        private SourceEntry(S source) {
+            this.source = source;
+            cache = new Object[path.length()];
+            cache[0] = NOREAD;
+            updateCachedSources(0);
+            updateCachedValue();
+            updateCachedWriter();
+        }
+
+        private void cleanup() {
+            for (int i = 0; i < path.length(); i++) {
+                unregisterListener(cache[i], this);
+            }
+
+            cache = null;
+            cachedValue = null;
+            cachedWriter = null;
+        }
+    }
 
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
     public BeanProperty(String path) {
-        this(path, null);
-    }
-
-    /**
-     * @throws IllegalArgumentException for empty or {@code null} path.
-     */
-    public BeanProperty(String path, S source) {
         this.path = PropertyPath.createPropertyPath(path);
-        this.source = source;
     }
 
-    public void setSource(S source) {
-        this.source = source;
-
-        if (isListening()) {
-            cachedValueChanged(0);
-        }
-    };
-
-    public S getSource() {
-        if (isListening()) {
-            validateCache(-1);
-        }
-
-        return source;
-    }
-
-    private Object getLastSource() {
+    private Object getLastSource(S source) {
         if (source == null) {
             System.err.println(hashCode() + ": LOG: getLastSource(): source is null");
             return null;
@@ -107,7 +104,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
         return src;
     }
 
-    public Class<? extends V> getWriteType() {
+    public Class<? extends V> getWriteType(S source) {
         if (isListening()) {
             validateCache(-1);
 
@@ -121,7 +118,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
         return (Class<? extends V>)getType(getLastSource(), path.getLast());
     }
 
-    public V getValue() {
+    public V getValue(S source) {
         if (isListening()) {
             validateCache(-1);
 
@@ -146,7 +143,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
         return (V)src;
     }
 
-    public void setValue(V value) {
+    public void setValue(S source, V value) {
         if (isListening()) {
             validateCache(-1);
 
@@ -168,7 +165,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
         return cachedValue != NOREAD;
     }
 
-    public boolean isReadable() {
+    public boolean isReadable(S source) {
         if (isListening()) {
             validateCache(-1);
             return cachedIsReadable();
@@ -192,7 +189,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
         return cachedWriter != null;
     }
 
-    public boolean isWriteable() {
+    public boolean isWriteable(S source) {
         if (isListening()) {
             validateCache(-1);
             return cachedIsWriteable();
@@ -212,28 +209,19 @@ public final class BeanProperty<S, V> extends AbstractProperty<V> implements Sou
         return true;
     }
 
-    protected final void listeningStarted() {
-        if (cache == null) {
-            cache = new Object[path.length()];
+    protected final void listeningStarted(S source) {
+        SourceEntry entry = map.get(source);
+        if (entry == null) {
+            entry = new SourceEntry(source);
+            map.put(source, entry);
         }
-
-        cache[0] = NOREAD;
-        updateCachedSources(0);
-        updateCachedValue();
-        updateCachedWriter();
     }
 
-    protected final void listeningStopped() {
-        if (changeHandler != null) {
-            for (int i = 0; i < path.length(); i++) {
-                unregisterListener(cache[i], path.get(i));
-                cache[i] = null;
-            }
+    protected final void listeningStopped(S source) {
+        SourceEntry entry = map.remove(source);
+        if (entry != null) {
+            entry.cleanup();
         }
-
-        cachedValue = null;
-        cachedWriter = null;
-        changeHandler = null;
     }
 
     private boolean didValueChange(Object oldValue, Object newValue) {
