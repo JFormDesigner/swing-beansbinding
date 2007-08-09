@@ -111,6 +111,10 @@ public class Binding<S, T> {
         }
 
         private ValueResult(SyncFailure failure) {
+            if (failure == null) {
+                throw new AssertionError();
+            }
+
             this.failure = failure;
         }
 
@@ -119,7 +123,7 @@ public class Binding<S, T> {
         }
 
         public V getValue() {
-            if (value == null) {
+            if (failed()) {
                 throw new UnsupportedOperationException();
             }
 
@@ -127,7 +131,7 @@ public class Binding<S, T> {
         }
 
         public SyncFailure getFailure() {
-            if (failure == null) {
+            if (!failed()) {
                 throw new UnsupportedOperationException();
             }
             
@@ -175,13 +179,8 @@ public class Binding<S, T> {
     }
 
     public final AutoUpdateStrategy getAutoUpdateStrategy() {
-        if (strategy != null) {
-            return strategy;
-        } else if (group != null) {
-            return group.getAutoUpdateStrategy();
-        } else {
-            return AutoUpdateStrategy.READ_WRITE;
-        }
+        AutoUpdateStrategy retVal = (strategy == null ? group.getAutoUpdateStrategy() : strategy);
+        return retVal == null ? AutoUpdateStrategy.READ_WRITE : retVal;
     }
 
     public final void setValidator(Validator<? super S> validator) {
@@ -274,7 +273,7 @@ public class Binding<S, T> {
             value = sourceUnreadableValue;
         }
 
-        return new ValueResult<T>(value);
+        return new ValueResult<T>((T)value);
     }
 
     public final ValueResult<S> getTargetValueForSource() {
@@ -308,7 +307,7 @@ public class Binding<S, T> {
             }
         }
 
-        return new ValueResult<S>(value);
+        return new ValueResult<S>((S)value);
     }
 
     private final void tryRefreshThenSave() {
