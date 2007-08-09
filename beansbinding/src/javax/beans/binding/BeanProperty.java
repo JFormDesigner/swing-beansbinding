@@ -79,107 +79,294 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         private boolean cachedIsWriteable() {
             return cachedWriter != null;
         }
-    }
 
+        private int getSourceIndex(Object object) {
+            for (int i = 0; i < cache.length; i++) {
+                if (cache[i] == object) {
+                    return i;
+                }
+            }
+            
+            return -1;
+        }
+
+        private void updateCachedSources(int index) {
+            boolean loggedYet = false;
+            
+            Object src;
+            
+            if (index == 0) {
+                src = source;
+                
+                if (cache[0] != src) {
+                    unregisterListener(cache[0], this);
+                    
+                    cache[0] = src;
+                    
+                    if (src == null) {
+                        loggedYet = true;
+                        System.err.println("LOG: updateCachedSources(): source is null");
+                    } else {
+                        registerListener(src, this);
+                    }
+                }
+                
+                index++;
+            }
+            
+            for (int i = index; i < path.length(); i++) {
+                Object old = cache[i];
+                src = getProperty(cache[i - 1], path.get(i - 1));
+                
+                if (src != old) {
+                    unregisterListener(old, this);
+                    
+                    cache[i] = src;
+                    
+                    if (src == null) {
+                        if (!loggedYet) {
+                            loggedYet = true;
+                            System.err.println("LOG: updateCachedSources(): missing source");
+                        }
+                    } else if (src == NOREAD) {
+                        if (!loggedYet) {
+                            loggedYet = true;
+                            System.err.println("LOG: updateCachedSources(): missing read method");
+                        }
+                    } else {
+                        registerListener(src, this);
+                    }
+                }
+            }
+        }
+
+        private void validateCache(int ignore) {
+            for (int i = 0; i < path.length() - 1; i++) {
+                if (i == ignore - 1) {
+                    continue;
+                }
+                
+                Object src = cache[i];
+                
+                if (src == NOREAD) {
+                    return;
+                }
+                
+                Object next = getProperty(src, path.get(i));
+                
+                if (!match(next, cache[i + 1])) {
+                    System.err.println("LOG: validateCache(): concurrent modification");
+                }
+            }
+            
+            if (path.length() != ignore) {
+                Object next = getProperty(cache[path.length() - 1], path.getLast());
+                if (!match(cachedValue, next)) {
+                    System.err.println("LOG: validateCache(): concurrent modification");
+                }
+                
+                Object src = cache[path.length() - 1];
+                Object writer;
+                if (src == null || src == NOREAD) {
+                    writer = null;
+                } else {
+                    writer = getWriter(cache[path.length() - 1], path.getLast());
+                }
+                
+                if (cachedWriter != writer && (cachedWriter == null || !cachedWriter.equals(writer))) {
+                    System.err.println("LOG: validateCache(): concurrent modification");
+                }
+            }
+        }
+        
+        private void updateCachedWriter() {
+            Object src = cache[path.length() - 1];
+            if (src == null || src == NOREAD) {
+                cachedWriter = null;
+            } else {
+                cachedWriter = getWriter(src, path.getLast());
+                if (cachedWriter == null) {
+                    System.err.println("LOG: updateCachedWriter(): missing write method");
+                }
+            }
+        }
+        
+        private void updateCachedValue() {
+            Object src = cache[path.length() - 1];
+            if (src == null || src == NOREAD) {
+                cachedValue = NOREAD;
+            } else {
+                cachedValue = getProperty(cache[path.length() - 1], path.getLast());
+                if (cachedValue == NOREAD) {
+                    System.err.println("LOG: updateCachedValue(): missing read method");
+                }
+            }
+        }
+        
+        private void cachedValueChanged(int index) {
+            validateCache(index);
+            
+            boolean wasWriteable = cachedIsWriteable();
+            Object oldValue = cachedValue;
+            
+            updateCachedSources(index);
+            updateCachedValue();
+            if (index != path.length()) {
+                updateCachedWriter();
+            }
+            
+            notifyListeners(wasWriteable, oldValue, this);
+        }
+        
+        private void mapValueChanged(ObservableMap map, Object key) {
+            if (ignoreChange) {
+                return;
+            }
+            
+            int index = getSourceIndex(map);
+            
+            if (index == -1) {
+                throw new AssertionError();
+            }
+            
+            if (key.equals(path.get(index))) {
+                cachedValueChanged(index + 1);
+            }
+        }
+        
+        private void propertyValueChanged(PropertyChangeEvent pce) {
+            if (ignoreChange) {
+                return;
+            }
+            
+            int index = getSourceIndex(pce.getSource());
+            
+            if (index == -1) {
+                throw new AssertionError();
+            }
+            
+            String propertyName = pce.getPropertyName();
+            if (propertyName == null || path.get(index).equals(propertyName)) {
+                cachedValueChanged(index + 1);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent e) {
+           propertyValueChanged(e);
+        }
+
+        public void mapKeyValueChanged(ObservableMap map, Object key, Object lastValue) {
+            mapValueChanged(map, key);
+        }
+
+        public void mapKeyAdded(ObservableMap map, Object key) {
+            mapValueChanged(map, key);
+        }
+
+        public void mapKeyRemoved(ObservableMap map, Object key, Object value) {
+            mapValueChanged(map, key);
+        }
+    }
+    
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
     public BeanProperty(String path) {
         this.path = PropertyPath.createPropertyPath(path);
     }
-
+    
     private Object getLastSource(S source) {
         if (source == null) {
             System.err.println("LOG: getLastSource(): source is null");
             return null;
         }
-
+        
         Object src = source;
-
+        
         for (int i = 0; i < path.length() - 1; i++) {
             src = getProperty(src, path.get(i));
             if (src == null) {
                 System.err.println("LOG: getLastSource(): missing source");
                 return null;
             }
-
+            
             if (src == NOREAD) {
                 System.err.println("LOG: getLastSource(): missing read method");
                 return NOREAD;
             }
         }
-
+        
         return src;
     }
-
+    
     public Class<? extends V> getWriteType(S source) {
 /*        if (isListening()) {
             validateCache(-1);
-
+ 
             if (cachedWriter == null) {
                 throw new UnsupportedOperationException("Unwriteable");
             }
-
+ 
             return (Class<? extends V>)getType(cache[path.length() - 1], path.getLast());
         }*/
-
+        
         return (Class<? extends V>)getType(getLastSource(source), path.getLast());
     }
-
+    
     public V getValue(S source) {
 /*        if (isListening()) {
             validateCache(-1);
-
+ 
             if (cachedValue == NOREAD) {
                 throw new UnsupportedOperationException("Unreadable");
             }
-
+ 
             return (V)cachedValue;
         } */
-
+        
         Object src = getLastSource(source);
         if (src == null || src == NOREAD) {
             throw new UnsupportedOperationException("Unreadable");
         }
-
+        
         src = getProperty(src, path.getLast());
         if (src == NOREAD) {
             System.err.println("LOG: getValue(): missing read method");
             throw new UnsupportedOperationException("Unreadable");
         }
-
+        
         return (V)src;
     }
-
+    
     public void setValue(S source, V value) {
 /*        if (isListening()) {
             validateCache(-1);
-
+ 
             if (cachedWriter == null) {
                 throw new UnsupportedOperationException("Unwritable");
             }
 // IGNORE_CHANGE
             write(cachedWriter, cache[path.length() - 1], path.getLast(), value);
-
+ 
             Object oldValue = cachedValue;
             updateCachedValue();
             notifyListeners(cachedIsWriteable(), oldValue);
         } else { */
-            setProperty(getLastSource(source), path.getLast(), value);
+        setProperty(getLastSource(source), path.getLast(), value);
         /*}*/
     }
-
+    
     public boolean isReadable(S source) {
 /*        if (isListening()) {
             validateCache(-1);
             return cachedIsReadable();
         }*/
-
+        
         Object src = getLastSource(source);
         if (src == null || src == NOREAD) {
             return false;
         }
-
+        
         Object reader = getReader(src, path.getLast());
         if (reader == null) {
             System.err.println("LOG: isReadable(): missing read method");
@@ -435,67 +622,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return src == NOREAD ? UNREADABLE : src;
     }
 
-    private void updateCachedSources(int index) {
-        boolean loggedYet = false;
-
-        Object src;
-
-        if (index == 0) {
-            src = source;
-
-            if (cache[0] != src) {
-                unregisterListener(cache[0], path.get(0));
-
-                cache[0] = src;
-
-                if (src == null) {
-                    loggedYet = true;
-                    System.err.println("LOG: updateCachedSources(): source is null");
-                } else {
-                    registerListener(src, path.get(0));
-                }
-            }
-
-            index++;
-        }
-
-        for (int i = index; i < path.length(); i++) {
-            Object old = cache[i];
-            src = getProperty(cache[i - 1], path.get(i - 1));
-
-            if (src != old) {
-                unregisterListener(old, path.get(i));
-
-                cache[i] = src;
-
-                if (src == null) {
-                    if (!loggedYet) {
-                        loggedYet = true;
-                        System.err.println("LOG: updateCachedSources(): missing source");
-                    }
-                } else if (src == NOREAD) {
-                    if (!loggedYet) {
-                        loggedYet = true;
-                        System.err.println("LOG: updateCachedSources(): missing read method");
-                    }
-                } else {
-                    registerListener(src, path.get(i));
-                }
-            }
-        }
-    }
-
-    private void registerListener(Object object, String string) {
+    private void registerListener(Object object, SourceEntry entry) {
         assert object != null;
 
         if (object != NOREAD) {
             if (object instanceof ObservableMap) {
-                ((ObservableMap)object).addObservableMapListener(
-                        getChangeHandler());
-            } else if (object instanceof Property && string.equals("value")) {
-                ((Property)object).addPropertyStateListener(getChangeHandler());
+                ((ObservableMap)object).addObservableMapListener(entry);
             } else if (!(object instanceof Map)) {
-                addPropertyChangeListener(object);
+                addPropertyChangeListener(object, entry);
             }
         }
     }
@@ -503,16 +637,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private void unregisterListener(Object object, String string) {
-        if (changeHandler != null && object!= null && object != NOREAD) {
-            // PENDING: optimize this and cache
+    private void unregisterListener(Object object, SourceEntry entry) {
+        if (object != null && object != NOREAD) {
             if (object instanceof ObservableMap) {
-                ((ObservableMap)object).removeObservableMapListener(
-                        getChangeHandler());
-            } else if (object instanceof Property && string.equals("value")) {
-                ((Property)object).addPropertyStateListener(getChangeHandler());
+                ((ObservableMap)object).removeObservableMapListener(entry);
             } else if (!(object instanceof Map)) {
-                removePropertyChangeListener(object);
+                removePropertyChangeListener(object, entry);
             }
         }
     }
@@ -520,7 +650,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private void addPropertyChangeListener(Object object) {
+    private static void addPropertyChangeListener(Object object, PropertyChangeListener listener) {
         EventSetDescriptor ed = getEventSetDescriptor(object);
         Method addPCMethod = null;
 
@@ -529,13 +659,13 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return;
         }
 
-        invokeMethod(addPCMethod, object, getChangeHandler());
+        invokeMethod(addPCMethod, object, listener);
     }
 
     /**
      * @throws PropertyResolutionException
      */
-    private void removePropertyChangeListener(Object object) {
+    private static void removePropertyChangeListener(Object object, PropertyChangeListener listener) {
         EventSetDescriptor ed = getEventSetDescriptor(object);
         Method removePCMethod = null;
 
@@ -544,36 +674,10 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return;
         }
         
-        Exception reason = null;
-        try {
-            removePCMethod.invoke(object, getChangeHandler());
-        } catch (SecurityException ex) {
-            reason = ex;
-        } catch (IllegalArgumentException ex) {
-            reason = ex;
-        } catch (InvocationTargetException ex) {
-            reason = ex;
-        } catch (IllegalAccessException ex) {
-            reason = ex;
-        }
-
-        if (reason != null) {
-            throw new PropertyResolutionException("Unable to remove listener from " + object,
-                                                  source, path.toString(), reason);
-        }
+        invokeMethod(removePCMethod, object, listener);
     }
 
-    private int getSourceIndex(Object object) {
-        for (int i = 0; i < cache.length; i++) {
-            if (cache[i] == object) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
-
-    private boolean wrapsLiteral(Object o) {
+    private static boolean wrapsLiteral(Object o) {
         assert o != null;
 
         return o instanceof String ||
@@ -590,7 +694,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     // need special match method because when using reflection
     // to get a primitive value, the value is always wrapped in
     // a new object
-    private boolean match(Object a, Object b) {
+    private static boolean match(Object a, Object b) {
         if (a == b) {
             return true;
         }
@@ -604,193 +708,6 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         }
 
         return false;
-    }
-
-    private void validateCache(int ignore) {
-        for (int i = 0; i < path.length() - 1; i++) {
-           if (i == ignore - 1) {
-               continue;
-           }
-            
-            Object src = cache[i];
-
-            if (src == NOREAD) {
-                return;
-            }
-
-            Object next = getProperty(src, path.get(i));
-
-            if (!match(next, cache[i + 1])) {
-                System.err.println("LOG: validateCache(): concurrent modification");
-            }
-        }
-
-        if (path.length() != ignore) {
-            Object next = getProperty(cache[path.length() - 1], path.getLast());
-            if (!match(cachedValue, next)) {
-                System.err.println("LOG: validateCache(): concurrent modification");
-            }
-
-            Object src = cache[path.length() - 1];
-            Object writer;
-            if (src == null || src == NOREAD) {
-                writer = null;
-            } else {
-                writer = getWriter(cache[path.length() - 1], path.getLast());
-            }
-
-            if (cachedWriter != writer && (cachedWriter == null || !cachedWriter.equals(writer))) {
-                System.err.println("LOG: validateCache(): concurrent modification");
-            }
-        }
-    }
-
-    private void updateCachedWriter() {
-        Object src = cache[path.length() - 1];
-        if (src == null || src == NOREAD) {
-            cachedWriter = null;
-        } else {
-            cachedWriter = getWriter(src, path.getLast());
-            if (cachedWriter == null) {
-                System.err.println("LOG: updateCachedWriter(): missing write method");
-            }
-        }
-    }
-
-    private void updateCachedValue() {
-        Object src = cache[path.length() - 1];
-        if (src == null || src == NOREAD) {
-            cachedValue = NOREAD;
-        } else {
-            cachedValue = getProperty(cache[path.length() - 1], path.getLast());
-            if (cachedValue == NOREAD) {
-                System.err.println("LOG: updateCachedValue(): missing read method");
-            }
-        }
-    }
-
-    private void cachedValueChanged(int index) {
-        validateCache(index);
-
-        boolean wasWriteable = cachedIsWriteable();
-        Object oldValue = cachedValue;
-
-        updateCachedSources(index);
-        updateCachedValue();
-        if (index != path.length()) {
-            updateCachedWriter();
-        }
-
-        notifyListeners(wasWriteable, oldValue);
-    }
-
-    private void mapValueChanged(ObservableMap map, Object key) {
-        if (ignoreChange) {
-            return;
-        }
-        
-        int index = getSourceIndex(map);
-
-        if (index == -1) {
-            throw new AssertionError();
-        }
-
-        if (key.equals(path.get(index))) {
-            cachedValueChanged(index + 1);
-        }
-    }
-
-    private void propertyValueChanged(PropertyChangeEvent pce) {
-        if (ignoreChange) {
-            return;
-        }
-
-        int index = getSourceIndex(pce.getSource());
-
-        if (index == -1) {
-            throw new AssertionError();
-        }
-
-        String propertyName = pce.getPropertyName();
-        if (propertyName == null || path.get(index).equals(propertyName)) {
-            cachedValueChanged(index + 1);
-        }
-    }
-
-    private void bindingPropertyChanged(PropertyStateEvent pse) {
-        int index = getSourceIndex(pse.getSource());
-
-        if (index == -1) {
-            throw new AssertionError();
-        }
-
-        boolean valueChanged = pse.getValueChanged();
-
-        if (index == path.length() - 1) {
-            validateCache(index + 1);
-
-            boolean writeableChanged = pse.getWriteableChanged();
-
-            if (writeableChanged && valueChanged) {
-                boolean wasWriteable = cachedIsWriteable();
-                Object oldValue = cachedValue;
-                updateCachedValue();
-                updateCachedWriter();
-                notifyListeners(wasWriteable, oldValue);
-            } else if (valueChanged) {
-                Object writer = getWriter(pse.getSource(), path.getLast());
-                if (cachedWriter != writer) {
-                    System.err.println("LOG: bindingPropertyChanged(): concurrent modification");
-                }
-                Object oldValue = cachedValue;
-                updateCachedValue();
-                notifyListeners(cachedIsWriteable(), oldValue);
-            } else {
-                Object value = pse.getSource().getValue();
-                if (cachedValue != value) {
-                    System.err.println("LOG: bindingPropertyChanged(): concurrent modification");
-                }
-                boolean wasWriteable = cachedIsWriteable();
-                updateCachedWriter();
-                notifyListeners(wasWriteable, cachedValue);
-            }
-        } else if (valueChanged) {
-            cachedValueChanged(index + 1);
-            return;
-        }
-    }
-
-    private ChangeHandler getChangeHandler() {
-        if (changeHandler == null) {
-            changeHandler = new ChangeHandler();
-        }
-        return changeHandler;
-    }
-
-
-    private final class ChangeHandler implements PropertyChangeListener,
-                                                 ObservableMapListener,
-                                                 PropertyStateListener {
-
-        public void propertyChange(PropertyChangeEvent e) {
-           propertyValueChanged(e);
-        }
-
-        public void mapKeyValueChanged(ObservableMap map, Object key, Object lastValue) {
-            mapValueChanged(map, key);
-        }
-
-        public void mapKeyAdded(ObservableMap map, Object key) {
-            mapValueChanged(map, key);
-        }
-
-        public void mapKeyRemoved(ObservableMap map, Object key, Object value) {
-            mapValueChanged(map, key);
-        }
-
-        public void propertyStateChanged(PropertyStateEvent pe) {
-            bindingPropertyChanged(pe);
-        }
     }
 
 }
