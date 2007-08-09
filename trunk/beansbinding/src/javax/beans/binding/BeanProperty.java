@@ -726,12 +726,4 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return false;
     }
 
-    public boolean equals(Object o) {
-        return o instanceof BeanProperty && ((BeanProperty)o).path.equals(path);
-    }
-
-    public int hashCode() {
-        return 17 + 37 * path.hashCode();
-    }
-
 }

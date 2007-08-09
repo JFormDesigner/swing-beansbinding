@@ -369,7 +369,7 @@ public class Binding<SS, SV, TS, TV> {
     public final void bind() {
         throwIfBound();
         
-        if (sourceProperty.equals(targetProperty) && sourceObject == targetObject) {
+        if (sourceProperty == targetProperty && sourceObject == targetObject) {
             throw new IllegalStateException("can't bind the same property on the same objects");
         }
         
