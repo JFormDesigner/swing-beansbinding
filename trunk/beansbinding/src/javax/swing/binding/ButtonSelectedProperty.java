@@ -9,80 +9,139 @@ import javax.beans.binding.*;
 import java.beans.*;
 import javax.swing.*;
 import java.awt.event.*;
-import java.util.ConcurrentModificationException;
+import java.util.*;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
 /**
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class ButtonSelectedProperty extends AbstractProperty<Boolean> implements SourceableProperty<AbstractButton, Boolean> {
+public final class ButtonSelectedProperty<S> extends AbstractProperty<S, Boolean> {
 
-    private Object source;
-    private AbstractButton cachedComponent;
-    private Object cachedValue;
-    private ChangeHandler changeHandler;
-    private boolean ignoreChange;
-
+    private Property<S, ? extends AbstractButton> sourceProperty;
+    private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
-
-    public ButtonSelectedProperty() {
-    }
-
-    public ButtonSelectedProperty(AbstractButton component) {
-        this.source = component;
-    }
-
-    public ButtonSelectedProperty(Property<? extends AbstractButton> property) {
-        this.source = property;
-    }
-
-    public void setSource(AbstractButton component) {
-        setSource0(component);
-    }
-
-    public void setSource(Property<? extends AbstractButton> property) {
-        setSource0(property);
-    }
-
-    public AbstractButton getSource() {
-        if (isListening()) {
-            validateCache(-1);
-            return cachedComponent;
-        }
-
-        return getButtonFromSource(false);
-    }
     
-    private void setSource0(Object object) {
-        if (isListening()) {
-            validateCache(-1);
-
-            if (source instanceof Property) {
-                ((Property)source).removePropertyStateListener(changeHandler);
-            }
-        }
-
-        this.source = source;
-
-        if (isListening()) {
-            if (source instanceof Property) {
-                ((Property)source).addPropertyStateListener(getChangeHandler());
-            }
-
+    private final class SourceEntry implements PropertyStateListener, ItemListener {
+        private S source;
+        private AbstractButton cachedComponent;
+        private Object cachedValue;
+        private boolean ignoreChange;
+        
+        private SourceEntry(S source) {
+            this.source = source;
+            sourceProperty.addPropertyStateListener(source, this);
             updateCachedComponent();
             updateCachedValue();
         }
+        
+        private void cleanup() {
+            if (cachedComponent != null) {
+                cachedComponent.removeItemListener(this);
+            }
+
+            sourceProperty.removePropertyStateListener(source, this);
+
+            cachedComponent = null;
+            cachedValue = null;
+        }
+
+        // flag -1 - validate all
+        // flag  0 - source property changed value or readability
+        // flag  1 - value changed
+        private void validateCache(int flag) {
+            if (flag != 0 && getButtonFromSource(source, false) != cachedComponent) {
+                System.err.println("LOG: validateCache(): concurrent modification");
+            }
+            
+            if (flag != 1) {
+                Object value = (cachedComponent == null ? NOREAD : cachedComponent.isSelected());
+                if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
+                    System.err.println("LOG: validateCache(): concurrent modification");
+                }
+            }
+        }
+        
+        private void updateCachedComponent() {
+            AbstractButton comp = getButtonFromSource(source, true);
+
+            if (comp != cachedComponent) {
+                if (cachedComponent != null) {
+                    cachedComponent.removeItemListener(this);
+                }
+
+                cachedComponent = comp;
+
+                if (cachedComponent != null) {
+                    cachedComponent.addItemListener(this);
+                }
+            }
+        }
+        
+        private void updateCachedValue() {
+            cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.isSelected());
+        }
+        
+        private boolean cachedIsReadable() {
+            return cachedValue != NOREAD;
+        }
+        
+        private boolean cachedIsWriteable() {
+            return cachedComponent != null;
+        }
+
+        public void propertyStateChanged(PropertyStateEvent pe) {
+            bindingPropertyChanged(pe);
+        }
+
+        public void itemStateChanged(ItemEvent ie) {
+            buttonSelectedChanged();
+        }
+
+        private void bindingPropertyChanged(PropertyStateEvent pse) {
+            boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
+            validateCache(0);
+            Object oldValue = cachedValue;
+            boolean wasWriteable = cachedIsWriteable();
+            updateCachedComponent();
+            updateCachedValue();
+            notifyListeners(wasWriteable, oldValue, this);
+        }
+
+        private void buttonSelectedChanged() {
+            if (ignoreChange) {
+                return;
+            }
+
+            validateCache(1);
+            Object oldValue = cachedValue;
+            updateCachedValue();
+            notifyListeners(cachedIsWriteable(), oldValue, this);
+        }
     }
 
-    public Class<Boolean> getWriteType() {
+    private ButtonSelectedProperty(Property<S, ? extends AbstractButton> sourceProperty) {
+        this.sourceProperty = sourceProperty;
+    }
+
+    public static final ButtonSelectedProperty<AbstractButton> create() {
+        return new ButtonSelectedProperty<AbstractButton>(new ObjectProperty<AbstractButton>());
+    }
+
+    public static final <S> ButtonSelectedProperty<S> createForProperty(Property<S, ? extends AbstractButton> sourceProperty) {
+        return new ButtonSelectedProperty<S>(sourceProperty);
+    }
+
+    public Class<Boolean> getWriteType(S source) {
         AbstractButton component;
-        
-        if (isListening()) {
-            validateCache(-1);
-            component = cachedComponent;
+
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
+            component = entry.cachedComponent;
         } else {
-            component = getButtonFromSource(true);
+            component = getButtonFromSource(source, true);
         }
 
         if (component == null) {
@@ -92,18 +151,20 @@ public final class ButtonSelectedProperty extends AbstractProperty<Boolean> impl
         return Boolean.class;
     }
 
-    public Boolean getValue() {
-        if (isListening()) {
-            validateCache(-1);
+    public Boolean getValue(S source) {
+        SourceEntry entry = map.get(source);
 
-            if (cachedValue == NOREAD) {
+        if (entry != null) {
+            entry.validateCache(-1);
+
+            if (entry.cachedValue == NOREAD) {
                 throw new UnsupportedOperationException("Unreadable");
             }
 
-            return (Boolean)cachedValue;
+            return (Boolean)entry.cachedValue;
         }
 
-        AbstractButton comp = getButtonFromSource(true);
+        AbstractButton comp = getButtonFromSource(source, true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
@@ -111,226 +172,128 @@ public final class ButtonSelectedProperty extends AbstractProperty<Boolean> impl
         return comp.isSelected();
     }
 
-    public void setValue(Boolean value) {
-        AbstractButton component;
+    public void setValue(S source, Boolean value) {
+        SourceEntry entry = map.get(source);
 
-        if (isListening()) {
-            validateCache(-1);
-            component = cachedComponent;
-        } else {
-            component = getButtonFromSource(true);
-        }
+        if (entry != null) {
+            entry.validateCache(-1);
 
-        if (component == null) {
-            throw new UnsupportedOperationException("Unwriteable");
-        }
-
-        try {
-            ignoreChange = true;
-            component.setSelected(value);
-            if (isListening()) {
-                Object oldValue = cachedValue;
-                updateCachedValue();
-                notifyListeners(cachedIsWriteable(), oldValue);
+            if (entry.cachedComponent == null) {
+                throw new UnsupportedOperationException("Unwriteable");
             }
-        } finally {
-            ignoreChange = false;
+
+            try {
+                entry.ignoreChange = true;
+                entry.cachedComponent.setSelected(value);
+                Object oldValue = entry.cachedValue;
+                entry.updateCachedValue();
+                notifyListeners(entry.cachedIsWriteable(), oldValue, entry);
+            } finally {
+                entry.ignoreChange = false;
+            }
+        } else {
+            AbstractButton component = getButtonFromSource(source, true);
+            if (component == null) {
+                throw new UnsupportedOperationException("Unwriteable");
+            }
+
+            component.setSelected(value);
         }
     }
 
-    public boolean isReadable() {
-        if (isListening()) {
-            validateCache(-1);
-            return cachedIsReadable();
+    public boolean isReadable(S source) {
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
+            return entry.cachedIsReadable();
         }
 
-        return (getButtonFromSource(true) != null);
+        return (getButtonFromSource(source, true) != null);
     }
 
-    public boolean isWriteable() {
-        if (isListening()) {
-            validateCache(-1);
-            return cachedIsWriteable();
+    public boolean isWriteable(S source) {
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
+            return entry.cachedIsWriteable();
         }
 
-        return (getButtonFromSource(true) != null);
+        return (getButtonFromSource(source, true) != null);
     }
 
-    private AbstractButton getButtonFromSource(boolean logErrors) {
-        if (source == null) {
+    private AbstractButton getButtonFromSource(S source, boolean logErrors) {
+        if (!sourceProperty.isReadable(source)) {
             if (logErrors) {
-                System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): source is null");
+                System.err.println("LOG: getButtonFromSource(): unreadable source property");
             }
             return null;
         }
 
-        if (source instanceof Property) {
-            Property<? extends AbstractButton> prop = (Property<? extends AbstractButton>)source;
-            if (!prop.isReadable()) {
-                if (logErrors) {
-                    System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): unreadable source property");
-                }
-                return null;
+        AbstractButton button = sourceProperty.getValue(source);
+        if (button == null) {
+            if (logErrors) {
+                System.err.println("LOG: getButtonFromSource(): source property returned null");
             }
-
-            AbstractButton button = prop.getValue();
-            if (button == null) {
-                if (logErrors) {
-                    System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): source property returned null");
-                }
-                return null;
-            }
-
-            return button;
+            return null;
         }
-
-        return (AbstractButton)source;
+        
+        return button;
     }
 
-    protected final void listeningStarted() {
-        if (source instanceof Property) {
-            ((Property)source).addPropertyStateListener(getChangeHandler());
-        }
-
-        updateCachedComponent();
-        updateCachedValue();
-    }
-
-    protected final void listeningStopped() {
-        if (changeHandler != null) {
-
-            if (cachedComponent != null) {
-                cachedComponent.removeItemListener(changeHandler);
-            }
-
-            if (source instanceof Property) {
-                ((Property)source).removePropertyStateListener(changeHandler);
-            }
-        }
-
-        cachedComponent = null;
-        cachedValue = null;
-        changeHandler = null;
-    }
-
-    // flag -1 - validate all
-    // flag  0 - source property changed value or readability
-    // flag  1 - value changed
-    private void validateCache(int flag) {
-        if (flag != 0 && getButtonFromSource(false) != cachedComponent) {
-            System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
-        }
-
-        if (flag != 1) {
-            Object value = (cachedComponent == null ? NOREAD : cachedComponent.isSelected());
-            if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
-                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
-            }
+    protected final void listeningStarted(S source) {
+        SourceEntry entry = map.get(source);
+        if (entry == null) {
+            entry = new SourceEntry(source);
+            map.put(source, entry);
         }
     }
 
-    private void updateCachedComponent() {
-        AbstractButton comp = getButtonFromSource(true);
-
-        if (comp != cachedComponent) {
-            if (cachedComponent != null) {
-                cachedComponent.removeItemListener(changeHandler);
-            }
-
-            cachedComponent = comp;
-            
-            if (cachedComponent != null) {
-                cachedComponent.addItemListener(getChangeHandler());
-            }
+    protected final void listeningStopped(S source) {
+        SourceEntry entry = map.remove(source);
+        if (entry != null) {
+            entry.cleanup();
         }
     }
 
-    private void updateCachedValue() {
-        cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.isSelected());
-    }
-
-    private boolean cachedIsReadable() {
-        return cachedValue != NOREAD;
-    }
-
-    private boolean cachedIsWriteable() {
-        return cachedComponent != null;
-    }
-
-    private boolean didValueChange(Object oldValue, Object newValue) {
+    private static boolean didValueChange(Object oldValue, Object newValue) {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
 
-    private Object toUNREADABLE(Object src) {
+    private static Object toUNREADABLE(Object src) {
         return src == NOREAD ? UNREADABLE : src;
     }
 
-    private void notifyListeners(boolean wasWriteable, Object oldValue) {
-        PropertyStateListener[] listeners = getPropertyStateListeners();
+    private void notifyListeners(boolean wasWriteable, Object oldValue, SourceEntry entry) {
+        PropertyStateListener[] listeners = getPropertyStateListeners(entry.source);
 
         if (listeners == null || listeners.length == 0) {
             return;
         }
 
         oldValue = toUNREADABLE(oldValue);
-        Object newValue = toUNREADABLE(cachedValue);
+        Object newValue = toUNREADABLE(entry.cachedValue);
         boolean valueChanged = didValueChange(oldValue, newValue);
-        boolean writeableChanged = (wasWriteable != cachedIsWriteable());
+        boolean writeableChanged = (wasWriteable != entry.cachedIsWriteable());
 
         if (!valueChanged && !writeableChanged) {
             return;
         }
         
         PropertyStateEvent pse = new PropertyStateEvent(this,
+                                                        entry.source,
                                                         valueChanged,
                                                         oldValue,
                                                         newValue,
                                                         writeableChanged,
-                                                        cachedIsWriteable());
+                                                        entry.cachedIsWriteable());
 
         this.firePropertyStateChange(pse);
     }
 
-    private void bindingPropertyChanged(PropertyStateEvent pse) {
-        boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
-        validateCache(0);
-        Object oldValue = cachedValue;
-        boolean wasWriteable = cachedIsWriteable();
-        updateCachedComponent();
-        updateCachedValue();
-        notifyListeners(wasWriteable, oldValue);
-    }
-
-    private void buttonSelectedChanged() {
-        if (ignoreChange) {
-            return;
-        }
-
-        validateCache(1);
-        Object oldValue = cachedValue;
-        updateCachedValue();
-        notifyListeners(cachedIsWriteable(), oldValue);
-    }
-
     public String toString() {
         return "Button.isSelected";
-    }
-
-    private ChangeHandler getChangeHandler() {
-        if (changeHandler ==  null) {
-            changeHandler = new ChangeHandler();
-        }
-        return changeHandler;
-    }
-    
-    private final class ChangeHandler implements PropertyStateListener, ItemListener {
-        public void propertyStateChanged(PropertyStateEvent pe) {
-            bindingPropertyChanged(pe);
-        }
-
-        public void itemStateChanged(ItemEvent ie) {
-            buttonSelectedChanged();
-        }
     }
 
 }
