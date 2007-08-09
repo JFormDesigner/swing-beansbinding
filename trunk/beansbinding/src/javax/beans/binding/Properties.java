@@ -12,66 +12,47 @@ public class Properties  {
 
     private Properties() {}
 
-    public static <V> Property<V> unwriteableProperty(Property<? extends V> property) {
+    public static <S, V> Property<S, V> unwriteableProperty(Property<? super S, ? extends V> property) {
         return new UnwriteableProperty(property);
     }
 
-    public static <S, V> SourceableProperty<S, V> unwriteableSourceableProperty(SourceableProperty<S, ? extends V> property) {
-        return new UnwriteableSourceableProperty(property);
-    }
+    private static class UnwriteableProperty<S, V> implements Property<S, V> {
+        protected Property<? super S, ? extends V> property;
 
-    private static class UnwriteableSourceableProperty<S, V> extends UnwriteableProperty<V> implements SourceableProperty<S, V> {
-
-        public UnwriteableSourceableProperty(SourceableProperty<S, ? extends V> property) {
-            super(property);
-        }
-
-        public void setSource(S source) {
-            ((SourceableProperty<S, ? extends V>)property).setSource(source);
-        }
-
-        public S getSource() {
-            return ((SourceableProperty<S, ? extends V>)property).getSource();
-        }
-    }
-
-    private static class UnwriteableProperty<V> implements Property<V> {
-        protected Property<? extends V> property;
-
-        public UnwriteableProperty(Property<? extends V> property) {
+        public UnwriteableProperty(Property<? super S, ? extends V> property) {
             this.property = property;
         }
 
-        public Class<? extends V> getWriteType() {
+        public Class<? extends V> getWriteType(S source) {
             throw new UnsupportedOperationException("Unwriteable");
         }
         
-        public V getValue() {
-            return property.getValue();
+        public V getValue(S source) {
+            return property.getValue(source);
         }
         
-        public void setValue(V value) {
+        public void setValue(S source, V value) {
             throw new UnsupportedOperationException("Unwriteable");
         }
         
-        public boolean isReadable() {
-            return property.isReadable();
+        public boolean isReadable(S source) {
+            return property.isReadable(source);
         }
         
-        public boolean isWriteable() {
+        public boolean isWriteable(S source) {
             return false;
         }
         
-        public void addPropertyStateListener(PropertyStateListener listener) {
-            property.addPropertyStateListener(listener);
+        public void addPropertyStateListener(S source, PropertyStateListener listener) {
+            property.addPropertyStateListener(source, listener);
         }
         
-        public void removePropertyStateListener(PropertyStateListener listener) {
-            property.removePropertyStateListener(listener);
+        public void removePropertyStateListener(S source, PropertyStateListener listener) {
+            property.removePropertyStateListener(source, listener);
         }
         
-        public PropertyStateListener[] getPropertyStateListeners() {
-            return property.getPropertyStateListeners();
+        public PropertyStateListener[] getPropertyStateListeners(S source) {
+            return property.getPropertyStateListeners(source);
         }
         
         public String toString() {
