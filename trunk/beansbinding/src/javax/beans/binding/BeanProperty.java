@@ -298,31 +298,35 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         
         return src;
     }
-    
+
     public Class<? extends V> getWriteType(S source) {
-/*        if (isListening()) {
-            validateCache(-1);
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
  
-            if (cachedWriter == null) {
+            if (entry.cachedWriter == null) {
                 throw new UnsupportedOperationException("Unwriteable");
             }
  
-            return (Class<? extends V>)getType(cache[path.length() - 1], path.getLast());
-        }*/
-        
+            return (Class<? extends V>)getType(entry.cache[path.length() - 1], path.getLast());
+        }
+
         return (Class<? extends V>)getType(getLastSource(source), path.getLast());
     }
     
     public V getValue(S source) {
-/*        if (isListening()) {
-            validateCache(-1);
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
  
-            if (cachedValue == NOREAD) {
+            if (entry.cachedValue == NOREAD) {
                 throw new UnsupportedOperationException("Unreadable");
             }
  
-            return (V)cachedValue;
-        } */
+            return (V)entry.cachedValue;
+        }
         
         Object src = getLastSource(source);
         if (src == null || src == NOREAD) {
@@ -339,28 +343,37 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     }
     
     public void setValue(S source, V value) {
-/*        if (isListening()) {
-            validateCache(-1);
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
  
-            if (cachedWriter == null) {
+            if (entry.cachedWriter == null) {
                 throw new UnsupportedOperationException("Unwritable");
             }
-// IGNORE_CHANGE
-            write(cachedWriter, cache[path.length() - 1], path.getLast(), value);
+
+            try {
+                entry.ignoreChange = true;
+                write(entry.cachedWriter, entry.cache[path.length() - 1], path.getLast(), value);
+            } finally {
+                entry.ignoreChange = false;
+            }
  
-            Object oldValue = cachedValue;
-            updateCachedValue();
-            notifyListeners(cachedIsWriteable(), oldValue);
-        } else { */
-        setProperty(getLastSource(source), path.getLast(), value);
-        /*}*/
+            Object oldValue = entry.cachedValue;
+            entry.updateCachedValue();
+            notifyListeners(entry.cachedIsWriteable(), oldValue, entry);
+        } else {
+            setProperty(getLastSource(source), path.getLast(), value);
+        }
     }
     
     public boolean isReadable(S source) {
-/*        if (isListening()) {
-            validateCache(-1);
-            return cachedIsReadable();
-        }*/
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
+            return entry.cachedIsReadable();
+        }
         
         Object src = getLastSource(source);
         if (src == null || src == NOREAD) {
@@ -377,10 +390,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     }
 
     public boolean isWriteable(S source) {
-        /*if (isListening()) {
-            validateCache(-1);
-            return cachedIsWriteable();
-        }*/
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
+            return entry.cachedIsWriteable();
+        }
 
         Object src = getLastSource(source);
         if (src == null || src == NOREAD) {
