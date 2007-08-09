@@ -12,6 +12,6 @@ import java.util.EventListener;
  */
 public interface PropertyStateListener extends EventListener {
 
-    public void propertyStateChanged(Object source, PropertyStateEvent pse);
+    public void propertyStateChanged(PropertyStateEvent pse);
 
 }

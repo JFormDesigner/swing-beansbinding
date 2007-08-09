@@ -14,20 +14,22 @@ public final class PropertyStateEvent extends EventObject {
 
     public static final Object UNREADABLE = new StringBuffer("UNREADABLE");
 
+    private Object sourceObject;
     private final boolean valueChanged;
     private final Object oldValue;
     private final Object newValue;
     private final boolean writeableChanged;
     private boolean isWriteable;
 
-    public PropertyStateEvent(Property source,
+    public PropertyStateEvent(Property sourceProperty,
+                              Object sourceObject,
                               boolean valueChanged,
                               Object oldValue,
                               Object newValue,
                               boolean writeableChanged,
                               boolean isWriteable) {
 
-        super(source);
+        super(sourceProperty);
 
         if (!writeableChanged && !valueChanged) {
             throw new IllegalArgumentException("Nothing has changed");
@@ -36,7 +38,8 @@ public final class PropertyStateEvent extends EventObject {
         if (valueChanged && oldValue == UNREADABLE && newValue == UNREADABLE) {
             throw new IllegalArgumentException("Value can't change from UNREADABLE to UNREADABLE");
         }
-        
+
+        this.sourceObject = sourceObject;
         this.valueChanged = valueChanged;
         this.oldValue = oldValue;
         this.newValue = newValue;
@@ -44,10 +47,18 @@ public final class PropertyStateEvent extends EventObject {
         this.isWriteable = isWriteable;
     }
 
-    public Property getSource() {
-        return (Property)source;
+    public Object getSource() {
+        return super.getSource();
     }
 
+    public Property getSourceProperty() {
+        return (Property)getSource();
+    }
+    
+    public Object getSourceObject() {
+        return sourceObject;
+    }
+    
     public boolean getValueChanged() {
         return valueChanged;
     }
@@ -79,7 +90,7 @@ public final class PropertyStateEvent extends EventObject {
     public String toString() {
         StringBuffer buffer = new StringBuffer(getClass().getName());
 
-        buffer.append(": Property ").append(getSource()).append(" changed:\n");
+        buffer.append(": Property ").append(getSourceProperty()).append(" changed on ").append(getSourceObject()).append(":\n");
         
         if (getValueChanged()) {
             buffer.append("    value changed from ").append(getOldValue()).append(" to ").append(getNewValue()).append('\n');

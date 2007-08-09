@@ -85,15 +85,15 @@ public abstract class AbstractProperty<S, V> implements Property<S, V> {
         return ret;
     }
 
-    protected final void firePropertyStateChange(S source, PropertyStateEvent pse) {
-        List<PropertyStateListener>listeners = map.get(source);
+    protected final void firePropertyStateChange(PropertyStateEvent pse) {
+        List<PropertyStateListener>listeners = map.get(pse.getSourceObject());
 
         if (listeners == null) {
             return;
         }
 
         for (PropertyStateListener listener : listeners) {
-            listener.propertyStateChanged(source, pse);
+            listener.propertyStateChanged(pse);
         }
     }
 

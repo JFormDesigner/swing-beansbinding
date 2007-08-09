@@ -447,13 +447,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         }
 
         PropertyStateEvent pse = new PropertyStateEvent(this,
+                                                        entry.source,
                                                         valueChanged,
                                                         oldValue,
                                                         newValue,
                                                         writeableChanged,
                                                         entry.cachedIsWriteable());
 
-        this.firePropertyStateChange(entry.source, pse);
+        this.firePropertyStateChange(pse);
     }
 
     public String toString() {
