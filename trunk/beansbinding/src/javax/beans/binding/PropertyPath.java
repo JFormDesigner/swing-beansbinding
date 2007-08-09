@@ -110,7 +110,8 @@ abstract class PropertyPath {
         
         public String toString() {
             StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < path.length; i++) {
+            builder.append(path[0]);
+            for (int i = 1; i < path.length; i++) {
                 builder.append('.');
                 builder.append(path[i]);
             }
