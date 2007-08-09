@@ -16,10 +16,10 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class ButtonSelectedProperty<T extends AbstractButton> extends AbstractProperty<Boolean> implements SourceableProperty<T, Boolean> {
+public final class ButtonSelectedProperty extends AbstractProperty<Boolean> implements SourceableProperty<AbstractButton, Boolean> {
 
     private Object source;
-    private T cachedComponent;
+    private AbstractButton cachedComponent;
     private Object cachedValue;
     private ChangeHandler changeHandler;
     private boolean ignoreChange;
@@ -29,23 +29,23 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
     public ButtonSelectedProperty() {
     }
 
-    public ButtonSelectedProperty(T component) {
+    public ButtonSelectedProperty(AbstractButton component) {
         this.source = component;
     }
 
-    public ButtonSelectedProperty(Property<? extends T> property) {
+    public ButtonSelectedProperty(Property<? extends AbstractButton> property) {
         this.source = property;
     }
 
-    public void setSource(T component) {
+    public void setSource(AbstractButton component) {
         setSource0(component);
     }
 
-    public void setSource(Property<? extends T> property) {
+    public void setSource(Property<? extends AbstractButton> property) {
         setSource0(property);
     }
 
-    public T getSource() {
+    public AbstractButton getSource() {
         if (isListening()) {
             validateCache(-1);
             return cachedComponent;
@@ -76,7 +76,7 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
     }
 
     public Class<Boolean> getWriteType() {
-        T component;
+        AbstractButton component;
         
         if (isListening()) {
             validateCache(-1);
@@ -103,7 +103,7 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
             return (Boolean)cachedValue;
         }
 
-        T comp = getButtonFromSource(true);
+        AbstractButton comp = getButtonFromSource(true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
@@ -112,7 +112,7 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
     }
 
     public void setValue(Boolean value) {
-        T component;
+        AbstractButton component;
 
         if (isListening()) {
             validateCache(-1);
@@ -156,7 +156,7 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
         return (getButtonFromSource(true) != null);
     }
 
-    private T getButtonFromSource(boolean logErrors) {
+    private AbstractButton getButtonFromSource(boolean logErrors) {
         if (source == null) {
             if (logErrors) {
                 System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): source is null");
@@ -165,7 +165,7 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
         }
 
         if (source instanceof Property) {
-            Property<? extends T> prop = (Property<? extends T>)source;
+            Property<? extends AbstractButton> prop = (Property<? extends AbstractButton>)source;
             if (!prop.isReadable()) {
                 if (logErrors) {
                     System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): unreadable source property");
@@ -173,7 +173,7 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
                 return null;
             }
 
-            T button = prop.getValue();
+            AbstractButton button = prop.getValue();
             if (button == null) {
                 if (logErrors) {
                     System.err.println(hashCode() + ": LOG: getJToggleButtonFromSource(): source property returned null");
@@ -184,7 +184,7 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
             return button;
         }
 
-        return (T)source;
+        return (AbstractButton)source;
     }
 
     protected final void listeningStarted() {
@@ -230,7 +230,7 @@ public final class ButtonSelectedProperty<T extends AbstractButton> extends Abst
     }
 
     private void updateCachedComponent() {
-        T comp = getButtonFromSource(true);
+        AbstractButton comp = getButtonFromSource(true);
 
         if (comp != cachedComponent) {
             if (cachedComponent != null) {
