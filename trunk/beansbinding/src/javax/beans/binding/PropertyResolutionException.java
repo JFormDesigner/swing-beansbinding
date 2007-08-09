@@ -18,25 +18,13 @@ package javax.beans.binding;
  * @author Scott Violet
  */
 public class PropertyResolutionException extends RuntimeException {
-    private final Object source;
-    private final String path;
 
-    public PropertyResolutionException(String description, Object source, String path) {
-        this(description, source, path, null);
+    public PropertyResolutionException(String description) {
+        super(description);
     }
 
-    public PropertyResolutionException(String description, Object source,
-                                       String path, Exception reason) {
-
+    public PropertyResolutionException(String description, Exception reason) {
         super(description, reason);
-        this.source = source;
-        this.path = path;
     }
 
-    public String toString() {
-        return getClass().getName() + " [description=" + getMessage() + 
-                                      ", source=" + source +
-                                      ", path=" + path +
-                                      "]";
-    }
 }
