@@ -82,7 +82,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
     private Object getLastSource(S source) {
         if (source == null) {
-            System.err.println(hashCode() + ": LOG: getLastSource(): source is null");
+            System.err.println("LOG: getLastSource(): source is null");
             return null;
         }
 
@@ -91,12 +91,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         for (int i = 0; i < path.length() - 1; i++) {
             src = getProperty(src, path.get(i));
             if (src == null) {
-                System.err.println(hashCode() + ": LOG: getLastSource(): missing source");
+                System.err.println("LOG: getLastSource(): missing source");
                 return null;
             }
 
             if (src == NOREAD) {
-                System.err.println(hashCode() + ": LOG: getLastSource(): missing read method");
+                System.err.println("LOG: getLastSource(): missing read method");
                 return NOREAD;
             }
         }
@@ -136,7 +136,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
         src = getProperty(getLastSource(), path.getLast());
         if (src == NOREAD) {
-            System.err.println(hashCode() + ": LOG: getValue(): missing read method");
+            System.err.println("LOG: getValue(): missing read method");
             throw new UnsupportedOperationException("Unreadable");
         }
 
@@ -178,7 +178,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
         Object reader = getReader(src, path.getLast());
         if (reader == null) {
-            System.err.println(hashCode() + ": LOG: isReadable(): missing read method");
+            System.err.println("LOG: isReadable(): missing read method");
             return false;
         }
 
@@ -202,7 +202,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
         Object writer = getWriter(src, path.getLast());
         if (writer == null) {
-            System.err.println(hashCode() + ": LOG: isWritable(): missing write method");
+            System.err.println("LOG: isWritable(): missing write method");
             return false;
         }
 
@@ -397,7 +397,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         if (pd == null || pd.getWriteMethod() == null) {
-            System.err.println(hashCode() + ": LOG: missing write method");
+            System.err.println("LOG: missing write method");
             throw new UnsupportedOperationException("Unwritable");
         }
 
@@ -463,7 +463,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
         Object writer = getWriter(object, string);
         if (writer == null) {
-            System.err.println(hashCode() + ": LOG: setProperty(): missing write method");
+            System.err.println("LOG: setProperty(): missing write method");
             throw new UnsupportedOperationException("Unwritable");
         }
 
@@ -489,7 +489,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
                 if (src == null) {
                     loggedYet = true;
-                    System.err.println(hashCode() + ": LOG: updateCachedSources(): source is null");
+                    System.err.println("LOG: updateCachedSources(): source is null");
                 } else {
                     registerListener(src, path.get(0));
                 }
@@ -510,12 +510,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                 if (src == null) {
                     if (!loggedYet) {
                         loggedYet = true;
-                        System.err.println(hashCode() + ": LOG: updateCachedSources(): missing source");
+                        System.err.println("LOG: updateCachedSources(): missing source");
                     }
                 } else if (src == NOREAD) {
                     if (!loggedYet) {
                         loggedYet = true;
-                        System.err.println(hashCode() + ": LOG: updateCachedSources(): missing read method");
+                        System.err.println("LOG: updateCachedSources(): missing read method");
                     }
                 } else {
                     registerListener(src, path.get(i));
@@ -564,7 +564,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         Method addPCMethod = null;
 
         if (ed == null || (addPCMethod = ed.getAddListenerMethod()) == null) {
-            System.err.println(hashCode() + ": LOG: addPropertyChangeListener(): can't add listener");
+            System.err.println("LOG: addPropertyChangeListener(): can't add listener");
             return;
         }
 
@@ -579,7 +579,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         Method removePCMethod = null;
 
         if (ed == null || (removePCMethod = ed.getRemoveListenerMethod()) == null) {
-            System.err.println(hashCode() + ": LOG: removePropertyChangeListener(): can't remove listener from source");
+            System.err.println("LOG: removePropertyChangeListener(): can't remove listener from source");
             return;
         }
         
@@ -660,14 +660,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             Object next = getProperty(src, path.get(i));
 
             if (!match(next, cache[i + 1])) {
-                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
+                System.err.println("LOG: validateCache(): concurrent modification");
             }
         }
 
         if (path.length() != ignore) {
             Object next = getProperty(cache[path.length() - 1], path.getLast());
             if (!match(cachedValue, next)) {
-                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
+                System.err.println("LOG: validateCache(): concurrent modification");
             }
 
             Object src = cache[path.length() - 1];
@@ -679,7 +679,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             }
 
             if (cachedWriter != writer && (cachedWriter == null || !cachedWriter.equals(writer))) {
-                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
+                System.err.println("LOG: validateCache(): concurrent modification");
             }
         }
     }
@@ -691,7 +691,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         } else {
             cachedWriter = getWriter(src, path.getLast());
             if (cachedWriter == null) {
-                System.err.println(hashCode() + ": LOG: updateCachedWriter(): missing write method");
+                System.err.println("LOG: updateCachedWriter(): missing write method");
             }
         }
     }
@@ -703,7 +703,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         } else {
             cachedValue = getProperty(cache[path.length() - 1], path.getLast());
             if (cachedValue == NOREAD) {
-                System.err.println(hashCode() + ": LOG: updateCachedValue(): missing read method");
+                System.err.println("LOG: updateCachedValue(): missing read method");
             }
         }
     }
@@ -779,7 +779,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             } else if (valueChanged) {
                 Object writer = getWriter(pse.getSource(), path.getLast());
                 if (cachedWriter != writer) {
-                    System.err.println(hashCode() + ": LOG: bindingPropertyChanged(): concurrent modification");
+                    System.err.println("LOG: bindingPropertyChanged(): concurrent modification");
                 }
                 Object oldValue = cachedValue;
                 updateCachedValue();
@@ -787,7 +787,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             } else {
                 Object value = pse.getSource().getValue();
                 if (cachedValue != value) {
-                    System.err.println(hashCode() + ": LOG: bindingPropertyChanged(): concurrent modification");
+                    System.err.println("LOG: bindingPropertyChanged(): concurrent modification");
                 }
                 boolean wasWriteable = cachedIsWriteable();
                 updateCachedWriter();
