@@ -20,7 +20,7 @@ public final class PropertyStateEvent extends EventObject {
     private final boolean writeableChanged;
     private boolean isWriteable;
 
-    public PropertyStateEvent(Property<?> source,
+    public PropertyStateEvent(Property source,
                               boolean valueChanged,
                               Object oldValue,
                               Object newValue,
@@ -44,8 +44,8 @@ public final class PropertyStateEvent extends EventObject {
         this.isWriteable = isWriteable;
     }
 
-    public Property<?> getSource() {
-        return (Property<?>)source;
+    public Property getSource() {
+        return (Property)source;
     }
 
     public boolean getValueChanged() {
