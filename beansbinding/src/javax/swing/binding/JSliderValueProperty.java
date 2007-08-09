@@ -9,80 +9,139 @@ import javax.beans.binding.*;
 import java.beans.*;
 import javax.swing.*;
 import javax.swing.event.*;
-import java.util.ConcurrentModificationException;
+import java.util.*;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
 /**
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class JSliderValueProperty extends AbstractProperty<Integer> implements SourceableProperty<JSlider, Integer> {
+public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> {
 
-    private Object source;
-    private JSlider cachedComponent;
-    private Object cachedValue;
-    private ChangeHandler changeHandler;
-    private boolean ignoreChange;
-
+    private Property<S, ? extends JSlider> sourceProperty;
+    private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
 
-    public JSliderValueProperty() {
-    }
-
-    public JSliderValueProperty(JSlider component) {
-        this.source = component;
-    }
-
-    public JSliderValueProperty(Property<? extends JSlider> property) {
-        this.source = property;
-    }
-
-    public void setSource(JSlider component) {
-        setSource0(component);
-    }
-
-    public void setSource(Property<? extends JSlider> property) {
-        setSource0(property);
-    }
-
-    public JSlider getSource() {
-        if (isListening()) {
-            validateCache(-1);
-            return cachedComponent;
-        }
-
-        return getJSliderFromSource(false);
-    }
-
-    private void setSource0(Object object) {
-        if (isListening()) {
-            validateCache(-1);
-
-            if (source instanceof Property) {
-                ((Property)source).removePropertyStateListener(changeHandler);
-            }
-        }
-
-        this.source = source;
-
-        if (isListening()) {
-            if (source instanceof Property) {
-                ((Property)source).addPropertyStateListener(getChangeHandler());
-            }
-
+    private final class SourceEntry implements PropertyStateListener, ChangeListener {
+        private S source;
+        private JSlider cachedComponent;
+        private Object cachedValue;
+        private boolean ignoreChange;
+        
+        private SourceEntry(S source) {
+            this.source = source;
+            sourceProperty.addPropertyStateListener(source, this);
             updateCachedComponent();
             updateCachedValue();
         }
-    }
-    
-    public Class<Integer> getWriteType() {
-        JSlider component;
         
-        if (isListening()) {
-            validateCache(-1);
-            component = cachedComponent;
+        private void cleanup() {
+            if (cachedComponent != null) {
+                cachedComponent.removeChangeListener(this);
+            }
+
+            sourceProperty.removePropertyStateListener(source, this);
+
+            cachedComponent = null;
+            cachedValue = null;
+        }
+
+        // flag -1 - validate all
+        // flag  0 - source property changed value or readability
+        // flag  1 - value changed
+        private void validateCache(int flag) {
+            if (flag != 0 && getJSliderFromSource(source, false) != cachedComponent) {
+                System.err.println("LOG: validateCache(): concurrent modification");
+            }
+            
+            if (flag != 1) {
+                Object value = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
+                if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
+                    System.err.println("LOG: validateCache(): concurrent modification");
+                }
+            }
+        }
+        
+        private void updateCachedComponent() {
+            JSlider comp = getJSliderFromSource(source, true);
+
+            if (comp != cachedComponent) {
+                if (cachedComponent != null) {
+                    cachedComponent.removeChangeListener(this);
+                }
+
+                cachedComponent = comp;
+
+                if (cachedComponent != null) {
+                    cachedComponent.addChangeListener(this);
+                }
+            }
+        }
+        
+        private void updateCachedValue() {
+            cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
+        }
+        
+        private boolean cachedIsReadable() {
+            return cachedValue != NOREAD;
+        }
+        
+        private boolean cachedIsWriteable() {
+            return cachedComponent != null;
+        }
+
+        public void propertyStateChanged(PropertyStateEvent pe) {
+            bindingPropertyChanged(pe);
+        }
+
+        public void stateChanged(ChangeEvent ce) {
+            sliderValueChanged();
+        }
+
+        private void bindingPropertyChanged(PropertyStateEvent pse) {
+            boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
+            validateCache(0);
+            Object oldValue = cachedValue;
+            boolean wasWriteable = cachedIsWriteable();
+            updateCachedComponent();
+            updateCachedValue();
+            notifyListeners(wasWriteable, oldValue, this);
+        }
+
+        private void sliderValueChanged() {
+            if (ignoreChange) {
+                return;
+            }
+            
+            validateCache(1);
+            Object oldValue = cachedValue;
+            updateCachedValue();
+            notifyListeners(cachedIsWriteable(), oldValue, this);
+        }
+    }
+
+    private JSliderValueProperty(Property<S, ? extends JSlider> sourceProperty) {
+        this.sourceProperty = sourceProperty;
+    }
+
+    public static final JSliderValueProperty<JSlider> create() {
+        return new JSliderValueProperty<JSlider>(new ObjectProperty<JSlider>());
+    }
+
+    public static final <S> JSliderValueProperty<S> createForProperty(Property<S, ? extends JSlider> sourceProperty) {
+        return new JSliderValueProperty<S>(sourceProperty);
+    }
+
+    public Class<Integer> getWriteType(S source) {
+        JSlider component;
+
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
+            component = entry.cachedComponent;
         } else {
-            component = getJSliderFromSource(true);
+            component = getJSliderFromSource(source, true);
         }
 
         if (component == null) {
@@ -92,245 +151,149 @@ public final class JSliderValueProperty extends AbstractProperty<Integer> implem
         return Integer.class;
     }
 
-    public Integer getValue() {
-        if (isListening()) {
-            validateCache(-1);
+    public Integer getValue(S source) {
+        SourceEntry entry = map.get(source);
 
-            if (cachedValue == NOREAD) {
+        if (entry != null) {
+            entry.validateCache(-1);
+
+            if (entry.cachedValue == NOREAD) {
                 throw new UnsupportedOperationException("Unreadable");
             }
 
-            return (Integer)cachedValue;
+            return (Integer)entry.cachedValue;
         }
 
-        JSlider comp = getJSliderFromSource(true);
+        JSlider comp = getJSliderFromSource(source, true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
 
         return comp.getValue();
     }
+    
+    public void setValue(S source, Integer value) {
+        SourceEntry entry = map.get(source);
 
-    public void setValue(Integer value) {
-        JSlider component;
+        if (entry != null) {
+            entry.validateCache(-1);
 
-        if (isListening()) {
-            validateCache(-1);
-            component = cachedComponent;
-        } else {
-            component = getJSliderFromSource(true);
-        }
-
-        if (component == null) {
-            throw new UnsupportedOperationException("Unwriteable");
-        }
-
-        try {
-            ignoreChange = true;
-            component.setValue(value);
-            if (isListening()) {
-                Object oldValue = cachedValue;
-                updateCachedValue();
-                notifyListeners(cachedIsWriteable(), oldValue);
+            if (entry.cachedComponent == null) {
+                throw new UnsupportedOperationException("Unwriteable");
             }
-        } finally {
-            ignoreChange = false;
+
+            try {
+                entry.ignoreChange = true;
+                entry.cachedComponent.setValue(value);
+                Object oldValue = entry.cachedValue;
+                entry.updateCachedValue();
+                notifyListeners(entry.cachedIsWriteable(), oldValue, entry);
+            } finally {
+                entry.ignoreChange = false;
+            }
+        } else {
+            JSlider component = getJSliderFromSource(source, true);
+            if (component == null) {
+                throw new UnsupportedOperationException("Unwriteable");
+            }
+
+            component.setValue(value);
         }
     }
+    
+    public boolean isReadable(S source) {
+        SourceEntry entry = map.get(source);
 
-    public boolean isReadable() {
-        if (isListening()) {
-            validateCache(-1);
-            return cachedIsReadable();
+        if (entry != null) {
+            entry.validateCache(-1);
+            return entry.cachedIsReadable();
         }
 
-        return (getJSliderFromSource(true) != null);
+        return (getJSliderFromSource(source, true) != null);
     }
 
-    public boolean isWriteable() {
-        if (isListening()) {
-            validateCache(-1);
-            return cachedIsWriteable();
+    public boolean isWriteable(S source) {
+        SourceEntry entry = map.get(source);
+
+        if (entry != null) {
+            entry.validateCache(-1);
+            return entry.cachedIsWriteable();
         }
 
-        return (getJSliderFromSource(true) != null);
+        return (getJSliderFromSource(source, true) != null);
     }
 
-    private JSlider getJSliderFromSource(boolean logErrors) {
-        if (source == null) {
+    private JSlider getJSliderFromSource(S source, boolean logErrors) {
+        if (!sourceProperty.isReadable(source)) {
             if (logErrors) {
-                System.err.println(hashCode() + ": LOG: getJSliderFromSource(): source is null");
+                System.err.println("LOG: getButtonFromSource(): unreadable source property");
             }
             return null;
         }
 
-        if (source instanceof Property) {
-            Property<? extends JSlider> prop = (Property<? extends JSlider>)source;
-            if (!prop.isReadable()) {
-                if (logErrors) {
-                    System.err.println(hashCode() + ": LOG: getJSliderFromSource(): unreadable source property");
-                }
-                return null;
+        JSlider slider = sourceProperty.getValue(source);
+        if (slider == null) {
+            if (logErrors) {
+                System.err.println("LOG: getButtonFromSource(): source property returned null");
             }
-
-            JSlider slider = prop.getValue();
-            if (slider == null) {
-                if (logErrors) {
-                    System.err.println(hashCode() + ": LOG: getJSliderFromSource(): source property returned null");
-                }
-                return null;
-            }
-
-            return slider;
+            return null;
         }
-
-        return (JSlider)source;
+        
+        return slider;
     }
 
-    protected final void listeningStarted() {
-        if (source instanceof Property) {
-            ((Property)source).addPropertyStateListener(getChangeHandler());
-        }
-
-        updateCachedComponent();
-        updateCachedValue();
-    }
-
-    protected final void listeningStopped() {
-        if (changeHandler != null) {
-
-            if (cachedComponent != null) {
-                cachedComponent.removeChangeListener(changeHandler);
-            }
-
-            if (source instanceof Property) {
-                ((Property)source).removePropertyStateListener(changeHandler);
-            }
-        }
-
-        cachedComponent = null;
-        cachedValue = null;
-        changeHandler = null;
-    }
-
-    // flag -1 - validate all
-    // flag  0 - source property changed value or readability
-    // flag  1 - value changed
-    private void validateCache(int flag) {
-        if (flag != 0 && getJSliderFromSource(false) != cachedComponent) {
-            System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
-        }
-
-        if (flag != 1) {
-            Object value = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
-            if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
-                System.err.println(hashCode() + ": LOG: validateCache(): concurrent modification");
-            }
+    protected final void listeningStarted(S source) {
+        SourceEntry entry = map.get(source);
+        if (entry == null) {
+            entry = new SourceEntry(source);
+            map.put(source, entry);
         }
     }
 
-    private void updateCachedComponent() {
-        JSlider comp = getJSliderFromSource(true);
-
-        if (comp != cachedComponent) {
-            if (cachedComponent != null) {
-                cachedComponent.removeChangeListener(changeHandler);
-            }
-
-            cachedComponent = comp;
-            
-            if (cachedComponent != null) {
-                cachedComponent.addChangeListener(getChangeHandler());
-            }
+    protected final void listeningStopped(S source) {
+        SourceEntry entry = map.remove(source);
+        if (entry != null) {
+            entry.cleanup();
         }
     }
 
-    private void updateCachedValue() {
-        cachedValue = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
-    }
-
-    private boolean cachedIsReadable() {
-        return cachedValue != NOREAD;
-    }
-
-    private boolean cachedIsWriteable() {
-        return cachedComponent != null;
-    }
-
-    private boolean didValueChange(Object oldValue, Object newValue) {
+    private static boolean didValueChange(Object oldValue, Object newValue) {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
 
-    private Object toUNREADABLE(Object src) {
+    private static Object toUNREADABLE(Object src) {
         return src == NOREAD ? UNREADABLE : src;
     }
 
-    private void notifyListeners(boolean wasWriteable, Object oldValue) {
-        PropertyStateListener[] listeners = getPropertyStateListeners();
+    private void notifyListeners(boolean wasWriteable, Object oldValue, SourceEntry entry) {
+        PropertyStateListener[] listeners = getPropertyStateListeners(entry.source);
 
         if (listeners == null || listeners.length == 0) {
             return;
         }
 
         oldValue = toUNREADABLE(oldValue);
-        Object newValue = toUNREADABLE(cachedValue);
+        Object newValue = toUNREADABLE(entry.cachedValue);
         boolean valueChanged = didValueChange(oldValue, newValue);
-        boolean writeableChanged = (wasWriteable != cachedIsWriteable());
+        boolean writeableChanged = (wasWriteable != entry.cachedIsWriteable());
 
         if (!valueChanged && !writeableChanged) {
             return;
         }
         
         PropertyStateEvent pse = new PropertyStateEvent(this,
+                                                        entry.source,
                                                         valueChanged,
                                                         oldValue,
                                                         newValue,
                                                         writeableChanged,
-                                                        cachedIsWriteable());
+                                                        entry.cachedIsWriteable());
 
         this.firePropertyStateChange(pse);
     }
 
-    private void bindingPropertyChanged(PropertyStateEvent pse) {
-        boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
-        validateCache(0);
-        Object oldValue = cachedValue;
-        boolean wasWriteable = cachedIsWriteable();
-        updateCachedComponent();
-        updateCachedValue();
-        notifyListeners(wasWriteable, oldValue);
-    }
-
-    private void sliderValueChanged() {
-        if (ignoreChange) {
-            return;
-        }
-
-        validateCache(1);
-        Object oldValue = cachedValue;
-        updateCachedValue();
-        notifyListeners(cachedIsWriteable(), oldValue);
-    }
-
     public String toString() {
         return "JSlider.value";
-    }
-
-    private ChangeHandler getChangeHandler() {
-        if (changeHandler ==  null) {
-            changeHandler = new ChangeHandler();
-        }
-        return changeHandler;
-    }
-    
-    private final class ChangeHandler implements PropertyStateListener, ChangeListener {
-        public void propertyStateChanged(PropertyStateEvent pe) {
-            bindingPropertyChanged(pe);
-        }
-
-        public void stateChanged(ChangeEvent ce) {
-            sliderValueChanged();
-        }
     }
 
 }
