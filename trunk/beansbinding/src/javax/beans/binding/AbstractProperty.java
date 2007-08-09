@@ -10,54 +10,72 @@ import java.util.*;
 /**
  * @author Shannon Hickey
  */
-public abstract class AbstractProperty<V> implements Property<V> {
+public abstract class AbstractProperty<S, V> implements Property<S, V> {
 
-    private List<PropertyStateListener> listeners;
-    private boolean listening;
+    private IdentityHashMap<S, List<PropertyStateListener>> map = new IdentityHashMap<S, List<PropertyStateListener>>();
 
-    public abstract Class<? extends V> getWriteType();
+    public abstract Class<? extends V> getWriteType(S source);
 
-    public abstract V getValue();
+    public abstract V getValue(S source);
 
-    public abstract void setValue(V value);
+    public abstract void setValue(S source, V value);
 
-    public abstract boolean isReadable();
+    public abstract boolean isReadable(S source);
 
-    public abstract boolean isWriteable();
+    public abstract boolean isWriteable(S source);
 
-    protected void listeningStarted() {
+    protected void listeningStarted(S source) {
     }
-    
-    protected void listeningStopped() {
+
+    protected void listeningStopped(S source) {
     }
-    
-    public final void addPropertyStateListener(PropertyStateListener listener) {
+
+    public final void addPropertyStateListener(S source, PropertyStateListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        List<PropertyStateListener>listeners = map.get(source);
+        boolean wasListening;
+
         if (listeners == null) {
-            listeners = new ArrayList<PropertyStateListener>(1);
+            wasListening = false;
+            listeners = new ArrayList<PropertyStateListener>();
+            map.put(source, listeners);
+        } else {
+            wasListening = (listeners.size() != 0);
         }
 
         listeners.add(listener);
 
-        if (!listening && listeners.size() != 0) {
-            listening = true;
-            listeningStarted();
+        if (!wasListening) {
+            listeningStarted(source);
         }
     }
 
-    public final void removePropertyStateListener(PropertyStateListener listener) {
+    public final void removePropertyStateListener(S source, PropertyStateListener listener) {
+        if (listener == null) {
+            return;
+        }
+
+        List<PropertyStateListener>listeners = map.get(source);
+
         if (listeners == null) {
             return;
         }
 
+        boolean wasListening = (listeners.size() != 0);
+
         listeners.remove(listener);
 
-        if (listening && listeners.size() == 0) {
-            listening = false;
-            listeningStopped();
+        if (wasListening && listeners.size() == 0) {
+            listeningStopped(source);
         }
     }
 
-    public final PropertyStateListener[] getPropertyStateListeners() {
+    public final PropertyStateListener[] getPropertyStateListeners(S source) {
+        List<PropertyStateListener>listeners = map.get(source);
+
         if (listeners == null) {
             return new PropertyStateListener[0];
         }
@@ -67,18 +85,21 @@ public abstract class AbstractProperty<V> implements Property<V> {
         return ret;
     }
 
-    protected final void firePropertyStateChange(PropertyStateEvent pse) {
+    protected final void firePropertyStateChange(S source, PropertyStateEvent pse) {
+        List<PropertyStateListener>listeners = map.get(source);
+
         if (listeners == null) {
             return;
         }
 
         for (PropertyStateListener listener : listeners) {
-            listener.propertyStateChanged(pse);
+            listener.propertyStateChanged(source, pse);
         }
     }
 
-    public final boolean isListening() {
-        return listening;
+    public final boolean isListening(S source) {
+         List<PropertyStateListener>listeners = map.get(source);
+         return listeners != null && listeners.size() != 0;
     }
 
 }
