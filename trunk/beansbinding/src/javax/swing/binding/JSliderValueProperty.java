@@ -121,11 +121,15 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
     }
 
     private JSliderValueProperty(Property<S, ? extends JSlider> sourceProperty) {
+        if (sourceProperty == null) {
+            throw new IllegalArgumentException("can't have null source property");
+        }
+
         this.sourceProperty = sourceProperty;
     }
 
     public static final JSliderValueProperty<JSlider> create() {
-        return new JSliderValueProperty<JSlider>(new ObjectProperty<JSlider>());
+        return createForProperty(new ObjectProperty<JSlider>());
     }
 
     public static final <S> JSliderValueProperty<S> createForProperty(Property<S, ? extends JSlider> sourceProperty) {
@@ -226,7 +230,7 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
     private JSlider getJSliderFromSource(S source, boolean logErrors) {
         if (!sourceProperty.isReadable(source)) {
             if (logErrors) {
-                System.err.println("LOG: getButtonFromSource(): unreadable source property");
+                System.err.println("LOG: getJSliderFromSource(): unreadable source property");
             }
             return null;
         }
@@ -234,7 +238,7 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
         JSlider slider = sourceProperty.getValue(source);
         if (slider == null) {
             if (logErrors) {
-                System.err.println("LOG: getButtonFromSource(): source property returned null");
+                System.err.println("LOG: getJSliderFromSource(): source property returned null");
             }
             return null;
         }
