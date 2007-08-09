@@ -11,19 +11,21 @@ import java.util.ArrayList;
 /**
  * @author Shannon Hickey
  */
-public class Binding<S, T> {
+public class Binding<SS, SV, TS, TV> {
 
     private String name;
-    private Property<S> source;
-    private Property<T> target;
+    private SS sourceObject;
+    private TS targetObject;
+    private Property<SS, SV> sourceProperty;
+    private Property<TS, TV> targetProperty;
 
     private boolean bound;
     private AutoUpdateStrategy strategy;
-    private Validator<? super S> validator;
-    private Converter<S, T> converter;
-    private T sourceNullValue;
-    private S targetNullValue;
-    private T sourceUnreadableValue;
+    private Validator<? super SV> validator;
+    private Converter<SV, TV> converter;
+    private TV sourceNullValue;
+    private SV targetNullValue;
+    private TV sourceUnreadableValue;
     private List<BindingListener> listeners;
     private PropertyStateListener psl;
     private boolean ignoreChange;
@@ -143,34 +145,58 @@ public class Binding<S, T> {
         }
     }
 
-    public Binding(Property<S> source, Property<T> target) {
-        this(null, source, target);
+    public Binding(Property<SS, SV> sourceProperty, Property<TS, TV> targetProperty) {
+        this(null, null, sourceProperty, null, targetProperty);
     }
 
-    public Binding(String name, Property<S> source, Property<T> target) {
-        if (source == null || target == null) {
-            throw new IllegalArgumentException("source and target must be non-null");
-        }
+    public Binding(String name, Property<SS, SV> sourceProperty, Property<TS, TV> targetProperty) {
+        this(name, null, sourceProperty, null, targetProperty);
+    }
+    
+    public Binding(SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty) {
+        this(null, sourceObject, sourceProperty, targetObject, targetProperty);
+    }
 
-        if (source == target) {
-            throw new IllegalArgumentException("can't bind a property to itself");
+    public Binding(String name, SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty) {
+        if (sourceProperty == null || targetProperty == null) {
+            throw new IllegalArgumentException("source and target properties must be non-null");
         }
 
         this.name = name;
-        this.source = source;
-        this.target = target;
+        this.sourceObject = sourceObject;
+        this.sourceProperty = sourceProperty;
+        this.targetObject = targetObject;
+        this.targetProperty = targetProperty;
     }
 
     public final String getName() {
         return name;
     }
 
-    public final Property<S> getSource() {
-        return source;
+    public final Property<SS, SV> getSourceProperty() {
+        return sourceProperty;
     }
 
-    public final Property<T> getTarget() {
-        return target;
+    public final Property<TS, TV> getTargetProperty() {
+        return targetProperty;
+    }
+
+    public final SS getSourceObject() {
+        return sourceObject;
+    }
+
+    public final TS getTargetObject() {
+        return targetObject;
+    }
+
+    public final void setSourceObject() {
+        throwIfBound();
+        this.sourceObject = sourceObject;
+    }
+
+    public final void setTargetObject() {
+        throwIfBound();
+        this.targetObject = targetObject;
     }
 
     public final void setAutoUpdateStrategy(AutoUpdateStrategy strategy) {
@@ -183,48 +209,48 @@ public class Binding<S, T> {
         return retVal == null ? AutoUpdateStrategy.READ_WRITE : retVal;
     }
 
-    public final void setValidator(Validator<? super S> validator) {
+    public final void setValidator(Validator<? super SV> validator) {
         throwIfBound();
         this.validator = validator;
     }
 
-    public final Validator<? super S> getValidator() {
+    public final Validator<? super SV> getValidator() {
         return validator;
     }
 
-    public final void setConverter(Converter<S, T> converter) {
+    public final void setConverter(Converter<SV, TV> converter) {
         throwIfBound();
         this.converter = converter;
     }
 
-    public final Converter<S, T> getConverter() {
+    public final Converter<SV, TV> getConverter() {
         return converter;
     }
 
-    public final void setSourceNullValue(T value) {
+    public final void setSourceNullValue(TV value) {
         throwIfBound();
         sourceNullValue = value;
     }
 
-    public final T getSourceNullValue() {
+    public final TV getSourceNullValue() {
         return sourceNullValue;
     }
 
-    public final void setTargetNullValue(S value) {
+    public final void setTargetNullValue(SV value) {
         throwIfBound();
         targetNullValue = value;
     }
 
-    public final S getTargetNullValue() {
+    public final SV getTargetNullValue() {
         return targetNullValue;
     }
 
-    public final void setSourceUnreadableValue(T value) {
+    public final void setSourceUnreadableValue(TV value) {
         throwIfBound();
         sourceUnreadableValue = value;
     }
 
-    public final T getSourceUnreadableValue() {
+    public final TV getSourceUnreadableValue() {
         return sourceUnreadableValue;
     }
 
@@ -252,15 +278,15 @@ public class Binding<S, T> {
         return ret;
     }
 
-    public final ValueResult<T> getSourceValueForTarget() {
-        if (!target.isWriteable()) {
-            return new ValueResult<T>(SyncFailure.TARGET_UNWRITEABLE);
+    public final ValueResult<TV> getSourceValueForTarget() {
+        if (!targetProperty.isWriteable(targetObject)) {
+            return new ValueResult<TV>(SyncFailure.TARGET_UNWRITEABLE);
         }
 
-        T value;
+        TV value;
 
-        if (source.isReadable()) {
-            S rawValue = source.getValue();
+        if (sourceProperty.isReadable(sourceObject)) {
+            SV rawValue = sourceProperty.getValue(sourceObject);
 
             if (rawValue == null) {
                 value = sourceNullValue;
@@ -273,20 +299,20 @@ public class Binding<S, T> {
             value = sourceUnreadableValue;
         }
 
-        return new ValueResult<T>((T)value);
+        return new ValueResult<TV>((TV)value);
     }
 
-    public final ValueResult<S> getTargetValueForSource() {
-        if (!target.isReadable()) {
-            return new ValueResult<S>(SyncFailure.TARGET_UNREADABLE);
+    public final ValueResult<SV> getTargetValueForSource() {
+        if (!targetProperty.isReadable(targetObject)) {
+            return new ValueResult<SV>(SyncFailure.TARGET_UNREADABLE);
         }
 
-        if (!source.isWriteable()) {
-            return new ValueResult<S>(SyncFailure.SOURCE_UNWRITEABLE);
+        if (!sourceProperty.isWriteable(sourceObject)) {
+            return new ValueResult<SV>(SyncFailure.SOURCE_UNWRITEABLE);
         }
 
-        S value = null;
-        T rawValue = target.getValue();
+        SV value = null;
+        TV rawValue = targetProperty.getValue(targetObject);
 
         if (rawValue == null) {
             value = targetNullValue;
@@ -296,18 +322,18 @@ public class Binding<S, T> {
             } catch (ClassCastException cce) {
                 throw cce;
             } catch (RuntimeException rte) {
-                return new ValueResult<S>(SyncFailure.conversionFailure(rte));
+                return new ValueResult<SV>(SyncFailure.conversionFailure(rte));
             }
 
             if (validator != null) {
                 Validator.Result vr = validator.validate(value);
                 if (vr != null) {
-                    return new ValueResult<S>(SyncFailure.validationFailure(vr));
+                    return new ValueResult<SV>(SyncFailure.validationFailure(vr));
                 }
             }
         }
 
-        return new ValueResult<S>((S)value);
+        return new ValueResult<SV>((SV)value);
     }
 
     private final void tryRefreshThenSave() {
@@ -342,6 +368,11 @@ public class Binding<S, T> {
 
     public final void bind() {
         throwIfBound();
+        
+        if (sourceProperty.equals(targetProperty) && sourceObject == targetObject) {
+            throw new IllegalStateException("can't bind the same property on the same objects");
+        }
+        
         bound = true;
         bindImpl();
         if (group != null) {
@@ -355,18 +386,18 @@ public class Binding<S, T> {
         if (strat == AutoUpdateStrategy.READ_ONCE) {
             refresh();
             psl = new PSL();
-            source.addPropertyStateListener(psl);
-            target.addPropertyStateListener(psl);
+            sourceProperty.addPropertyStateListener(sourceObject, psl);
+            targetProperty.addPropertyStateListener(targetObject, psl);
         } else if (strat == AutoUpdateStrategy.READ) {
             refresh();
             psl = new PSL();
-            source.addPropertyStateListener(psl);
-            target.addPropertyStateListener(psl);
+            sourceProperty.addPropertyStateListener(sourceObject, psl);
+            targetProperty.addPropertyStateListener(targetObject, psl);
         } else {
             tryRefreshThenSave();
             psl = new PSL();
-            source.addPropertyStateListener(psl);
-            target.addPropertyStateListener(psl);
+            sourceProperty.addPropertyStateListener(sourceObject, psl);
+            targetProperty.addPropertyStateListener(targetObject, psl);
         }
     }
 
@@ -380,8 +411,8 @@ public class Binding<S, T> {
     }
 
     protected void unbindImpl() {
-        source.removePropertyStateListener(psl);
-        target.removePropertyStateListener(psl);
+        sourceProperty.removePropertyStateListener(sourceObject, psl);
+        targetProperty.removePropertyStateListener(targetObject, psl);
         psl = null;
     }
 
@@ -458,14 +489,14 @@ public class Binding<S, T> {
     protected final SyncFailure simpleRefresh() {
         throwIfUnbound();
 
-        ValueResult<T> vr = getSourceValueForTarget();
+        ValueResult<TV> vr = getSourceValueForTarget();
         if (vr.failed()) {
             return vr.getFailure();
         }
 
         try {
             ignoreChange = true;
-            target.setValue(vr.getValue());
+            targetProperty.setValue(targetObject, vr.getValue());
         } finally {
             ignoreChange = false;
         }
@@ -476,14 +507,14 @@ public class Binding<S, T> {
     protected final SyncFailure simpleSave() {
         throwIfUnbound();
 
-        ValueResult<S> vr = getTargetValueForSource();
+        ValueResult<SV> vr = getTargetValueForSource();
         if (vr.failed()) {
             return vr.getFailure();
         }
 
         try {
             ignoreChange = true;
-            source.setValue(vr.getValue());
+            sourceProperty.setValue(sourceObject, vr.getValue());
         } finally {
             ignoreChange = false;
         }
@@ -491,18 +522,18 @@ public class Binding<S, T> {
         return null;
     }
 
-    private final T convertForward(S value) {
+    private final TV convertForward(SV value) {
         if (converter == null) {
-            Class<? extends T> targetType = target.getWriteType();
+            Class<? extends TV> targetType = targetProperty.getWriteType(targetObject);
             return targetType.cast(value);
         }
 
         return converter.convertForward(value);
     }
 
-    private final S convertReverse(T value) {
+    private final SV convertReverse(TV value) {
         if (converter == null) {
-            Class<? extends S> sourceType = source.getWriteType();
+            Class<? extends SV> sourceType = sourceProperty.getWriteType(sourceObject);
             return sourceType.cast(value);
         }
 
@@ -527,8 +558,10 @@ public class Binding<S, T> {
 
     private String paramString() {
         return "name=" + getName() +
-               ", source=" + source +
-               ", target=" + target +
+               ", sourceObject=" + sourceObject +
+               ", sourceProperty=" + sourceProperty +
+               ", targetObject=" + targetObject +
+               ", targetProperty" + targetProperty +
                ", autoUpdateStrategy=" + getAutoUpdateStrategy() +
                ", validator=" + validator +
                ", converter=" + converter +
@@ -546,7 +579,7 @@ public class Binding<S, T> {
 
             AutoUpdateStrategy strat = getAutoUpdateStrategy();
 
-            if (pse.getSource() == source) {
+            if (pse.getSourceProperty() == sourceProperty && pse.getSourceObject() == sourceObject) {
                 if (strat == AutoUpdateStrategy.READ_ONCE) {
                     if (pse.getValueChanged()) {
                         sourceChanged();

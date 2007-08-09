@@ -248,7 +248,7 @@ public class BindingGroup {
     }
 
     private class Handler implements BindingListener {
-        public void syncFailed(Binding<?, ?> binding, Binding.SyncFailure... failures) {
+        public void syncFailed(Binding binding, Binding.SyncFailure... failures) {
             if (listeners == null) {
                 return;
             }
@@ -258,7 +258,7 @@ public class BindingGroup {
             }
         }
 
-        public void synced(Binding<?, ?> binding) {
+        public void synced(Binding binding) {
             if (listeners == null) {
                 return;
             }
@@ -270,7 +270,7 @@ public class BindingGroup {
             }
         }
 
-        public void sourceChanged(Binding<?, ?> binding) {
+        public void sourceChanged(Binding binding) {
             if (listeners == null) {
                 return;
             }
@@ -280,7 +280,7 @@ public class BindingGroup {
             }
         }
 
-        public void targetChanged(Binding<?, ?> binding) {
+        public void targetChanged(Binding binding) {
             if (listeners == null) {
                 return;
             }
@@ -292,5 +292,4 @@ public class BindingGroup {
             }
         }
     }
-
 }
