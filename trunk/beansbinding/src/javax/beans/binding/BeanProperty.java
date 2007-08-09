@@ -158,7 +158,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             if (cachedWriter == null) {
                 throw new UnsupportedOperationException("Unwritable");
             }
-
+// IGNORE_CHANGE
             write(cachedWriter, cache[path.length() - 1], path.getLast(), value);
 
             Object oldValue = cachedValue;
@@ -261,21 +261,20 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private BeanInfo getBeanInfo(Object object) {
+    private static BeanInfo getBeanInfo(Object object) {
         assert object != null;
 
         try {
             return Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
         } catch (IntrospectionException ie) {
-            throw new PropertyResolutionException("Exception while introspecting " + object.getClass().getName(),
-                                                  source, path.toString(), ie);
+            throw new PropertyResolutionException("Exception while introspecting " + object.getClass().getName(), ie);
         }
     }
 
     /**
      * @throws PropertyResolutionException
      */
-    private PropertyDescriptor getPropertyDescriptor(Object object, String string) {
+    private static PropertyDescriptor getPropertyDescriptor(Object object, String string) {
         assert object != null;
 
         PropertyDescriptor[] pds = getBeanInfo(object).getPropertyDescriptors();
@@ -288,7 +287,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return null;
     }
 
-    private EventSetDescriptor getEventSetDescriptor(Object object) {
+    private static EventSetDescriptor getEventSetDescriptor(Object object) {
         assert object != null;
         
         EventSetDescriptor[] eds = getBeanInfo(object).getEventSetDescriptors();
@@ -304,7 +303,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private Object invokeMethod(Method method, Object object, Object... args) {
+    private static Object invokeMethod(Method method, Object object, Object... args) {
         Exception reason = null;
 
         try {
@@ -317,24 +316,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             reason = ex;
         }
 
-        throw new PropertyResolutionException("Exception invoking method " + method + " on " + object,
-                                              source, path.toString(), reason);
+        throw new PropertyResolutionException("Exception invoking method " + method + " on " + object, reason);
     }
 
-    private Object getReader(Object object, String string) {
+    private static Object getReader(Object object, String string) {
         assert object != null;
 
         if (object instanceof Map) {
             return object;
-        }
-
-        if (object instanceof Property && string.equals("value")) {
-            Property prop = (Property)object;
-            if (!prop.isReadable()) {
-                return null;
-            }
-
-            return prop;
         }
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
@@ -345,7 +334,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private Object read(Object reader, Object object, String string) {
+    private static Object read(Object reader, Object object, String string) {
         assert reader != null;
 
         if (reader instanceof Map) {
@@ -353,19 +342,13 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return ((Map)reader).get(string);
         }
 
-        if (reader instanceof Property) {
-            assert reader == object;
-            assert string.equals("value");
-            return ((Property)reader).getValue();
-        }
-        
         return invokeMethod((Method)reader, object);
     }
 
     /**
      * @throws PropertyResolutionException
      */
-    private Object getProperty(Object object, String string) {
+    private static Object getProperty(Object object, String string) {
         if (object == null || object == NOREAD) {
             return NOREAD;
         }
@@ -385,7 +368,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private Class<?> getType(Object object, String string) {
+    private static Class<?> getType(Object object, String string) {
         if (object == null || object == NOREAD) {
             throw new UnsupportedOperationException("Unwritable");
         }
@@ -403,20 +386,11 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return pd.getPropertyType();
     }
 
-    private Object getWriter(Object object, String string) {
+    private static Object getWriter(Object object, String string) {
         assert object != null;
 
         if (object instanceof Map) {
             return object;
-        }
-
-        if (object instanceof Property && string.equals("value")) {
-            Property prop = (Property)object;
-            if (!prop.isWriteable()) {
-                return null;
-            }
-
-            return prop;
         }
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
@@ -427,35 +401,23 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private void write(Object writer, Object object, String string, Object value) {
+    private static void write(Object writer, Object object, String string, Object value) {
         assert writer != null;
 
-        try {
-            ignoreChange = true;
-            if (writer instanceof Map) {
-                assert writer == object;
-                ((Map)writer).put(string, value);
-                return;
-            }
-            
-            if (writer instanceof Property) {
-                assert writer == object;
-                assert string.equals("value");
-                ((Property)writer).setValue(value);
-                return;
-            }
-            
-            invokeMethod((Method)writer, object, value);
-        } finally {
-            ignoreChange = false;
+        if (writer instanceof Map) {
+            assert writer == object;
+            ((Map)writer).put(string, value);
+            return;
         }
+            
+        invokeMethod((Method)writer, object, value);
     }
 
     /**
      * @throws PropertyResolutionException
      * @throws IllegalStateException
      */
-    private void setProperty(Object object, String string, Object value) {
+    private static void setProperty(Object object, String string, Object value) {
         if (object == null || object == NOREAD) {
             throw new UnsupportedOperationException("Unwritable");
         }
@@ -469,7 +431,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         write(writer, object, string, value);
     }
 
-    private Object toUNREADABLE(Object src) {
+    private static Object toUNREADABLE(Object src) {
         return src == NOREAD ? UNREADABLE : src;
     }
 
