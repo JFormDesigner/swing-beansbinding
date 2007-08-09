@@ -12,81 +12,39 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 /**
  * @author Shannon Hickey
  */
-public final class ObjectProperty<S> extends AbstractProperty<S> implements SourceableProperty<S, S> {
-
-    private S source;
+public final class ObjectProperty<S> implements Property<S, S> {
 
     public ObjectProperty() {
-        this(null);
     }
 
-    public ObjectProperty(S source) {
-        this.source = source;
-    }
-
-    public void setSource(S source) {
-        S oldSource = this.source;
-
-        this.source = source;
-
-        if (isListening()) {
-            notifyListeners(oldSource);
-        }
-    };
-
-    public S getSource() {
-        return source;
-    }
-
-    public Class<? extends S> getWriteType() {
+    public Class<? extends S> getWriteType(S source) {
         throw new IllegalStateException("Unwriteable");
     }
 
-    public S getValue() {
+    public S getValue(S source) {
         return source;
     }
 
-    public void setValue(S value) {
+    public void setValue(S source, S value) {
         throw new IllegalStateException("Unwriteable");
     }
 
-    public boolean isReadable() {
+    public boolean isReadable(Object source) {
         return true;
     }
 
-    public boolean isWriteable() {
+    public boolean isWriteable(Object source) {
         return false;
     }
 
-    private boolean didValueChange(Object oldValue, Object newValue) {
-        return oldValue == null || newValue == null || !oldValue.equals(newValue);
-    }
-
-    private void notifyListeners(Object oldValue) {
-        PropertyStateListener[] listeners = getPropertyStateListeners();
-
-        if (listeners == null || listeners.length == 0) {
-            return;
-        }
-
-        boolean valueChanged = didValueChange(oldValue, source);
-
-        if (!valueChanged) {
-            return;
-        }
-
-        PropertyStateEvent pse = new PropertyStateEvent(this,
-                                                        true,
-                                                        oldValue,
-                                                        source,
-                                                        false,
-                                                        false);
-
-        firePropertyStateChange(pse);
-    }
-
     public String toString() {
-        return source == null ? "null" : source.toString();
+        return getClass().getName();
+    }
+
+    public void addPropertyStateListener(S source, PropertyStateListener listener) {}
+    public void removePropertyStateListener(S source, PropertyStateListener listener) {}
+    public PropertyStateListener[] getPropertyStateListeners(S source) {
+        return new PropertyStateListener[0];
     }
 
 }
