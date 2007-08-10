@@ -12,47 +12,46 @@ import javax.swing.*;
 /**
  * @author Shannon Hickey
  */
-class ElementsProperty<T extends JComponent> extends AbstractProperty<List> implements PropertyStateListener {
+class ElementsProperty extends AbstractProperty<Object, List> implements PropertyStateListener {
 
-    private Property<? extends T> componentProperty;
+    private Property tableTargetProperty;
     private List list;
+    private Binding binding;
 
-    public ElementsProperty(Property<? extends T> componentProperty) {
-        if (componentProperty == null) {
-            throw new IllegalArgumentException("can't have null property");
+    public ElementsProperty(Property tableTargetProperty) {
+        super(true);
+
+        if (tableTargetProperty == null) {
+            throw new IllegalArgumentException("can't have table target property");
         }
 
-        this.componentProperty = componentProperty;
-        componentProperty.addPropertyStateListener(this);
+        this.tableTargetProperty = tableTargetProperty;
     }
 
-    public T getComponent() {
-        if (!isReadable()) {
-            throw new UnsupportedOperationException("Unreadable");
-        }
-
-        return (T)componentProperty.getValue();
+    public JComponent getComponent() {
+        assert binding != null;
+        return (JComponent)tableTargetProperty.getValue(binding.getTargetObject());
     }
 
-    public Class<List> getWriteType() {
-        if (!isWriteable()) {
+    public Class<List> getWriteType(Object source) {
+        if (!isWriteable(source)) {
             throw new UnsupportedOperationException("Unwriteable");
         }
 
         return (Class<List>)List.class;
     }
 
-    public List getValue() {
-        if (!isReadable()) {
+    public List getValue(Object source) {
+        if (!isReadable(source)) {
             throw new UnsupportedOperationException("Unreadable");
         }
 
         return list;
     }
 
-    public void setValue(List list) {
-        if (!isWriteable()) {
-            throw new UnsupportedOperationException("Unreadable");
+    public void setValue(Object source, List list) {
+        if (!isWriteable(source)) {
+            throw new UnsupportedOperationException("Unwriteable");
         }
 
         if (this.list == list) {
@@ -62,24 +61,67 @@ class ElementsProperty<T extends JComponent> extends AbstractProperty<List> impl
         List old = this.list;
         this.list = list;
 
-        PropertyStateEvent pse = new PropertyStateEvent(this, true, old, list, false, true);
+        PropertyStateEvent pse = new PropertyStateEvent(this, null, true, old, list, false, true);
         firePropertyStateChange(pse);
     }
 
-    public boolean isReadable() {
-        return componentProperty.isReadable() && componentProperty.getValue() != null;
+    public boolean isReadable(Object source) {
+        return binding != null &&
+               tableTargetProperty.isReadable(binding.getTargetObject()) &&
+               tableTargetProperty.getValue(binding.getTargetObject()) != null;
     }
 
-    public boolean isWriteable() {
-        return componentProperty.isReadable() && componentProperty.getValue() != null;
+    public boolean isWriteable(Object source) {
+        return binding != null &&
+               tableTargetProperty.isReadable(binding.getTargetObject()) &&
+               tableTargetProperty.getValue(binding.getTargetObject()) != null;
     }
 
     public String toString() {
         return "JTable.elements";
     }
 
-    private boolean isReadableSourceValue(Object value) {
+    private static boolean isReadableSourceValue(Object value) {
         return value != null && value != PropertyStateEvent.UNREADABLE;
+    }
+
+    void installBinding(Binding binding) {
+        if (this.binding != null) {
+            throw new IllegalStateException();
+        }
+
+        this.binding = binding;
+
+        if (this.isListening(null)) {
+            // someone outside the binding has installed listeners
+            // should be nice and notify them
+            if (isReadable(null)) {
+                PropertyStateEvent pse = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
+            }
+        }
+
+        tableTargetProperty.addPropertyStateListener(binding.getTargetObject(), this);
+    }
+
+    void uninstallBinding() {
+        if (this.binding == null) {
+            throw new IllegalStateException();
+        }
+
+        boolean wasReadable = isReadable(null);
+        List oldValue = getValue(null);
+
+        this.binding = null;
+
+        if (this.isListening(null)) {
+            // someone outside the binding has installed listeners
+            // should be nice and notify them
+            if (wasReadable) {
+                PropertyStateEvent pse = new PropertyStateEvent(this, null, true, oldValue, PropertyStateEvent.UNREADABLE, true, false);
+            }
+        }
+
+        tableTargetProperty.removePropertyStateListener(binding.getTargetObject(), this);
     }
 
     public void propertyStateChanged(PropertyStateEvent pse) {
@@ -93,18 +135,18 @@ class ElementsProperty<T extends JComponent> extends AbstractProperty<List> impl
         this.list = null;
 
         if (wasReadableSource && !isReadableSource) {
-            PropertyStateEvent ps = new PropertyStateEvent(this, true, old, PropertyStateEvent.UNREADABLE, true, false);
+            PropertyStateEvent ps = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
             firePropertyStateChange(ps);
             return;
         }
 
         if (!wasReadableSource && isReadableSource) {
-            PropertyStateEvent ps = new PropertyStateEvent(this, true, PropertyStateEvent.UNREADABLE, null, true, true);
+            PropertyStateEvent ps = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
             firePropertyStateChange(ps);
             return;
         }
 
-        PropertyStateEvent ps = new PropertyStateEvent(this, true, old, null, false, true);
+        PropertyStateEvent ps = new PropertyStateEvent(this, null, true, old, null, false, true);
         firePropertyStateChange(ps);
     }
 
