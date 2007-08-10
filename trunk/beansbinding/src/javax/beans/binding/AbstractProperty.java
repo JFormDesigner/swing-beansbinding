@@ -12,7 +12,48 @@ import java.util.*;
  */
 public abstract class AbstractProperty<S, V> implements Property<S, V> {
 
-    private IdentityHashMap<S, List<PropertyStateListener>> map = new IdentityHashMap<S, List<PropertyStateListener>>();
+    private final boolean ignoresSource;
+    private Object listeners;
+
+    public AbstractProperty() {
+        this(false);
+    }
+
+    public AbstractProperty(boolean ignoresSource) {
+        this.ignoresSource = ignoresSource;
+    }
+
+    private List<PropertyStateListener> getListeners(S source, boolean create) {
+        if (ignoresSource) {
+            List<PropertyStateListener> list = (List<PropertyStateListener>)listeners;
+
+            if (list == null && create) {
+                list = new ArrayList<PropertyStateListener>();
+                listeners = list;
+            }
+
+            return list;
+        }
+
+        IdentityHashMap<S, List<PropertyStateListener>> map = (IdentityHashMap<S, List<PropertyStateListener>>)listeners;
+
+        if (map == null) {
+            if (create) {
+                map = new IdentityHashMap<S, List<PropertyStateListener>>();
+                listeners = map;
+            } else {
+                return null;
+            }
+        }
+
+        List<PropertyStateListener> list = map.get(source);
+        if (list == null && create) {
+            list = new ArrayList<PropertyStateListener>();
+            map.put(source, list);
+        }
+
+        return list;
+    }
 
     public abstract Class<? extends V> getWriteType(S source);
 
@@ -35,21 +76,12 @@ public abstract class AbstractProperty<S, V> implements Property<S, V> {
             return;
         }
 
-        List<PropertyStateListener>listeners = map.get(source);
-        boolean wasListening;
-
-        if (listeners == null) {
-            wasListening = false;
-            listeners = new ArrayList<PropertyStateListener>();
-            map.put(source, listeners);
-        } else {
-            wasListening = (listeners.size() != 0);
-        }
-
+        List<PropertyStateListener> listeners = getListeners(source, true);
+        boolean wasListening = (listeners.size() != 0);
         listeners.add(listener);
 
         if (!wasListening) {
-            listeningStarted(source);
+            listeningStarted(ignoresSource ? null : source);
         }
     }
 
@@ -58,7 +90,7 @@ public abstract class AbstractProperty<S, V> implements Property<S, V> {
             return;
         }
 
-        List<PropertyStateListener>listeners = map.get(source);
+        List<PropertyStateListener> listeners = getListeners(source, false);
 
         if (listeners == null) {
             return;
@@ -69,12 +101,12 @@ public abstract class AbstractProperty<S, V> implements Property<S, V> {
         listeners.remove(listener);
 
         if (wasListening && listeners.size() == 0) {
-            listeningStopped(source);
+            listeningStopped(ignoresSource ? null : source);
         }
     }
 
     public final PropertyStateListener[] getPropertyStateListeners(S source) {
-        List<PropertyStateListener>listeners = map.get(source);
+         List<PropertyStateListener> listeners = getListeners(source, false);
 
         if (listeners == null) {
             return new PropertyStateListener[0];
@@ -86,7 +118,7 @@ public abstract class AbstractProperty<S, V> implements Property<S, V> {
     }
 
     protected final void firePropertyStateChange(PropertyStateEvent pse) {
-        List<PropertyStateListener>listeners = map.get(pse.getSourceObject());
+        List<PropertyStateListener> listeners = getListeners((S)pse.getSourceObject(), false);
 
         if (listeners == null) {
             return;
@@ -98,7 +130,7 @@ public abstract class AbstractProperty<S, V> implements Property<S, V> {
     }
 
     public final boolean isListening(S source) {
-         List<PropertyStateListener>listeners = map.get(source);
+         List<PropertyStateListener> listeners = getListeners(source, false);
          return listeners != null && listeners.size() != 0;
     }
 
