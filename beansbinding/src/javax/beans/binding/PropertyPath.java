@@ -144,7 +144,7 @@ abstract class PropertyPath {
         }
 
         public String toString() {
-            return "." + path;
+            return path;
         }
     }
 }
