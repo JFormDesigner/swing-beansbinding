@@ -14,52 +14,60 @@ import java.util.*;
 /**
  * @author Shannon Hickey
  */
-public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
+public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List> {
 
-    private ElementsProperty<JTable> ep;
+    private ElementsProperty<TS, JTable> ep;
     private Handler handler = new Handler();
     private JTable table;
-    private List<T> elements;
+    private List<E> elements;
     private boolean editable;
     private boolean editableSet;
     private List<TableColumnBinding> columnBindings = new ArrayList<TableColumnBinding>();
 
-    public JTableBinding(List<T> source, JTable target) {
-        this(null, source, target);
+    public static <E> JTableBinding<E, List<E>, JTable> createDirectBinding(List<E> source, JTable target) {
+        return createDirectBinding(null, source, target);
     }
 
-    public JTableBinding(Property<List<T>> source, JTable target) {
-        this(null, source, target);
+    public static <E> JTableBinding<E, List<E>, JTable> createDirectBinding(String name, List<E> sourceList, JTable targetTable) {
+        return new JTableBinding<E, List<E>, JTable>(name, sourceList, new ObjectProperty<List<E>>(), targetTable, new ObjectProperty<JTable>());
     }
 
-    public JTableBinding(List<T> source, Property<? extends JTable> target) {
-        this(null, source, target);
+    public static <E, SS> JTableBinding<E, SS, JTable> createDirectBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, JTable targetTable) {
+        return createDirectBinding(null, sourceObject, sourceListProperty, targetTable);
     }
 
-    public JTableBinding(Property<List<T>> source, Property<? extends JTable> target) {
-        this(null, source, target);
+    public static <E, SS> JTableBinding<E, SS, JTable> createDirectBinding(String name, SS sourceObject, Property<SS, List<E>> sourceListProperty, JTable targetTable) {
+        return new JTableBinding<E, SS, JTable>(name, sourceObject, sourceListProperty, targetTable, new ObjectProperty<JTable>());
     }
 
-    public JTableBinding(String name, List<T> source, JTable target) {
-        super(name, new ObjectProperty(source), new ElementsProperty<JTable>(new ObjectProperty<JTable>(target)));
-        setup();
+    public static <E, TS> JTableBinding<E, List<E>, TS> createDirectBinding(List<E> sourceList, TS targetObject, Property<TS, ? extends JTable> targetTableProperty) {
+        return createDirectBinding(null, sourceList, targetObject, targetTableProperty);
     }
 
-    public JTableBinding(String name, Property<List<T>> source, JTable target) {
-        super(name, source, new ElementsProperty<JTable>(new ObjectProperty<JTable>(target)));
-        setup();
+    public static <E, TS> JTableBinding<E, List<E>, TS> createDirectBinding(String name, List<E> sourceList, TS targetObject, Property<TS, ? extends JTable> targetTableProperty) {
+        return new JTableBinding<E, List<E>, TS>(name, sourceList, new ObjectProperty<List<E>>(), targetObject, targetTableProperty);
     }
 
-    public JTableBinding(String name, List<T> source, Property<? extends JTable> target) {
-        super(name, new ObjectProperty(source), new ElementsProperty(target));
-        setup();
+    public JTableBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetTableProperty) {
+        this(null, sourceObject, sourceListProperty, targetObject, targetTableProperty);
     }
 
-    public JTableBinding(String name, Property<List<T>> source, Property<? extends JTable> target) {
-        super(name, source, new ElementsProperty(target));
-        setup();
+    public JTableBinding(String name, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetTableProperty) {
+        super(name, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetTableProperty));
+        ep = (ElementsProperty<TS, JTable>)getTargetProperty();
+        ep.addPropertyStateListener(null, handler);
     }
 
+    protected final void bindImpl() {
+        ep.installBinding(this);
+        super.bindImpl();
+    }
+
+    protected final void unbinImpl() {
+        ep.uninstallBinding();
+        super.unbindImpl();
+    }
+    
     public void setEditable(boolean editable) {
         throwIfBound();
         this.editable = editable;
@@ -74,32 +82,34 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
         return editableSet;
     }
 
-    public TableColumnBinding addColumnBinding(SourceableProperty<T, ?> source) {
-        return addColumnBinding(null, source);
+    public TableColumnBinding addColumnBinding(Property<E, ?> columnProperty) {
+        return addColumnBinding(null, columnProperty);
     }
     
-    public TableColumnBinding addColumnBinding(String name, SourceableProperty<T, ?> source) {
+    public TableColumnBinding addColumnBinding(String name, Property<E, ?> columnProperty) {
         throwIfBound();
-        if (source == null) {
-            throw new IllegalArgumentException("can't have null source");
+
+        if (columnProperty == null) {
+            throw new IllegalArgumentException("can't have null column property");
         }
 
-        TableColumnBinding binding = new TableColumnBinding(name, source);
+        TableColumnBinding binding = new TableColumnBinding(name, columnProperty);
         columnBindings.add(binding);
         return binding;
     }
 
-    public TableColumnBinding addColumnBinding(int index, SourceableProperty<T, ?> source) {
-        return addColumnBinding(null, index, source);
+    public TableColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty) {
+        return addColumnBinding(null, index, columnProperty);
     }
     
-    public TableColumnBinding addColumnBinding(String name, int index, SourceableProperty<T, ?> source) {
+    public TableColumnBinding addColumnBinding(String name, int index, Property<E, ?> columnProperty) {
         throwIfBound();
-        if (source == null) {
-            throw new IllegalArgumentException("can't have null source");
+
+        if (columnProperty == null) {
+            throw new IllegalArgumentException("can't have null column property");
         }
 
-        TableColumnBinding binding = new TableColumnBinding(name, source);
+        TableColumnBinding binding = new TableColumnBinding(name, columnProperty);
         columnBindings.add(index, binding);
         return binding;
     }
@@ -122,47 +132,38 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
         return Collections.unmodifiableList(columnBindings);
     }
 
-    private void setup() {
-        prepareElementsProperty();
-    }
-
-    private void prepareElementsProperty() {
-        ep = (ElementsProperty)getTarget();
-        ep.addPropertyStateListener(handler);
-    }
-
-    private final class TableColumnProperty implements Property<Object> {
+    private final class TableColumnProperty implements Property {
         private TableColumnBinding binding;
 
-        public Class<? extends Object> getWriteType() {
+        public Class<? extends Object> getWriteType(Object source) {
             return binding.columnClass == null ? Object.class : binding.columnClass;
         }
 
-        public Object getValue() {
+        public Object getValue(Object source) {
             throw new UnsupportedOperationException();
         }
 
-        public void setValue(Object value) {
+        public void setValue(Object source, Object value) {
             throw new UnsupportedOperationException();
         }
 
-        public boolean isReadable() {
+        public boolean isReadable(Object source) {
             throw new UnsupportedOperationException();
         }
 
-        public boolean isWriteable() {
+        public boolean isWriteable(Object source) {
             return true;
         }
 
-        public void addPropertyStateListener(PropertyStateListener listener) {
+        public void addPropertyStateListener(Object source, PropertyStateListener listener) {
             throw new UnsupportedOperationException();
         }
 
-        public void removePropertyStateListener(PropertyStateListener listener) {
+        public void removePropertyStateListener(Object source, PropertyStateListener listener) {
             throw new UnsupportedOperationException();
         }
 
-        public PropertyStateListener[] getPropertyStateListeners() {
+        public PropertyStateListener[] getPropertyStateListeners(Object source) {
             throw new UnsupportedOperationException();
         }
     }
@@ -173,9 +174,9 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
         private boolean editableSet;
         private String columnName;
 
-        public TableColumnBinding(String name, SourceableProperty<T, ?> prop) {
-            super(name, prop, new TableColumnProperty());
-            ((TableColumnProperty)getTarget()).binding = this;
+        public TableColumnBinding(String name, Property<E, ?> columnProperty) {
+            super(name, null, columnProperty, null, new TableColumnProperty());
+            ((TableColumnProperty)getTargetProperty()).binding = this;
         }
 
         public TableColumnBinding setColumnName(String name) {
@@ -195,7 +196,7 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
         }
 
         public String getColumnName() {
-            return columnName == null ? getSource().toString() : columnName;
+            return columnName == null ? getSourceProperty().toString() : columnName;
         }
         
         public TableColumnBinding setEditable(boolean editable) {
@@ -230,7 +231,7 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
 
             if (newValue != null && newValue != PropertyStateEvent.UNREADABLE) {
                 table = ep.getComponent();
-                elements = (List<T>)newValue;
+                elements = (List<E>)newValue;
                 table.setModel(new BindingTableModel());
             }
         }
@@ -259,7 +260,7 @@ public final class JTableBinding<T> extends SwingBinding<List<T>, List> {
 
         public Object getValueAt(int rowIndex, int columnIndex) {
             TableColumnBinding cb = columnBindings.get(columnIndex);
-            ((SourceableProperty)cb.getSource()).setSource(elements.get(rowIndex));
+            cb.setSourceObject(elements.get(rowIndex));
             return cb.getSourceValueForTarget().getValue();
         }
 
