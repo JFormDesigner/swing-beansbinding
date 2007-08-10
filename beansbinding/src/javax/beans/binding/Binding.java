@@ -145,14 +145,14 @@ public class Binding<SS, SV, TS, TV> {
         }
     }
 
-    public Binding(Property<SS, SV> sourceProperty, Property<TS, TV> targetProperty) {
-        this(null, null, sourceProperty, null, targetProperty);
+    public static <SS, TS, TV> Binding<SS, SS, TS, TV> createObjectBinding(SS source, TS targetObject, Property<TS, TV> targetProperty) {
+        return createObjectBinding(null, source, targetObject, targetProperty);
     }
 
-    public Binding(String name, Property<SS, SV> sourceProperty, Property<TS, TV> targetProperty) {
-        this(name, null, sourceProperty, null, targetProperty);
+    public static <SS, TS, TV> Binding<SS, SS, TS, TV> createObjectBinding(String name, SS source, TS targetObject, Property<TS, TV> targetProperty) {
+        return new Binding<SS, SS, TS, TV>(name, source, new ObjectProperty<SS>(), targetObject, targetProperty);
     }
-    
+
     public Binding(SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty) {
         this(null, sourceObject, sourceProperty, targetObject, targetProperty);
     }
@@ -205,7 +205,12 @@ public class Binding<SS, SV, TS, TV> {
     }
 
     public final AutoUpdateStrategy getAutoUpdateStrategy() {
-        AutoUpdateStrategy retVal = (strategy == null ? group.getAutoUpdateStrategy() : strategy);
+        AutoUpdateStrategy retVal = strategy;
+
+        if (retVal == null && group != null) {
+            retVal = group.getAutoUpdateStrategy();
+        }
+
         return retVal == null ? AutoUpdateStrategy.READ_WRITE : retVal;
     }
 
