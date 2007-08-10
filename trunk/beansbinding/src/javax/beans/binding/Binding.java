@@ -145,11 +145,11 @@ public class Binding<SS, SV, TS, TV> {
         }
     }
 
-    public static <SS, TS, TV> Binding<SS, SS, TS, TV> createObjectBinding(SS source, TS targetObject, Property<TS, TV> targetProperty) {
-        return createObjectBinding(null, source, targetObject, targetProperty);
+    public static <SS, TS, TV> Binding<SS, SS, TS, TV> createDirectBinding(SS source, TS targetObject, Property<TS, TV> targetProperty) {
+        return createDirectBinding(null, source, targetObject, targetProperty);
     }
 
-    public static <SS, TS, TV> Binding<SS, SS, TS, TV> createObjectBinding(String name, SS source, TS targetObject, Property<TS, TV> targetProperty) {
+    public static <SS, TS, TV> Binding<SS, SS, TS, TV> createDirectBinding(String name, SS source, TS targetObject, Property<TS, TV> targetProperty) {
         return new Binding<SS, SS, TS, TV>(name, source, new ObjectProperty<SS>(), targetObject, targetProperty);
     }
 
@@ -189,12 +189,12 @@ public class Binding<SS, SV, TS, TV> {
         return targetObject;
     }
 
-    public final void setSourceObject() {
+    public final void setSourceObject(SS sourceObject) {
         throwIfBound();
         this.sourceObject = sourceObject;
     }
 
-    public final void setTargetObject() {
+    public final void setTargetObject(TS targetObject) {
         throwIfBound();
         this.targetObject = targetObject;
     }

@@ -12,7 +12,7 @@ import javax.swing.*;
 /**
  * @author Shannon Hickey
  */
-class ElementsProperty extends AbstractProperty<Object, List> implements PropertyStateListener {
+class ElementsProperty<TS, T extends JComponent> extends AbstractProperty<TS, List> implements PropertyStateListener {
 
     private Property tableTargetProperty;
     private List list;
@@ -28,12 +28,12 @@ class ElementsProperty extends AbstractProperty<Object, List> implements Propert
         this.tableTargetProperty = tableTargetProperty;
     }
 
-    public JComponent getComponent() {
+    public T getComponent() {
         assert binding != null;
-        return (JComponent)tableTargetProperty.getValue(binding.getTargetObject());
+        return (T)tableTargetProperty.getValue(binding.getTargetObject());
     }
 
-    public Class<List> getWriteType(Object source) {
+    public Class<List> getWriteType(TS source) {
         if (!isWriteable(source)) {
             throw new UnsupportedOperationException("Unwriteable");
         }
@@ -41,7 +41,7 @@ class ElementsProperty extends AbstractProperty<Object, List> implements Propert
         return (Class<List>)List.class;
     }
 
-    public List getValue(Object source) {
+    public List getValue(TS source) {
         if (!isReadable(source)) {
             throw new UnsupportedOperationException("Unreadable");
         }
@@ -49,7 +49,7 @@ class ElementsProperty extends AbstractProperty<Object, List> implements Propert
         return list;
     }
 
-    public void setValue(Object source, List list) {
+    public void setValue(TS source, List list) {
         if (!isWriteable(source)) {
             throw new UnsupportedOperationException("Unwriteable");
         }
@@ -65,13 +65,13 @@ class ElementsProperty extends AbstractProperty<Object, List> implements Propert
         firePropertyStateChange(pse);
     }
 
-    public boolean isReadable(Object source) {
+    public boolean isReadable(TS source) {
         return binding != null &&
                tableTargetProperty.isReadable(binding.getTargetObject()) &&
                tableTargetProperty.getValue(binding.getTargetObject()) != null;
     }
 
-    public boolean isWriteable(Object source) {
+    public boolean isWriteable(TS source) {
         return binding != null &&
                tableTargetProperty.isReadable(binding.getTargetObject()) &&
                tableTargetProperty.getValue(binding.getTargetObject()) != null;
