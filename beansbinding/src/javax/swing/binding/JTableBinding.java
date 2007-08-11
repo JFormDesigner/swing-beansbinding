@@ -18,8 +18,8 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
 
     private ElementsProperty<TS, JTable> ep;
     private Handler handler = new Handler();
+    private BindingTableModel model;
     private JTable table;
-    private List<E> elements;
     private boolean editable;
     private boolean editableSet;
     private List<TableColumnBinding> columnBindings = new ArrayList<TableColumnBinding>();
@@ -55,17 +55,20 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
     public JTableBinding(String name, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetTableProperty) {
         super(name, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetTableProperty));
         ep = (ElementsProperty<TS, JTable>)getTargetProperty();
-        ep.addPropertyStateListener(null, handler);
     }
 
     protected final void bindImpl() {
+        model = new BindingTableModel();
+        ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
         super.bindImpl();
     }
 
     protected final void unbinImpl() {
-        ep.uninstallBinding();
         super.unbindImpl();
+        ep.uninstallBinding();
+        ep.removePropertyStateListener(null, handler);
+        model = null;
     }
     
     public void setEditable(boolean editable) {
@@ -221,23 +224,26 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
                 return;
             }
 
-            if (table != null) {
-                table.setModel(null);
-                table = null;
-                elements = null;
-            }
-
             Object newValue = pse.getNewValue();
 
-            if (newValue != null && newValue != PropertyStateEvent.UNREADABLE) {
+            if (newValue == PropertyStateEvent.UNREADABLE) {
+                table.setModel(new DefaultTableModel());
+                table = null;
+                model.setElements(null);
+            } else {
                 table = ep.getComponent();
-                elements = (List<E>)newValue;
-                table.setModel(new BindingTableModel());
+                model.setElements((List<E>)newValue);
+                table.setModel(model);
             }
         }
     }
 
     private final class BindingTableModel implements TableModel {
+        private List<E> elements;
+        public void setElements(List<E> elements) {
+            this.elements = elements;
+        }
+        
         public int getRowCount() {
             return elements.size();
         }
