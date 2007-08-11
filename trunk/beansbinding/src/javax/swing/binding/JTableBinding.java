@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.event.*;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Shannon Hickey
@@ -238,46 +239,75 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
         }
     }
 
-    private final class BindingTableModel implements TableModel {
-        private List<E> elements;
-        public void setElements(List<E> elements) {
-            this.elements = elements;
+    private final class BindingTableModel extends ListBindingManager implements TableModel  {
+        private final List<TableModelListener> listeners;
+
+        public BindingTableModel() {
+            super(JTableBinding.this);
+            listeners = new CopyOnWriteArrayList<TableModelListener>();
         }
-        
+
         public int getRowCount() {
-            return elements.size();
+            return size();
         }
 
-        public int getColumnCount() {
-            return columnBindings.size();
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            return valueAt(rowIndex, columnIndex);
         }
 
-        public String getColumnName(int columnIndex) {
-            return columnBindings.get(columnIndex).getColumnName();
+        public void setValueAt(Object value, int rowIndex, int columnIndex) {
         }
 
         public Class<?> getColumnClass(int columnIndex) {
-            return columnBindings.get(columnIndex).getColumnClass();
+            Class<?> klass = JTableBinding.this.getColumnBinding(columnIndex).getColumnClass();
+            return klass == null ? Object.class : klass;
+        }
+
+        protected void allChanged() {
+            fireTableModelEvent(new TableModelEvent(this, 0, Integer.MAX_VALUE));
+        }
+
+        protected void valueChanged(int row, int column) {
+            fireTableModelEvent(new TableModelEvent(this, row, row, column));
+        }
+
+        protected void added(int row, int length) {
+            fireTableModelEvent(new TableModelEvent(this, row, row + length - 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
+        }
+
+        protected void removed(int row, int length) {
+            fireTableModelEvent(new TableModelEvent(this, row, row + length - 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE));
+        }
+
+        protected void changed(int row) {
+            fireTableModelEvent(new TableModelEvent(this, row, row, TableModelEvent.ALL_COLUMNS));
+        }
+
+        public String getColumnName(int columnIndex) {
+            TableColumnBinding binding = JTableBinding.this.getColumnBinding(columnIndex);
+            return binding.getColumnName() == null ? binding.getSourceProperty().toString() : binding.getColumnName();
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return false;
         }
 
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            TableColumnBinding cb = columnBindings.get(columnIndex);
-            cb.setSourceObject(elements.get(rowIndex));
-            return cb.getSourceValueForTarget().getValue();
-        }
-
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        }
-
         public void addTableModelListener(TableModelListener l) {
+            listeners.add(l);
         }
 
         public void removeTableModelListener(TableModelListener l) {
+            listeners.add(l);
+        }
+
+        private void fireTableModelEvent(TableModelEvent e) {
+            for (TableModelListener listener : listeners) {
+                listener.tableChanged(e);
+            }
+        }
+
+        public int getColumnCount() {
+            return columnCount();
         }
     }
-
 }
