@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.binding.JTableBinding.TableColumnBinding;
 import javax.beans.binding.*;
 
 /**
@@ -19,25 +18,26 @@ import javax.beans.binding.*;
  * @author Shannon Hickey
  */
 abstract class ListBindingManager implements ObservableListListener {
-    private JTableBinding binding;
+    private ColumnBinding[] bindings;
     private List<?> elements;
     private List<ColumnDescriptionManager> managers;
 
-    public ListBindingManager(JTableBinding binding) {
-        this.binding = binding;
+    public ListBindingManager() {
     }
 
     private List<ColumnDescriptionManager> createManagers() {
-        List<TableColumnBinding> bindings = binding.getColumnBindings();
-        List<ColumnDescriptionManager> managers = new ArrayList<ColumnDescriptionManager>(bindings.size());
+        bindings = getColBindings();
+        List<ColumnDescriptionManager> managers = new ArrayList<ColumnDescriptionManager>(bindings.length);
 
-        for (TableColumnBinding binding : bindings) {
+        for (ColumnBinding binding : bindings) {
             managers.add(new ColumnDescriptionManager(binding));
         }
 
         return managers;
     }
 
+    protected abstract ColumnBinding[] getColBindings();
+    
     public final void setElements(List<?> elements) {
         if (this.elements != null) {
             if (this.elements instanceof ObservableList) {
@@ -91,13 +91,13 @@ abstract class ListBindingManager implements ObservableListListener {
             }
         }
 
-        TableColumnBinding tcb = binding.getColumnBinding(column);
-        tcb.setSourceObject(elements.get(row));
-        return tcb.getSourceValueForTarget().getValue();
+        ColumnBinding cb = bindings[column];
+        cb.setSourceObject(elements.get(row));
+        return cb.getSourceValueForTarget().getValue();
     }
 
     public final int columnCount() {
-        return binding.getColumnBindings().size();
+        return bindings.length;
     }
 
     public final void listElementsAdded(ObservableList list, int index, int length) {
@@ -145,10 +145,10 @@ abstract class ListBindingManager implements ObservableListListener {
     protected abstract void changed(int row);
 
     private final class ColumnDescriptionManager {
-        private final TableColumnBinding columnBinding;
+        private final ColumnBinding columnBinding;
         private List<EntryWrapper> wrappers;
 
-        ColumnDescriptionManager(TableColumnBinding columnBinding) {
+        ColumnDescriptionManager(ColumnBinding columnBinding) {
             this.columnBinding = columnBinding;
         }
 
@@ -179,7 +179,7 @@ abstract class ListBindingManager implements ObservableListListener {
 
         void wrapperChanged(EntryWrapper wrapper) {
             int row = wrappers.indexOf(wrapper);
-            ListBindingManager.this.valueChanged(row, binding.getColumnBindings().indexOf(columnBinding));
+            ListBindingManager.this.valueChanged(row, columnBinding.getColumn());
         }
 
         private void add(int index, int length) {
