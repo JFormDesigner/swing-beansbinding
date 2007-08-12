@@ -71,14 +71,16 @@ public final class JListBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List
     }
 
     public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty) {
-        return setDetailBinding(null, detailProperty);
+        return detailProperty == null ?
+            setDetailBinding("AUTO_DETAIL", new ObjectProperty<E>()) :
+            setDetailBinding(null, detailProperty);
     }
 
     public ListDetailBinding setDetailBinding(String name, Property<E, ?> detailProperty) {
         throwIfBound();
 
         if (detailProperty == null) {
-            detailProperty = new ObjectProperty<E>();
+            throw new IllegalArgumentException("can't have null detail property");
         }
 
         detailBinding = new ListDetailBinding(name, detailProperty);

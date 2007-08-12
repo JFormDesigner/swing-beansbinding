@@ -15,7 +15,7 @@ class ColumnBinding extends Binding {
     private int column;
 
     public ColumnBinding(String name, int column, Property columnSource, Property columnTarget) {
-        super(null, columnSource, null, columnTarget);
+        super(name, null, columnSource, null, columnTarget);
         this.column = column;
     }
 
