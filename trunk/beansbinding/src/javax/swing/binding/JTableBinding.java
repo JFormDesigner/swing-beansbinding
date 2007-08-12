@@ -86,46 +86,59 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
         return editableSet;
     }
 
-    public TableColumnBinding addColumnBinding(Property<E, ?> columnProperty) {
+    public <ET> TableColumnBinding<ET> addColumnBinding(Property<E, ET> columnProperty) {
         return addColumnBinding(null, columnProperty);
     }
-    
-    public TableColumnBinding addColumnBinding(String name, Property<E, ?> columnProperty) {
+
+    public <ET> TableColumnBinding<ET> addColumnBinding(String name, Property<E, ET> columnProperty) {
         throwIfBound();
 
         if (columnProperty == null) {
             throw new IllegalArgumentException("can't have null column property");
         }
 
-        TableColumnBinding binding = new TableColumnBinding(name, columnProperty);
+        TableColumnBinding binding = new TableColumnBinding(name, columnBindings.size(), columnProperty);
         columnBindings.add(binding);
         return binding;
     }
 
-    public TableColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty) {
+    public <ET> TableColumnBinding<ET> addColumnBinding(int index, Property<E, ET> columnProperty) {
         return addColumnBinding(null, index, columnProperty);
     }
-    
-    public TableColumnBinding addColumnBinding(String name, int index, Property<E, ?> columnProperty) {
+
+    public <ET> TableColumnBinding<ET> addColumnBinding(String name, int index, Property<E, ET> columnProperty) {
         throwIfBound();
 
         if (columnProperty == null) {
             throw new IllegalArgumentException("can't have null column property");
         }
 
-        TableColumnBinding binding = new TableColumnBinding(name, columnProperty);
+        TableColumnBinding binding = new TableColumnBinding(name, index, columnProperty);
         columnBindings.add(index, binding);
+        adjustIndices(index + 1, true);
         return binding;
     }
 
     public boolean removeColumnBinding(TableColumnBinding binding) {
         throwIfBound();
-        return columnBindings.remove(binding);
+        boolean retVal = columnBindings.remove(binding);
+
+        if (retVal) {
+            adjustIndices(binding.getColumn(), false);
+        }
+
+        return retVal;
     }
     
     public TableColumnBinding removeColumnBinding(int index) {
         throwIfBound();
-        return columnBindings.remove(index);
+        TableColumnBinding retVal = columnBindings.remove(index);
+        
+        if (retVal != null) {
+            adjustIndices(index, false);
+        }
+
+        return retVal;
     }
 
     public TableColumnBinding getColumnBinding(int index) {
@@ -136,6 +149,14 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
         return Collections.unmodifiableList(columnBindings);
     }
 
+    private void adjustIndices(int start, boolean up) {
+        int size = columnBindings.size();
+        for (int i = start; i < size; i++) {
+            ColumnBinding cb = columnBindings.get(i);
+            cb.setColumn(cb.getColumn() + (up ? 1 : -1));
+        }
+    }
+    
     private final class TableColumnProperty implements Property {
         private TableColumnBinding binding;
 
@@ -172,24 +193,24 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
         }
     }
     
-    public final class TableColumnBinding extends Binding {
+    public final class TableColumnBinding<ET> extends ColumnBinding<E, ET> {
         private Class<?> columnClass;
         private boolean editable;
         private boolean editableSet;
         private String columnName;
 
-        public TableColumnBinding(String name, Property<E, ?> columnProperty) {
-            super(name, null, columnProperty, null, new TableColumnProperty());
+        public TableColumnBinding(String name, int column, Property<E, ET> columnProperty) {
+            super(name, column, columnProperty, new TableColumnProperty());
             ((TableColumnProperty)getTargetProperty()).binding = this;
         }
 
-        public TableColumnBinding setColumnName(String name) {
+        public TableColumnBinding<ET> setColumnName(String name) {
             JTableBinding.this.throwIfBound();
             this.columnName = name;
             return this;
         }
 
-        public TableColumnBinding setColumnClass(Class<?> columnClass) {
+        public TableColumnBinding<ET> setColumnClass(Class<? super ET> columnClass) {
             JTableBinding.this.throwIfBound();
             this.columnClass = columnClass;
             return this;
@@ -203,7 +224,7 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
             return columnName == null ? getSourceProperty().toString() : columnName;
         }
         
-        public TableColumnBinding setEditable(boolean editable) {
+        public TableColumnBinding<ET> setEditable(boolean editable) {
             JTableBinding.this.throwIfBound();
             this.editable = editable;
             this.editableSet = true;
@@ -243,8 +264,13 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
         private final List<TableModelListener> listeners;
 
         public BindingTableModel() {
-            super(JTableBinding.this);
             listeners = new CopyOnWriteArrayList<TableModelListener>();
+        }
+
+        protected ColumnBinding[] getColBindings() {
+            ColumnBinding[] bindings = new ColumnBinding[getColumnBindings().size()];
+            bindings = getColumnBindings().toArray(bindings);
+            return bindings;
         }
 
         public int getRowCount() {
