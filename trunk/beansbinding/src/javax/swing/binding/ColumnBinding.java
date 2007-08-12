@@ -10,19 +10,19 @@ import javax.beans.binding.*;
 /**
  * @author Shannon Hickey
  */
-class ColumnBinding<E, ET> extends Binding<E, ET, Object, Object> {
+class ColumnBinding extends Binding {
 
     private int column;
 
-    public ColumnBinding(String name, int column, Property<E, ET> columnSource, Property columnTarget) {
+    public ColumnBinding(String name, int column, Property columnSource, Property columnTarget) {
         super(null, columnSource, null, columnTarget);
         this.column = column;
     }
-    
+
     int getColumn() {
         return column;
     }
-    
+
     void setColumn(int column) {
         this.column = column;
     }
