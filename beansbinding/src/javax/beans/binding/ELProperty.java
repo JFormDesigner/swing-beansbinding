@@ -26,6 +26,15 @@
 
 package javax.beans.binding;
 
+import javax.el.ELContext;
+import javax.el.ELException;
+import javax.el.Expression;
+import javax.el.Expression.ResolvedList;
+import javax.el.Expression.ResolvedProperty;
+import javax.el.Expression.ResolvedObject;
+import javax.el.Expression.Result;
+import javax.el.PropertyNotFoundException;
+import javax.el.ValueExpression;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,10 +51,11 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
     private Property<S, ?> sourceProperty;
     private final String expression;
-    private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
+    private final ELContext context = new TempELContext();
+    /*private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();*/
     private static final Object NOREAD = new Object();
 
-    private final class SourceEntry implements PropertyChangeListener,
+    /*private final class SourceEntry implements PropertyChangeListener,
                                                ObservableMapListener,
                                                PropertyStateListener {
 
@@ -304,7 +314,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         public void mapKeyRemoved(ObservableMap map, Object key, Object value) {
             mapValueChanged(map, key);
         }
-    }
+    }*/
 
     public static final <S, V> ELProperty<S, V> create(String expression) {
         return new ELProperty<S, V>(expression);
@@ -333,7 +343,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         this.sourceProperty = sourceProperty;
     }
 
-    private Object getLastSource(S source) {
+    /*private Object getLastSource(S source) {
         Object src = getBeanFromSource(source);
 
         if (src == null || src == NOREAD) {
@@ -354,10 +364,10 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         }
         
         return src;
-    }
+    }*/
 
     public Class<? extends V> getWriteType(S source) {
-        SourceEntry entry = map.get(source);
+        /*SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
@@ -369,11 +379,13 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             return (Class<? extends V>)getType(entry.cache[path.length() - 1], path.getLast());
         }
 
-        return (Class<? extends V>)getType(getLastSource(source), path.getLast());
+        return (Class<? extends V>)getType(getLastSource(source), path.getLast());*/
+
+        return null;
     }
     
     public V getValue(S source) {
-        SourceEntry entry = map.get(source);
+        /*SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
@@ -396,11 +408,12 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             throw new UnsupportedOperationException("Unreadable");
         }
         
-        return (V)src;
+        return (V)src;*/
+        return null;
     }
     
     public void setValue(S source, V value) {
-        SourceEntry entry = map.get(source);
+        /*SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
@@ -421,11 +434,11 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             notifyListeners(entry.cachedIsWriteable(), oldValue, entry);
         } else {
             setProperty(getLastSource(source), path.getLast(), value);
-        }
+        }*/
     }
     
     public boolean isReadable(S source) {
-        SourceEntry entry = map.get(source);
+        /*SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
@@ -443,11 +456,13 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             return false;
         }
 
+        return true;*/
+        
         return true;
     }
 
     public boolean isWriteable(S source) {
-        SourceEntry entry = map.get(source);
+        /*SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
@@ -465,6 +480,8 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             return false;
         }
 
+        return true;*/
+        
         return true;
     }
 
@@ -492,25 +509,25 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
     }
 
     protected final void listeningStarted(S source) {
-        SourceEntry entry = map.get(source);
+        /*SourceEntry entry = map.get(source);
         if (entry == null) {
             entry = new SourceEntry(source);
             map.put(source, entry);
-        }
+        }*/
     }
 
     protected final void listeningStopped(S source) {
-        SourceEntry entry = map.remove(source);
+        /*SourceEntry entry = map.remove(source);
         if (entry != null) {
             entry.cleanup();
-        }
+        }*/
     }
 
     private static boolean didValueChange(Object oldValue, Object newValue) {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
 
-    private void notifyListeners(boolean wasWriteable, Object oldValue, SourceEntry entry) {
+    /*private void notifyListeners(boolean wasWriteable, Object oldValue, SourceEntry entry) {
         PropertyStateListener[] listeners = getPropertyStateListeners(entry.source);
 
         if (listeners == null || listeners.length == 0) {
@@ -535,10 +552,10 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                                                         entry.cachedIsWriteable());
 
         this.firePropertyStateChange(pse);
-    }
+    }*/
 
     public String toString() {
-        return getClass().getName() + "[" + path + "]";
+        return getClass().getName() + "[" + expression + "]";
     }
 
     /**
@@ -718,7 +735,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return src == NOREAD ? UNREADABLE : src;
     }
 
-    private void registerListener(Object object, SourceEntry entry) {
+    /*private void registerListener(Object object, SourceEntry entry) {
         assert object != null;
 
         if (object != NOREAD) {
@@ -728,12 +745,12 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                 addPropertyChangeListener(object, entry);
             }
         }
-    }
+    }*/
 
     /**
      * @throws PropertyResolutionException
      */
-    private void unregisterListener(Object object, SourceEntry entry) {
+    /*private void unregisterListener(Object object, SourceEntry entry) {
         if (object != null && object != NOREAD) {
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).removeObservableMapListener(entry);
@@ -741,7 +758,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                 removePropertyChangeListener(object, entry);
             }
         }
-    }
+    }*/
 
     /**
      * @throws PropertyResolutionException
