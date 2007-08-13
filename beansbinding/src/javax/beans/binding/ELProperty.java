@@ -26,6 +26,7 @@
 
 package javax.beans.binding;
 
+import com.sun.el.ExpressionFactoryImpl;
 import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.Expression;
@@ -50,7 +51,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
     private Property<S, ?> sourceProperty;
-    private final String expression;
+    private final ValueExpression expression;
     private final ELContext context = new TempELContext();
     /*private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();*/
     private static final Object NOREAD = new Object();
@@ -339,7 +340,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             throw new IllegalArgumentException("expression must be non-null and non-empty");
         }
 
-        this.expression = expression;
+        this.expression = new ExpressionFactoryImpl().createValueExpression(context, expression, Object.class);
         this.sourceProperty = sourceProperty;
     }
 
@@ -407,9 +408,21 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             System.err.println("LOG: getValue(): missing read method");
             throw new UnsupportedOperationException("Unreadable");
         }
-        
+
         return (V)src;*/
-        return null;
+
+        try {
+            expression.setSource(getBeanFromSource(source));
+            Expression.Result result = expression.getResult(context);
+            if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
+                System.err.println("LOG: path is incomplete");
+                throw new UnsupportedOperationException("Unreadable");
+            }
+            
+            return (V)result.getResult();
+        } finally {
+            expression.setSource(null);
+        }
     }
     
     public void setValue(S source, V value) {
