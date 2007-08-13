@@ -426,7 +426,7 @@ public class Binding<SS, SV, TS, TV> {
         return bound;
     }
 
-    public final void getHasChangedTarget() {
+    public final boolean getHasChangedTarget() {
         return hasChangedTarget;
     }
     
