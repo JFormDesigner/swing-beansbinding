@@ -46,7 +46,8 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     private static final Object NOREAD = new Object();
 
     private final class SourceEntry implements PropertyChangeListener,
-                                               ObservableMapListener {
+                                               ObservableMapListener,
+                                               PropertyStateListener {
 
         private S source;
         private Object cachedBean;
@@ -59,6 +60,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             this.source = source;
             cache = new Object[path.length()];
             cache[0] = NOREAD;
+
+            if (sourceProperty != null) {
+                sourceProperty.addPropertyStateListener(source, this);
+            }
+
+            updateCachedBean();
             updateCachedSources(0);
             updateCachedValue();
             updateCachedWriter();
@@ -69,6 +76,10 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                 unregisterListener(cache[i], this);
             }
 
+            if (sourceProperty != null) {
+                sourceProperty.removePropertyStateListener(source, this);
+            }
+            
             cache = null;
             cachedValue = null;
             cachedWriter = null;
@@ -92,13 +103,17 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return -1;
         }
 
+        private void updateCachedBean() {
+            cachedBean = getBeanFromSource(source);
+        }
+        
         private void updateCachedSources(int index) {
             boolean loggedYet = false;
             
             Object src;
             
             if (index == 0) {
-                src = source;
+                src = cachedBean;
                 
                 if (cache[0] != src) {
                     unregisterListener(cache[0], this);
@@ -142,6 +157,8 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             }
         }
 
+        // -1 already used to mean validate all
+        // 0... means something in the path changed
         private void validateCache(int ignore) {
             for (int i = 0; i < path.length() - 1; i++) {
                 if (i == ignore - 1) {
@@ -204,6 +221,17 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                 }
             }
         }
+
+        private void bindingPropertyChanged(PropertyStateEvent pse) {
+            validateCache(0);
+            Object oldValue = cachedValue;
+            boolean wasWriteable = cachedIsWriteable();
+            updateCachedBean();
+            updateCachedSources(0);
+            updateCachedValue();
+            updateCachedWriter();
+            notifyListeners(wasWriteable, oldValue, this);
+        }
         
         private void cachedValueChanged(int index) {
             validateCache(index);
@@ -235,7 +263,15 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                 cachedValueChanged(index + 1);
             }
         }
-        
+
+        public void propertyStateChanged(PropertyStateEvent pe) {
+            if (!pe.getValueChanged()) {
+                return;
+            }
+
+            bindingPropertyChanged(pe);
+        }
+
         private void propertyValueChanged(PropertyChangeEvent pce) {
             if (ignoreChange) {
                 return;
@@ -286,13 +322,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     }
 
     private Object getLastSource(S source) {
-        if (source == null) {
-            System.err.println("LOG: getLastSource(): source is null");
-            return null;
+        Object src = getBeanFromSource(source);
+
+        if (src == null || src == NOREAD) {
+            return src;
         }
-        
-        Object src = source;
-        
+
         for (int i = 0; i < path.length() - 1; i++) {
             src = getProperty(src, path.get(i));
             if (src == null) {
@@ -419,6 +454,29 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         }
 
         return true;
+    }
+
+    private Object getBeanFromSource(S source) {
+        if (sourceProperty == null) {
+            if (source == null) {
+                System.err.println("LOG: getBeanFromSource(): source is null");
+            }
+
+            return source;
+        }
+
+        if (!sourceProperty.isReadable(source)) {
+            System.err.println("LOG: getBeanFromSource(): unreadable source property");
+            return NOREAD;
+        }
+
+        Object bean = sourceProperty.getValue(source);
+        if (bean == null) {
+            System.err.println("LOG: getBeanFromSource(): source property returned null");
+            return null;
+        }
+        
+        return bean;
     }
 
     protected final void listeningStarted(S source) {
