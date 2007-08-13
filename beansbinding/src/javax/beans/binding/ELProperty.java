@@ -41,7 +41,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
     private Property<S, ?> sourceProperty;
-    private final PropertyPath path;
+    private final String path;
     private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
 
@@ -317,7 +317,10 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
     public ELProperty(Property<S, ?> sourceProperty, String path) {
-        this.path = PropertyPath.createPropertyPath(path);
+        if (path == null || path.length() == 0) {
+            throw new IllegalArgumentException("path must be non-null and non-empty");
+        }
+
         this.sourceProperty = sourceProperty;
     }
 
