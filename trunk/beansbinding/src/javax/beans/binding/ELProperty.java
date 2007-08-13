@@ -41,7 +41,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
     private Property<S, ?> sourceProperty;
-    private final String path;
+    private final String expression;
     private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
 
@@ -305,22 +305,31 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             mapValueChanged(map, key);
         }
     }
+
+    public static final <S, V> ELProperty<S, V> create(String expression) {
+        return new ELProperty<S, V>(expression);
+    }
+
+    public static final <S, V> ELProperty<S, V> createForProperty(Property<S, ?> sourceProperty, String expression) {
+        return new ELProperty<S, V>(sourceProperty, expression);
+    }
     
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    public ELProperty(String path) {
-        this(null, path);
+    public ELProperty(String expression) {
+        this(null, expression);
     }
 
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    public ELProperty(Property<S, ?> sourceProperty, String path) {
-        if (path == null || path.length() == 0) {
-            throw new IllegalArgumentException("path must be non-null and non-empty");
+    public ELProperty(Property<S, ?> sourceProperty, String expression) {
+        if (expression == null || expression.length() == 0) {
+            throw new IllegalArgumentException("expression must be non-null and non-empty");
         }
 
+        this.expression = expression;
         this.sourceProperty = sourceProperty;
     }
 
