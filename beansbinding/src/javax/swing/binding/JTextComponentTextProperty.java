@@ -211,7 +211,6 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
         }
         
         private void bindingPropertyChanged(PropertyStateEvent pse) {
-            boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
             validateCache(0);
             Object oldValue = cachedValue;
             boolean wasWriteable = cachedIsWriteable;
@@ -277,6 +276,10 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
         }
 
         public void propertyStateChanged(PropertyStateEvent pe) {
+            if (!pe.getValueChanged()) {
+                return;
+            }
+
             bindingPropertyChanged(pe);
         }
 

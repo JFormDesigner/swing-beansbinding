@@ -91,6 +91,10 @@ public final class ButtonSelectedProperty<S> extends AbstractProperty<S, Boolean
         }
 
         public void propertyStateChanged(PropertyStateEvent pe) {
+            if (!pe.getValueChanged()) {
+                return;
+            }
+
             bindingPropertyChanged(pe);
         }
 
@@ -99,7 +103,6 @@ public final class ButtonSelectedProperty<S> extends AbstractProperty<S, Boolean
         }
 
         private void bindingPropertyChanged(PropertyStateEvent pse) {
-            boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
             validateCache(0);
             Object oldValue = cachedValue;
             boolean wasWriteable = cachedIsWriteable();
