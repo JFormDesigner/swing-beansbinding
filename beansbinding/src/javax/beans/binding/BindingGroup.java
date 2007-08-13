@@ -259,12 +259,12 @@ public class BindingGroup {
         }
 
         public void synced(Binding binding) {
+            updateChangedTargets(binding, false);
+
             if (listeners == null) {
                 return;
             }
 
-            updateChangedTargets(binding, false);
-            
             for (BindingListener listener : listeners) {
                 listener.synced(binding);
             }
@@ -281,12 +281,12 @@ public class BindingGroup {
         }
 
         public void targetChanged(Binding binding) {
+            updateChangedTargets(binding, true);
+
             if (listeners == null) {
                 return;
             }
 
-            updateChangedTargets(binding, true);
-            
             for (BindingListener listener : listeners) {
                 listener.targetChanged(binding);
             }
