@@ -91,6 +91,10 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
         }
 
         public void propertyStateChanged(PropertyStateEvent pe) {
+            if (!pe.getValueChanged()) {
+                return;
+            }
+
             bindingPropertyChanged(pe);
         }
 
@@ -99,7 +103,6 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
         }
 
         private void bindingPropertyChanged(PropertyStateEvent pse) {
-            boolean valueChanged = pse.getValueChanged() || pse.getReadableChanged();
             validateCache(0);
             Object oldValue = cachedValue;
             boolean wasWriteable = cachedIsWriteable();
