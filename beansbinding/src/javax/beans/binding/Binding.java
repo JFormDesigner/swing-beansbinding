@@ -527,10 +527,34 @@ public class Binding<SS, SV, TS, TV> {
         return null;
     }
 
+    private final Class<?> noPrimitiveType(Class<?> klass) {
+        if (!klass.isPrimitive()) {
+            return klass;
+        }
+
+        if (klass == Short.TYPE) {
+            return Short.class;
+        } else if (klass == Integer.TYPE) {
+            return Integer.class;
+        } else if (klass == Long.TYPE) {
+            return Long.class;
+        } else if (klass == Boolean.TYPE) {
+            return Boolean.class;
+        } else if (klass == Character.TYPE) {
+            return Character.class;
+        } else if (klass == Float.TYPE) {
+            return Float.class;
+        } else if (klass == Double.TYPE) {
+            return Double.class;
+        }
+
+        throw new AssertionError();
+    }
+
     private final TV convertForward(SV value) {
         if (converter == null) {
-            Class<? extends TV> targetType = targetProperty.getWriteType(targetObject);
-            return targetType.cast(value);
+            Class<?> targetType = noPrimitiveType(targetProperty.getWriteType(targetObject));
+            return (TV)targetType.cast(value);
         }
 
         return converter.convertForward(value);
@@ -538,8 +562,8 @@ public class Binding<SS, SV, TS, TV> {
 
     private final SV convertReverse(TV value) {
         if (converter == null) {
-            Class<? extends SV> sourceType = sourceProperty.getWriteType(sourceObject);
-            return sourceType.cast(value);
+            Class<?> sourceType = noPrimitiveType(sourceProperty.getWriteType(sourceObject));
+            return (SV)sourceType.cast(value);
         }
 
         return converter.convertReverse(value);
