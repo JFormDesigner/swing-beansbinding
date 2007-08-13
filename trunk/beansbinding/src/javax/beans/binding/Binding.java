@@ -30,6 +30,7 @@ public class Binding<SS, SV, TS, TV> {
     private PropertyStateListener psl;
     private boolean ignoreChange;
     private BindingGroup group;
+    private boolean hasChangedTarget;
 
     public enum AutoUpdateStrategy {
         READ,
@@ -425,6 +426,10 @@ public class Binding<SS, SV, TS, TV> {
         return bound;
     }
 
+    public final void getHasChangedTarget() {
+        return hasChangedTarget;
+    }
+    
     void setBindingGroup(BindingGroup group) {
         this.group = group;
     }
@@ -434,6 +439,8 @@ public class Binding<SS, SV, TS, TV> {
     }
 
     private final void synced() {
+        hasChangedTarget = false;
+
         if (listeners == null) {
             return;
         }
@@ -464,6 +471,8 @@ public class Binding<SS, SV, TS, TV> {
     }
 
     private final void targetChanged() {
+        hasChangedTarget = true;
+
         if (listeners == null) {
             return;
         }
