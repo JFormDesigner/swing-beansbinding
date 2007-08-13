@@ -167,8 +167,10 @@ public final class JListSelectedElementProperty<S, E> extends AbstractProperty<S
         if (index == -1) {
             return null;
         }
-        
-        return list.getModel().getElementAt(index);
+
+        ListModel model = list.getModel();
+        return model instanceof ListBindingManager ? ((ListBindingManager)model).getElement(index)
+                                                   : model.getElementAt(index);
     }
     
     public Class<E> getWriteType(S source) {
