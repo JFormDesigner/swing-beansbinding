@@ -40,6 +40,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  */
 public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
+    private Property<S, ?> sourceProperty;
     private final PropertyPath path;
     private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
@@ -48,6 +49,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                                                ObservableMapListener {
 
         private S source;
+        private Object cachedBean;
         private Object[] cache;
         private Object cachedValue;
         private Object cachedWriter;
@@ -272,9 +274,17 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
     public BeanProperty(String path) {
-        this.path = PropertyPath.createPropertyPath(path);
+        this(null, path);
     }
-    
+
+    /**
+     * @throws IllegalArgumentException for empty or {@code null} path.
+     */
+    public BeanProperty(Property<S, ?> sourceProperty, String path) {
+        this.path = PropertyPath.createPropertyPath(path);
+        this.sourceProperty = sourceProperty;
+    }
+
     private Object getLastSource(S source) {
         if (source == null) {
             System.err.println("LOG: getLastSource(): source is null");
