@@ -137,13 +137,13 @@ public class BindingGroup {
                 changedTargets = new LinkedHashSet<Binding>();
             }
 
-            if (changedTargets.add(binding) && changedTargets.size() == 1) {
+            if (changedTargets.add(binding) && changedTargets.size() == 1 && changeSupport != null) {
                 changeSupport.firePropertyChange("hasChangedTargetBindings", false, true);
             }
         } else {
             if (changedTargets == null) {
                 return;
-            } else if (changedTargets.remove(binding) && changedTargets.size() == 0) {
+            } else if (changedTargets.remove(binding) && changedTargets.size() == 0 && changeSupport != null) {
                 changeSupport.firePropertyChange("hasChangedTargetBindings", true, false);
             }
         }
