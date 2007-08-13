@@ -305,7 +305,15 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             mapValueChanged(map, key);
         }
     }
-    
+
+    public static final <S, V> BeanProperty<S, V> create(String path) {
+        return new BeanProperty<S, V>(path);
+    }
+
+    public static final <S, V> BeanProperty<S, V> createForProperty(Property<S, ?> sourceProperty, String path) {
+        return new BeanProperty<S, V>(sourceProperty, path);
+    }
+
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
