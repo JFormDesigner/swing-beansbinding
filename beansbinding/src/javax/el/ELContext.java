@@ -54,12 +54,8 @@ import java.util.Locale;
  */
 public abstract class ELContext {
 
-    // Possible return value from evaluating a value expression. Indicates
-    // an attempt to dereference null to a property occurred. For example,
-    // if the value for "foo" in the expression "${foo.bar}" is null, then
-    // INCOMPLETE_PATH_RESULT is returned.
-    public static final Object INCOMPLETE_PATH_RESULT = 
-            new StringBuilder("IncompletePathResult");
+    public static final Object UNRESOLVABLE_RESULT = 
+            new StringBuilder("UnresolvableResult");
     
     /**
      * Called to indicate that a <code>ELResolver</code> has successfully
