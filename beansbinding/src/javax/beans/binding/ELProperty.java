@@ -340,7 +340,12 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             throw new IllegalArgumentException("expression must be non-null and non-empty");
         }
 
-        this.expression = new ExpressionFactoryImpl().createValueExpression(context, expression, Object.class);
+        try {
+            this.expression = new ExpressionFactoryImpl().createValueExpression(context, expression, Object.class);
+        } catch (ELException ele) {
+            throw new PropertyResolutionException("Error creating EL expression " + expression, ele);
+        }
+
         this.sourceProperty = sourceProperty;
     }
 
@@ -420,6 +425,8 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             }
             
             return (V)result.getResult();
+        } catch (ELException ele) {
+            throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
         } finally {
             expression.setSource(null);
         }
