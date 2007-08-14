@@ -6,6 +6,7 @@
 
 package com.sun.el.parser;
 
+import javax.el.ELContext;
 import javax.el.ELException;
 
 import com.sun.el.lang.EvaluationContext;
@@ -27,6 +28,9 @@ public final class AstNot extends SimpleNode {
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         Object obj = this.children[0].getValue(ctx);
+        if (obj == ELContext.UNRESOLVABLE_RESULT) {
+            return ELContext.UNRESOLVABLE_RESULT;
+        }
         Boolean b = coerceToBoolean(obj);
         return Boolean.valueOf(!b.booleanValue());
     }

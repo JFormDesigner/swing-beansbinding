@@ -8,6 +8,7 @@ package com.sun.el.parser;
 
 import java.util.Collection;
 import java.util.Map;
+import javax.el.ELContext;
 
 import javax.el.ELException;
 
@@ -30,7 +31,9 @@ public final class AstEmpty extends SimpleNode {
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         Object obj = this.children[0].getValue(ctx);
-        if (obj == null) {
+        if (obj == ELContext.UNRESOLVABLE_RESULT) {
+            return ELContext.UNRESOLVABLE_RESULT;
+        } else if (obj == null) {
             return Boolean.TRUE;
         } else if (obj instanceof String) {
             return Boolean.valueOf(((String) obj).length() == 0);
