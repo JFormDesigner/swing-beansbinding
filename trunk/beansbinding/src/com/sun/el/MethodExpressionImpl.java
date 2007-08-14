@@ -190,7 +190,7 @@ public final class MethodExpressionImpl extends MethodExpression implements
             ELException {
         Node n = this.getNode();
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper);
+                this.varMapper, this);
         return n.getMethodInfo(ctx, this.paramTypes);
     }
 
@@ -260,7 +260,7 @@ public final class MethodExpressionImpl extends MethodExpression implements
             throws PropertyNotFoundException, MethodNotFoundException,
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper);
+                this.varMapper, this);
         return this.getNode().invoke(ctx, this.paramTypes, params);
     }
 
