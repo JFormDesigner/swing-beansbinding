@@ -658,7 +658,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         if (pd == null || pd.getWriteMethod() == null) {
-            System.err.println("LOG: missing write method");
+            System.err.println("LOG: getType(): missing write method");
             throw new UnsupportedOperationException("Unwritable");
         }
 
