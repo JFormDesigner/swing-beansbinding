@@ -9,11 +9,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -162,7 +158,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
     public Class getType(ELContext context) throws PropertyNotFoundException,
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper, this);
+                this.varMapper);
         return this.getNode().getType(ctx);
     }
 
@@ -174,7 +170,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
     public Object getValue(ELContext context) throws PropertyNotFoundException,
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper, this);
+                this.varMapper);
         Object value = this.getNode().getValue(ctx);
         if (this.expectedType != null) {
             return ELSupport.coerceToType(value, this.expectedType);
@@ -184,72 +180,15 @@ public final class ValueExpressionImpl extends ValueExpression implements
     
     public Result getResult(ELContext context) throws PropertyNotFoundException, 
             ELException {
-        EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper, this, true);
-        Node node = this.getNode();
-        Object value = coerce(node.getValue(ctx));
-        List<Expression.ResolvedObject> resolvedObjects = ctx.getResolvedObjects();
-        if (value != ELContext.INCOMPLETE_PATH_RESULT) {
-            List resolvedList = null;
-            // PENDING: make this a property
-            int listThreshold = 10;
-            for (Expression.ResolvedObject resolved : resolvedObjects) {
-                if (resolved instanceof ResolvedList) {
-                    if (resolvedList == null) {
-                        resolvedList = ((ResolvedList)resolved).getSource();
-                    } else if (resolvedList != ((ResolvedList)resolved).getSource()) {
-                        // Too many lists, bale.
-                        throw new ELException(
-                                "Expression consists of multiple lists, can only resolve a single list");
-                    }
-                }
-            }
-            if (resolvedList != null && resolvedList.size() != 1) {
-                // There's a List, need to repeatedly evaluate the expression to get
-                // the values in the List
-                int listSize = resolvedList.size();
-                if (listSize < listThreshold) {
-                    List<Object> values = new ArrayList<Object>(listSize);
-                    values.add(value);
-                    for (int i = 1; i < listSize; i++) {
-                        ctx.reset();
-                        ctx.setResolvingListIndex(i);
-                        value = coerce(node.getValue(ctx));
-                        if (value == ELContext.INCOMPLETE_PATH_RESULT) {
-                            // Incomplete path for one of the elements, bale.
-                            break;
-                        } else {
-                            values.add(value);
-                        }
-                    }
-                    resolvedObjects = ctx.getResolvedObjects();
-                    if (value != ELContext.INCOMPLETE_PATH_RESULT) {
-                        return new Result(Result.Type.MULTI_LIST_VALUE, values,
-                                resolvedObjects);
-                    }
-                    return new Result(Result.Type.INCOMPLETE_PATH, values,
-                            resolvedObjects);
-                } else {
-                    return new Result(Result.Type.CAPPED_MULTI_LIST_VALUE,
-                            Arrays.asList(value),
-                            resolvedObjects);
-                }
-            }
-            return new Result(Result.Type.SINGLE_VALUE, value, resolvedObjects);
-        } else {
-            return new Result(Result.Type.INCOMPLETE_PATH, null, resolvedObjects);
+        EvaluationContext ctx = new EvaluationContext(context, this.fnMapper, this.varMapper, true);
+        Object value = this.getNode().getValue(ctx);
+        if (this.expectedType != null) {
+            value = ELSupport.coerceToType(value, this.expectedType);
         }
+        List<Expression.ResolvedObject> resolvedObjects = ctx.getResolvedObjects();
+        return new Result(Result.Type.SINGLE_VALUE, value, resolvedObjects);
     }
     
-    private Object coerce(Object value) {
-        if (expectedType != null) {
-            if (value != ELContext.INCOMPLETE_PATH_RESULT) {
-                return ELSupport.coerceToType(value, expectedType);
-            }
-        }
-        return value;
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -280,7 +219,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
     public boolean isReadOnly(ELContext context)
             throws PropertyNotFoundException, ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper, this);
+                this.varMapper);
         return this.getNode().isReadOnly(ctx);
     }
 
@@ -295,10 +234,6 @@ public final class ValueExpressionImpl extends ValueExpression implements
         this.varMapper = (VariableMapper) in.readObject();
     }
 
-    
-    // PENDING: Notice how I'm not doing the following for isReadOnly and
-    // others.
-    
     /*
      * (non-Javadoc)
      * 
@@ -309,33 +244,8 @@ public final class ValueExpressionImpl extends ValueExpression implements
             throws PropertyNotFoundException, PropertyNotWritableException,
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper, this, true);
+                this.varMapper);
         this.getNode().setValue(ctx, value);
-        List<Expression.ResolvedObject> resolvedObjects = ctx.getResolvedObjects();
-        List resolvedList = null;
-        // PENDING: make this a property
-        int listThreshold = 10;
-        for (Expression.ResolvedObject resolved : resolvedObjects) {
-            if (resolved instanceof ResolvedList) {
-                if (resolvedList == null) {
-                    resolvedList = ((ResolvedList)resolved).getSource();
-                } else if (resolvedList != ((ResolvedList)resolved).getSource()) {
-                    // Too many lists, bale.
-                    throw new ELException(
-                            "Expression consists of multiple lists, can only resolve a single list");
-                }
-            }
-        }
-        if (resolvedList != null && resolvedList.size() != 1) {
-            // There's a List, need to repeatedly evaluate the expression to get
-            // the values in the List
-            int listSize = resolvedList.size();
-            for (int i = 1; i < listSize; i++) {
-                ctx.reset();
-                ctx.setResolvingListIndex(i);
-                this.getNode().setValue(ctx, value);
-            }
-        }
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
