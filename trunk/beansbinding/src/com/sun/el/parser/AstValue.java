@@ -8,8 +8,6 @@ package com.sun.el.parser;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import javax.el.ELContext;
 
 import javax.el.ELException;
 import javax.el.ELResolver;
@@ -39,21 +37,15 @@ public final class AstValue extends SimpleNode {
     public Class getType(EvaluationContext ctx) throws ELException {
         Target t = getTarget(ctx);
         ctx.setPropertyResolved(false);
-        if (t.base instanceof List) {
-            List list = (List)t.base;
-            if (list.size() > 0) {
-                t.base = list.get(0);
-            }
-        }
         return ctx.getELResolver().getType(ctx, t.base, t.property);
     }
 
     private final Target getTarget(EvaluationContext ctx) throws ELException {
         // evaluate expr-a to value-a
         Object base = this.children[0].getValue(ctx);
-        
+
         // if our base is null (we know there are more properites to evaluate)
-        if (base == null || base == ELContext.INCOMPLETE_PATH_RESULT) {
+        if (base == null) {
             throw new PropertyNotFoundException(MessageFactory.get(
                     "error.unreachable.base", this.children[0].getImage()));
         }
@@ -66,17 +58,15 @@ public final class AstValue extends SimpleNode {
         // evaluate any properties before our target
         ELResolver resolver = ctx.getELResolver();
         if (propCount > 1) {
-            while (base != null && base != ELContext.INCOMPLETE_PATH_RESULT &&
-                    i < propCount) {
+            while (base != null && i < propCount) {
                 property = this.children[i].getValue(ctx);
                 ctx.setPropertyResolved(false);
-                base = resolveValue(ctx, base, property);
+                base = resolver.getValue(ctx, base, property);
                 i++;
             }
             // if we are in this block, we have more properties to resolve,
             // but our base was null
-            if (base == ELContext.INCOMPLETE_PATH_RESULT || base == null || 
-                    property == null) {
+            if (base == null || property == null) {
                 throw new PropertyNotFoundException(MessageFactory.get(
                         "error.unreachable.property", property));
             }
@@ -98,10 +88,6 @@ public final class AstValue extends SimpleNode {
     public Object getValue(EvaluationContext ctx) throws ELException {
         Object base = this.children[0].getValue(ctx);
         int propCount = this.jjtGetNumChildren();
-        if (base == ELContext.INCOMPLETE_PATH_RESULT ||
-                (base == null && propCount > 1)) {
-            return ELContext.INCOMPLETE_PATH_RESULT;
-        }
         int i = 1;
         Object property = null;
         ELResolver resolver = ctx.getELResolver();
@@ -111,15 +97,9 @@ public final class AstValue extends SimpleNode {
                 return null;
             } else {
                 ctx.setPropertyResolved(false);
-                base = resolveValue(ctx, base, property);
-                if (base == ELContext.INCOMPLETE_PATH_RESULT) {
-                    return base;
-                }
+                base = resolver.getValue(ctx, base, property);
             }
             i++;
-        }
-        if (base == null && i < propCount) {
-            return ELContext.INCOMPLETE_PATH_RESULT;
         }
         return base;
     }
@@ -127,12 +107,6 @@ public final class AstValue extends SimpleNode {
     public boolean isReadOnly(EvaluationContext ctx) throws ELException {
         Target t = getTarget(ctx);
         ctx.setPropertyResolved(false);
-        if (t.base instanceof List) {
-            List list = (List)t.base;
-            if (list.size() > 0) {
-                t.base = list.get(0);
-            }
-        }
         return ctx.getELResolver().isReadOnly(ctx, t.base, t.property);
     }
 
@@ -140,14 +114,7 @@ public final class AstValue extends SimpleNode {
             throws ELException {
         Target t = getTarget(ctx);
         ctx.setPropertyResolved(false);
-        if (t.base instanceof List) {
-            List list = (List)t.base;
-            for (Object elem : list) {
-                ctx.getELResolver().setValue(ctx, elem, t.property, value);
-            }
-        } else {
-            ctx.getELResolver().setValue(ctx, t.base, t.property, value);
-        }
+        ctx.getELResolver().setValue(ctx, t.base, t.property, value);
     }
 
     public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes)
