@@ -6,7 +6,6 @@
 
 package com.sun.el.parser;
 
-import javax.el.ELContext;
 import javax.el.ELException;
 
 import com.sun.el.lang.EvaluationContext;
@@ -33,9 +32,6 @@ public final class AstCompositeExpression extends SimpleNode {
         if (this.children != null) {
             for (int i = 0; i < this.children.length; i++) {
                 obj = this.children[i].getValue(ctx);
-                if (obj == ELContext.INCOMPLETE_PATH_RESULT) {
-                    return ELContext.INCOMPLETE_PATH_RESULT;
-                }
                 if (obj != null) {
                     sb.append(obj);
                 }

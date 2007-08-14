@@ -6,7 +6,6 @@
 
 package com.sun.el.parser;
 
-import javax.el.ELContext;
 import javax.el.ELException;
 
 import com.sun.el.lang.ELArithmetic;
@@ -24,13 +23,7 @@ public final class AstMod extends ArithmeticNode {
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         Object obj0 = this.children[0].getValue(ctx);
-        if (obj0 == ELContext.INCOMPLETE_PATH_RESULT) {
-            return ELContext.INCOMPLETE_PATH_RESULT;
-        }
         Object obj1 = this.children[1].getValue(ctx);
-        if (obj1 == ELContext.INCOMPLETE_PATH_RESULT) {
-            return ELContext.INCOMPLETE_PATH_RESULT;
-        }
         return ELArithmetic.mod(obj0, obj1);
     }
 }

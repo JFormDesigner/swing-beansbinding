@@ -6,7 +6,6 @@
 
 package com.sun.el.parser;
 
-import javax.el.ELContext;
 import javax.el.ELException;
 
 import com.sun.el.lang.EvaluationContext;
@@ -23,17 +22,11 @@ public final class AstAnd extends BooleanNode {
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         Object obj = children[0].getValue(ctx);
-        if (obj == ELContext.INCOMPLETE_PATH_RESULT) {
-            return ELContext.INCOMPLETE_PATH_RESULT;
-        }
         Boolean b = coerceToBoolean(obj);
         if (!b.booleanValue()) {
             return b;
         }
         obj = children[1].getValue(ctx);
-        if (obj == ELContext.INCOMPLETE_PATH_RESULT) {
-            return ELContext.INCOMPLETE_PATH_RESULT;
-        }
         b = coerceToBoolean(obj);
         return b;
     }
