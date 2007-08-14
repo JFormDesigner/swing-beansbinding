@@ -244,14 +244,10 @@ public class BeanELResolver extends ELResolver {
             }
         }
 
+        Method method;
         BeanProperty bp = getBeanProperty(context, base, property);
-        Method method = bp.getReadMethod();
-        if (method == null) {
-            throw new PropertyNotFoundException(
-                        ELUtil.getExceptionMessageString(context,
-                            "propertyNotReadable",
-                            new Object[] { base.getClass().getName(),
-                                           property.toString()}));
+        if (bp == null || (method = bp.getReadMethod()) == null) {
+            return null;
         }
 
         Object value;
@@ -544,15 +540,7 @@ public class BeanELResolver extends ELResolver {
             bps = new BeanProperties(baseClass);
             properties.put(baseClass, bps);
         }
-        BeanProperty bp = bps.getBeanProperty(property);
-        if (bp == null) {
-            throw new PropertyNotFoundException(
-                        ELUtil.getExceptionMessageString(context,
-                            "propertyNotFound",
-                            new Object[] { baseClass.getName(),
-                                           property}));
-        }
-        return bp;
+        return bps.getBeanProperty(property);
     }
 }
 
