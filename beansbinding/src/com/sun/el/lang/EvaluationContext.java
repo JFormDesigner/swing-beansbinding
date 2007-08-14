@@ -22,19 +22,22 @@ public final class EvaluationContext extends ELContext {
     private final FunctionMapper fnMapper;
 
     private final VariableMapper varMapper;
+
+    private final Expression expression;
     
     private final Set<Expression.ResolvedObject> resolvedObjects;
     
     public EvaluationContext(ELContext elContext, FunctionMapper fnMapper,
-            VariableMapper varMapper) {
-        this(elContext, fnMapper, varMapper, false);
+            VariableMapper varMapper, Expression expression) {
+        this(elContext, fnMapper, varMapper, expression, false);
     }
 
     public EvaluationContext(ELContext elContext, FunctionMapper fnMapper,
-            VariableMapper varMapper, boolean trackResolvedObjects) {
+            VariableMapper varMapper, Expression expression, boolean trackResolvedObjects) {
         this.elContext = elContext;
         this.fnMapper = fnMapper;
         this.varMapper = varMapper;
+        this.expression = expression;
         if (trackResolvedObjects) {
             resolvedObjects = new LinkedHashSet<Expression.ResolvedObject>(1);
         } else {
@@ -54,6 +57,10 @@ public final class EvaluationContext extends ELContext {
         return this.varMapper;
     }
 
+    public Expression getExpression() {
+        return expression;
+    }
+    
     public Object getContext(Class key) {
         return this.elContext.getContext(key);
     }
