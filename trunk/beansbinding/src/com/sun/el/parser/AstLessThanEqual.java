@@ -6,6 +6,7 @@
 
 package com.sun.el.parser;
 
+import javax.el.ELContext;
 import javax.el.ELException;
 
 import com.sun.el.lang.EvaluationContext;
@@ -22,7 +23,13 @@ public final class AstLessThanEqual extends BooleanNode {
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         Object obj0 = this.children[0].getValue(ctx);
+        if (obj0 == ELContext.UNRESOLVABLE_RESULT) {
+            return ELContext.UNRESOLVABLE_RESULT;
+        }
         Object obj1 = this.children[1].getValue(ctx);
+        if (obj1 == ELContext.UNRESOLVABLE_RESULT) {
+            return ELContext.UNRESOLVABLE_RESULT;
+        }
         if (obj0 == obj1) {
             return Boolean.TRUE;
         }
