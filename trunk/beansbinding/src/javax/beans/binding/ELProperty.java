@@ -458,6 +458,28 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         } else {
             setProperty(getLastSource(source), path.getLast(), value);
         }*/
+
+        try {
+            expression.setSource(getBeanFromSource(source));
+            Expression.Result result = expression.getResult(context);
+            if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
+                log("getValue()", "path is incomplete");
+                throw new UnsupportedOperationException("Unwriteable");
+            }
+
+            if (expression.isReadOnly(context)) {
+                throw new UnsupportedOperationException("Unwriteable");
+            }
+
+            expression.setValue(context, value);
+        } catch (PropertyNotFoundException e) {
+            log("isWriteable()", "property not found");
+            throw new UnsupportedOperationException("Unwriteable");
+        } catch (ELException ele) {
+            throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
+        } finally {
+            expression.setSource(null);
+        }
     }
     
     public boolean isReadable(S source) {
