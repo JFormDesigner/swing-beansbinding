@@ -432,7 +432,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
             return (V)result.getResult();
         } catch (PropertyNotFoundException e) {
-            log("isReadable()", "property not found");
+            log("getValue()", "property not found");
             throw new UnsupportedOperationException("Unreadable");
         } catch (ELException ele) {
             throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
@@ -486,7 +486,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
             expression.setValue(context, value);
         } catch (PropertyNotFoundException e) {
-            log("isWriteable()", "property not found");
+            log("setValue()", "property not found");
             throw new UnsupportedOperationException("Unwriteable");
         } catch (ELException ele) {
             throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
@@ -930,7 +930,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return false;
     }
 
-    private static final boolean LOG = false;
+    private static final boolean LOG = true;
 
     private static void log(String method, String message) {
         if (LOG) {
