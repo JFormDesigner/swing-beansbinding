@@ -934,7 +934,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
     private static void log(String method, String message) {
         if (LOG) {
-            System.err.println("LOG: " + method + "(): " + message);
+            System.err.println("LOG: " + method + ": " + message);
         }
     }
     
