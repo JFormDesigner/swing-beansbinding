@@ -6,7 +6,6 @@
 
 package com.sun.el.parser;
 
-import javax.el.ELContext;
 import javax.el.ELException;
 
 import com.sun.el.lang.EvaluationContext;
@@ -29,9 +28,6 @@ public final class AstChoice extends SimpleNode {
     public Object getValue(EvaluationContext ctx)
             throws ELException {
         Object obj0 = this.children[0].getValue(ctx);
-        if (obj0 == ELContext.INCOMPLETE_PATH_RESULT) {
-            return ELContext.INCOMPLETE_PATH_RESULT;
-        }
         Boolean b0 = coerceToBoolean(obj0);
         return this.children[((b0.booleanValue() ? 1 : 2))].getValue(ctx);
     }

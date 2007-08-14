@@ -8,7 +8,6 @@ package com.sun.el.parser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import javax.el.ELContext;
 
 import javax.el.ELException;
 
@@ -32,9 +31,6 @@ public final class AstNegative extends SimpleNode {
             throws ELException {
         Object obj = this.children[0].getValue(ctx);
 
-        if (obj == ELContext.INCOMPLETE_PATH_RESULT) {
-            return ELContext.INCOMPLETE_PATH_RESULT;
-        }
         if (obj == null) {
             return new Long(0);
         }
