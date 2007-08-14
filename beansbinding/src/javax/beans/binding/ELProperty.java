@@ -34,7 +34,6 @@ import javax.el.Expression.ResolvedList;
 import javax.el.Expression.ResolvedProperty;
 import javax.el.Expression.ResolvedObject;
 import javax.el.Expression.Result;
-import javax.el.PropertyNotFoundException;
 import javax.el.ValueExpression;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
@@ -431,9 +430,6 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             }
 
             return (V)result.getResult();
-        } catch (PropertyNotFoundException e) {
-            log("getValue()", "property not found");
-            throw new UnsupportedOperationException("Unreadable");
         } catch (ELException ele) {
             throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
         } finally {
@@ -485,9 +481,6 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             }
 
             expression.setValue(context, value);
-        } catch (PropertyNotFoundException e) {
-            log("setValue()", "property not found");
-            throw new UnsupportedOperationException("Unwriteable");
         } catch (ELException ele) {
             throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
         } finally {
@@ -531,9 +524,6 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             }
             
             return true;
-        } catch (PropertyNotFoundException e) {
-            log("isReadable()", "property not found");
-            return false;
         } catch (ELException ele) {
             throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
         } finally {
@@ -582,9 +572,6 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             }
 
             return true;
-        } catch (PropertyNotFoundException e) {
-            log("isWriteable()", "property not found");
-            return false;
         } catch (ELException ele) {
             throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
         } finally {
