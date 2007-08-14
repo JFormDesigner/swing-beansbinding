@@ -420,11 +420,14 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             expression.setSource(getBeanFromSource(source));
             Expression.Result result = expression.getResult(context);
             if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
-                System.err.println("LOG: path is incomplete");
+                log("getValue()", "path is incomplete");
                 throw new UnsupportedOperationException("Unreadable");
             }
-            
+
             return (V)result.getResult();
+        } catch (PropertyNotFoundException e) {
+            log("isReadable()", "property not found");
+            throw new UnsupportedOperationException("Unreadable");
         } catch (ELException ele) {
             throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
         } finally {
@@ -477,8 +480,24 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         }
 
         return true;*/
-        
-        return true;
+
+        try {
+            expression.setSource(getBeanFromSource(source));
+            Expression.Result result = expression.getResult(context);
+            if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
+                log("isReadable()", "path is incomplete");
+                return false;
+            }
+            
+            return true;
+        } catch (PropertyNotFoundException e) {
+            log("isReadable()", "property not found");
+            return false;
+        } catch (ELException ele) {
+            throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
+        } finally {
+            expression.setSource(null);
+        }
     }
 
     public boolean isWriteable(S source) {
@@ -502,26 +521,42 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         return true;*/
         
-        return true;
+        try {
+            expression.setSource(getBeanFromSource(source));
+            Expression.Result result = expression.getResult(context);
+            if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
+                log("isWriteable()", "path is incomplete");
+                return false;
+            }
+
+            return !expression.isReadOnly(context);
+        } catch (PropertyNotFoundException e) {
+            log("isWriteable()", "property not found");
+            return false;
+        } catch (ELException ele) {
+            throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
+        } finally {
+            expression.setSource(null);
+        }
     }
 
     private Object getBeanFromSource(S source) {
         if (sourceProperty == null) {
             if (source == null) {
-                System.err.println("LOG: getBeanFromSource(): source is null");
+                log("getBeanFromSource()", "source is null");
             }
 
             return source;
         }
 
         if (!sourceProperty.isReadable(source)) {
-            System.err.println("LOG: getBeanFromSource(): unreadable source property");
+            log("getBeanFromSource()", "unreadable source property");
             return NOREAD;
         }
 
         Object bean = sourceProperty.getValue(source);
         if (bean == null) {
-            System.err.println("LOG: getBeanFromSource(): source property returned null");
+            log("getBeanFromSource()", "source property returned null");
             return null;
         }
         
@@ -699,7 +734,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         if (pd == null || pd.getWriteMethod() == null) {
-            System.err.println("LOG: missing write method");
+            log("getType()", "missing write method");
             throw new UnsupportedOperationException("Unwritable");
         }
 
@@ -744,7 +779,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         Object writer = getWriter(object, string);
         if (writer == null) {
-            System.err.println("LOG: setProperty(): missing write method");
+            log("setProperty()", "missing write method");
             throw new UnsupportedOperationException("Unwritable");
         }
 
@@ -788,7 +823,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         Method addPCMethod = null;
 
         if (ed == null || (addPCMethod = ed.getAddListenerMethod()) == null) {
-            System.err.println("LOG: addPropertyChangeListener(): can't add listener");
+            log("addPropertyChangeListener()", "can't add listener");
             return;
         }
 
@@ -803,7 +838,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         Method removePCMethod = null;
 
         if (ed == null || (removePCMethod = ed.getRemoveListenerMethod()) == null) {
-            System.err.println("LOG: removePropertyChangeListener(): can't remove listener from source");
+            log("removePropertyChangeListener()", "can't remove listener from source");
             return;
         }
         
@@ -843,4 +878,12 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return false;
     }
 
+    private static final boolean LOG = false;
+
+    private static void log(String method, String message) {
+        if (LOG) {
+            System.err.println("LOG: " + method + "(): " + message);
+        }
+    }
+    
 }
