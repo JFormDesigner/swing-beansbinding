@@ -144,4 +144,9 @@ public abstract class SimpleNode extends ELSupport implements Node {
     public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes) throws ELException {
         throw new UnsupportedOperationException();
     }
+    
+    protected Object resolveValue(EvaluationContext ctx, Object source, Object property) {
+        ctx.resolvingProperty(source, property);
+        return ctx.getELResolver().getValue(ctx, source, property);
+    }
 }
