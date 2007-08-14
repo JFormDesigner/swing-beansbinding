@@ -158,7 +158,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
     public Class getType(ELContext context) throws PropertyNotFoundException,
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper);
+                this.varMapper, this);
         return this.getNode().getType(ctx);
     }
 
@@ -170,7 +170,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
     public Object getValue(ELContext context) throws PropertyNotFoundException,
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper);
+                this.varMapper, this);
         Object value = this.getNode().getValue(ctx);
         if (this.expectedType != null) {
             return ELSupport.coerceToType(value, this.expectedType);
@@ -180,7 +180,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
     
     public Result getResult(ELContext context) throws PropertyNotFoundException, 
             ELException {
-        EvaluationContext ctx = new EvaluationContext(context, this.fnMapper, this.varMapper, true);
+        EvaluationContext ctx = new EvaluationContext(context, this.fnMapper, this.varMapper, this, true);
         Object value = this.getNode().getValue(ctx);
         if (this.expectedType != null) {
             value = ELSupport.coerceToType(value, this.expectedType);
@@ -219,7 +219,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
     public boolean isReadOnly(ELContext context)
             throws PropertyNotFoundException, ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper);
+                this.varMapper, this);
         return this.getNode().isReadOnly(ctx);
     }
 
@@ -244,7 +244,7 @@ public final class ValueExpressionImpl extends ValueExpression implements
             throws PropertyNotFoundException, PropertyNotWritableException,
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper,
-                this.varMapper);
+                this.varMapper, this);
         this.getNode().setValue(ctx, value);
     }
 
