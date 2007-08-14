@@ -6,8 +6,6 @@
 
 package com.sun.el.parser;
 
-import java.util.List;
-import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.MethodInfo;
 import javax.el.PropertyNotWritableException;
@@ -145,30 +143,5 @@ public abstract class SimpleNode extends ELSupport implements Node {
 
     public MethodInfo getMethodInfo(EvaluationContext ctx, Class[] paramTypes) throws ELException {
         throw new UnsupportedOperationException();
-    }
-    
-    protected Object resolveSource(EvaluationContext ctx, Object source) {
-        if (source instanceof List) {
-            List sourceAsList = (List)source;
-            int listIndex = ctx.getResolvingListIndex();
-            if (listIndex == 0) {
-                ctx.resolvingList(sourceAsList);
-            }
-            if (listIndex >= sourceAsList.size()) {
-                return ELContext.INCOMPLETE_PATH_RESULT;
-            }
-            source = sourceAsList.get(listIndex);
-        }
-        return source;
-    }
-    
-    protected Object resolveValue(EvaluationContext ctx, Object source, 
-            Object property) {
-        source = resolveSource(ctx, source);
-        if (source == ELContext.INCOMPLETE_PATH_RESULT) {
-            return source;
-        }
-        ctx.resolvingProperty(source, property);
-        return ctx.getELResolver().getValue(ctx, source, property);
     }
 }
