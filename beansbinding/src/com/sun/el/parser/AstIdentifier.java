@@ -6,9 +6,7 @@
 
 package com.sun.el.parser;
 
-import javax.el.ELContext;
 import javax.el.ELException;
-import javax.el.Expression;
 import javax.el.MethodExpression;
 import javax.el.MethodInfo;
 import javax.el.MethodNotFoundException;
@@ -35,9 +33,7 @@ public final class AstIdentifier extends SimpleNode {
             }
         }
         ctx.setPropertyResolved(false);
-        Object source = resolveSource(ctx, getSource(ctx));
-        // PENDING: this needs to deal with incomplete source!
-        return ctx.getELResolver().getType(ctx, source, this.image);
+        return ctx.getELResolver().getType(ctx, null, this.image);
     }
 
     public Object getValue(EvaluationContext ctx) throws ELException {
@@ -49,11 +45,7 @@ public final class AstIdentifier extends SimpleNode {
             }
         }
         ctx.setPropertyResolved(false);
-        Object source = getSource(ctx);
-        if (source != null) {
-            return resolveValue(ctx, source, this.image);
-        }
-        return ctx.getELResolver().getValue(ctx, source, this.image);
+        return ctx.getELResolver().getValue(ctx, null, this.image);
     }
 
     public boolean isReadOnly(EvaluationContext ctx) throws ELException {
@@ -65,9 +57,7 @@ public final class AstIdentifier extends SimpleNode {
             }
         }
         ctx.setPropertyResolved(false);
-        Object source = resolveSource(ctx, getSource(ctx));
-        // PENDING: this needs to deal with incomplete source!
-        return ctx.getELResolver().isReadOnly(ctx, source, this.image);
+        return ctx.getELResolver().isReadOnly(ctx, null, this.image);
     }
 
     public void setValue(EvaluationContext ctx, Object value)
@@ -81,9 +71,7 @@ public final class AstIdentifier extends SimpleNode {
             }
         }
         ctx.setPropertyResolved(false);
-        Object source = resolveSource(ctx, getSource(ctx));
-        // PENDING: this needs to deal with incomplete source!
-        ctx.getELResolver().setValue(ctx, source, this.image, value);
+        ctx.getELResolver().setValue(ctx, null, this.image, value);
     }
 
     private final Object invokeTarget(EvaluationContext ctx, Object target,
@@ -149,13 +137,5 @@ public final class AstIdentifier extends SimpleNode {
                             + "' does not reference a MethodExpression instance, returned type: "
                             + obj.getClass().getName());
         }
-    }
-
-    private Object getSource(EvaluationContext ctx) {
-        Expression expression = ctx.getExpression();
-        if (expression instanceof ValueExpression) {
-            return ((ValueExpression)expression).getSource();
-        }
-        return null;
     }
 }
