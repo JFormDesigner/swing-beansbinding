@@ -78,8 +78,26 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         }
 
         private void updateCache() {
-            // UPDATE VALUE AND WRITEABILITY
-            System.out.println("update value and writeability and install listeners");
+            try {
+                expression.setSource(getBeanFromSource(source, true));
+                Expression.Result result = expression.getResult(context);
+                
+                if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
+                    log("updateCache()", "expression is unresolvable");
+                    cachedValue = NOREAD;
+                    cachedIsWriteable = false;
+                } else {
+                    cachedValue = result.getResult();
+                    cachedIsWriteable = !expression.isReadOnly(context);
+                }
+            } catch (ELException ele) {
+                throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
+            } finally {
+                expression.setSource(null);
+            }
+
+            // NEED TO INSTALL LISTENERS
+            System.out.println("NEED TO INSTALL LISTENERS");
         }
 
         // flag -1 - validate all
@@ -91,8 +109,29 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             }
 
             if (flag != 1) {
-                System.out.println("validate value and writeability");
-                // CHECK THAT VALUE AND WRITEABILITY ARE THE SAME
+                try {
+                    expression.setSource(getBeanFromSource(source, true));
+                    Expression.Result result = expression.getResult(context);
+
+                    Object currValue;
+                    boolean currIsWriteable;
+
+                    if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
+                        currValue = NOREAD;
+                        currIsWriteable = false;
+                    } else {
+                        currValue = result.getResult();
+                        currIsWriteable = !expression.isReadOnly(context);
+                    }
+
+                    if (currValue != cachedValue || currIsWriteable != cachedIsWriteable) {
+                        System.err.println("LOG: validateCache(): concurrent modification");
+                    }
+                } catch (ELException ele) {
+                    throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
+                } finally {
+                    expression.setSource(null);
+                }
             }
         }
 
