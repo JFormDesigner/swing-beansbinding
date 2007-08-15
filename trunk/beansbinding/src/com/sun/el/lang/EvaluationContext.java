@@ -24,9 +24,10 @@ public final class EvaluationContext extends ELContext {
     private final VariableMapper varMapper;
 
     private final Expression expression;
-    
+
+    private final Set<Expression.ResolvedProperty> currentIdentifierProperties;
     private final Set<Expression.ResolvedProperty> resolvedProperties;
-    
+
     public EvaluationContext(ELContext elContext, FunctionMapper fnMapper,
             VariableMapper varMapper, Expression expression) {
         this(elContext, fnMapper, varMapper, expression, false);
@@ -40,8 +41,10 @@ public final class EvaluationContext extends ELContext {
         this.expression = expression;
         if (trackResolvedProperties) {
             resolvedProperties = new LinkedHashSet<Expression.ResolvedProperty>(1);
+            currentIdentifierProperties = new LinkedHashSet<Expression.ResolvedProperty>(1);
         } else {
             resolvedProperties = null;
+            currentIdentifierProperties = null;
         }
     }
     
@@ -80,28 +83,44 @@ public final class EvaluationContext extends ELContext {
     public void setPropertyResolved(boolean resolved) {
         this.elContext.setPropertyResolved(resolved);
     }
-    
+
     public void clearResolvedProperties() {
-        if (resolvedProperties != null) {
-            resolvedProperties.clear();
-        }
-    }
-    
-    public void resolvedProperty(Object base, Object property) {
-        if (base == null || property == null) {
+        if (resolvedProperties == null) {
             return;
         }
 
-        if (resolvedProperties != null) {
-            resolvedProperties.add(new Expression.ResolvedProperty(base, property));
-        }
+        resolvedProperties.clear();
     }
-    
-    public List<Expression.ResolvedProperty> getResolvedProperties() {
-        if (resolvedProperties != null) {
-            return new ArrayList<Expression.ResolvedProperty>(resolvedProperties);
+
+    public void resolvedIdentifier(Object base, Object property) {
+        if (base == null || property == null || resolvedProperties == null) {
+            return;
         }
-        return null;
+
+        resolvedProperties.addAll(currentIdentifierProperties);
+        currentIdentifierProperties.clear();
+        Expression.ResolvedProperty prop = new Expression.ResolvedProperty(base, property);
+        resolvedProperties.remove(prop);
+        currentIdentifierProperties.add(prop);
+    }
+
+    public void resolvedProperty(Object base, Object property) {
+        if (base == null || property == null || resolvedProperties == null) {
+            return;
+        }
+
+        Expression.ResolvedProperty prop = new Expression.ResolvedProperty(base, property);
+        resolvedProperties.remove(prop);
+        currentIdentifierProperties.add(prop);
+    }
+
+    public List<Expression.ResolvedProperty> getResolvedProperties() {
+        if (resolvedProperties == null) {
+            return null;
+        }
+
+        resolvedProperties.addAll(currentIdentifierProperties);
+        return new ArrayList<Expression.ResolvedProperty>(resolvedProperties);
     }
     
 }

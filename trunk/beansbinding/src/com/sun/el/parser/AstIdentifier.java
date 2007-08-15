@@ -50,7 +50,7 @@ public final class AstIdentifier extends SimpleNode {
         Object source = getSource(ctx);
         Object retVal = ctx.getELResolver().getValue(ctx, source, this.image);
         if (retVal != ELContext.UNRESOLVABLE_RESULT) {
-            ctx.resolvedProperty(source, this.image);
+            ctx.resolvedIdentifier(source, this.image);
         }
         return retVal;
     }
