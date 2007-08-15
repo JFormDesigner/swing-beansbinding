@@ -104,7 +104,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             }
 
             for (ResolvedProperty prop : resolvedProperties) {
-                System.out.println(prop.getSource() + "." + prop.getProperty());
+                registerListener(prop, this);
             }
 
             // Uninstall all listeners that are no longer along the path.

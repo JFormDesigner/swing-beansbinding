@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.List;
+import java.util.Collections;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -182,13 +183,21 @@ public final class ValueExpressionImpl extends ValueExpression implements
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper, this.varMapper, this, trackResolvedObjects);
         Object value = this.getNode().getValue(ctx);
-        
+
+        List<ResolvedProperty> resolvedProperties;
+
+        if (trackResolvedObjects) {
+            resolvedProperties = ctx.getResolvedProperties();
+        } else {
+            resolvedProperties = Collections.emptyList();
+        }
+
         if (value == ELContext.UNRESOLVABLE_RESULT) {
-            return new Result(Result.Type.UNRESOLVABLE, null, ctx.getResolvedProperties());
+            return new Result(Result.Type.UNRESOLVABLE, null, resolvedProperties);
         }
         
         value = ELSupport.coerceToType(value, this.expectedType);
-        return new Result(Result.Type.VALUE, value, ctx.getResolvedProperties());
+        return new Result(Result.Type.VALUE, value, resolvedProperties);
     }
     
     /*
