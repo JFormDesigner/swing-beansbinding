@@ -105,7 +105,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         // flag  1 - something else changed
         private void validateCache(int flag) {
             if (flag != 0 && getBeanFromSource(source, false) != cachedBean) {
-                System.err.println("LOG: validateCache(): concurrent modification");
+                log("validateCache()", "concurrent modification");
             }
 
             if (flag != 1) {
@@ -125,7 +125,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                     }
 
                     if (currValue != cachedValue || currIsWriteable != cachedIsWriteable) {
-                        System.err.println("LOG: validateCache(): concurrent modification");
+                        log("validateCache()", "concurrent modification");
                     }
                 } catch (ELException ele) {
                     throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
