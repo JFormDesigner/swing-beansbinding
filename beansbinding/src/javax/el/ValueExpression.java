@@ -101,7 +101,7 @@ public abstract class ValueExpression
     public Result getResult(ELContext context) throws PropertyNotFoundException, 
             ELException {
         Object value = getValue(context);
-        List<ResolvedObject> resolved = Collections.emptyList();
+        List<ResolvedProperty> resolved = Collections.emptyList();
         return new Result(Result.Type.VALUE, value, resolved);
     }
 

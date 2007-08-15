@@ -25,7 +25,7 @@ public final class EvaluationContext extends ELContext {
 
     private final Expression expression;
     
-    private final Set<Expression.ResolvedObject> resolvedObjects;
+    private final Set<Expression.ResolvedProperty> resolvedProperties;
     
     public EvaluationContext(ELContext elContext, FunctionMapper fnMapper,
             VariableMapper varMapper, Expression expression) {
@@ -33,15 +33,15 @@ public final class EvaluationContext extends ELContext {
     }
 
     public EvaluationContext(ELContext elContext, FunctionMapper fnMapper,
-            VariableMapper varMapper, Expression expression, boolean trackResolvedObjects) {
+            VariableMapper varMapper, Expression expression, boolean trackResolvedProperties) {
         this.elContext = elContext;
         this.fnMapper = fnMapper;
         this.varMapper = varMapper;
         this.expression = expression;
-        if (trackResolvedObjects) {
-            resolvedObjects = new LinkedHashSet<Expression.ResolvedObject>(1);
+        if (trackResolvedProperties) {
+            resolvedProperties = new LinkedHashSet<Expression.ResolvedProperty>(1);
         } else {
-            resolvedObjects = null;
+            resolvedProperties = null;
         }
     }
     
@@ -82,14 +82,14 @@ public final class EvaluationContext extends ELContext {
     }
     
     public void resolvingProperty(Object base, Object property) {
-        if (resolvedObjects != null) {
-            resolvedObjects.add(new Expression.ResolvedProperty(base, property));
+        if (resolvedProperties != null) {
+            resolvedProperties.add(new Expression.ResolvedProperty(base, property));
         }
     }
     
-    public List<Expression.ResolvedObject> getResolvedObjects() {
-        if (resolvedObjects != null) {
-            return new ArrayList<Expression.ResolvedObject>(resolvedObjects);
+    public List<Expression.ResolvedProperty> getResolvedProperties() {
+        if (resolvedProperties != null) {
+            return new ArrayList<Expression.ResolvedProperty>(resolvedProperties);
         }
         return null;
     }
