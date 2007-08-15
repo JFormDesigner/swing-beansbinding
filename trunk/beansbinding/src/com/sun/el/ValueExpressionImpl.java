@@ -182,11 +182,13 @@ public final class ValueExpressionImpl extends ValueExpression implements
             ELException {
         EvaluationContext ctx = new EvaluationContext(context, this.fnMapper, this.varMapper, this, true);
         Object value = this.getNode().getValue(ctx);
-        if (this.expectedType != null) {
-            value = ELSupport.coerceToType(value, this.expectedType);
+        
+        if (value == ELContext.UNRESOLVABLE_RESULT) {
+            return new Result(Result.Type.UNRESOLVABLE, null, ctx.getResolvedObjects());
         }
-        List<Expression.ResolvedObject> resolvedObjects = ctx.getResolvedObjects();
-        return new Result(Result.Type.SINGLE_VALUE, value, resolvedObjects);
+        
+        value = ELSupport.coerceToType(value, this.expectedType);
+        return new Result(Result.Type.VALUE, value, ctx.getResolvedObjects());
     }
     
     /*
