@@ -79,6 +79,10 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         }
 
         private void updateCache() {
+            lastRegisteredListeners = registeredListeners;
+            registeredListeners = new HashSet<RegisteredListener>(lastRegisteredListeners.size());
+            List<ResolvedProperty> resolvedProperties = null;
+
             try {
                 expression.setSource(getBeanFromSource(source, true));
                 Expression.Result result = expression.getResult(context);
@@ -91,14 +95,24 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                     cachedValue = result.getResult();
                     cachedIsWriteable = !expression.isReadOnly(context);
                 }
+
+                resolvedProperties = result.getResolvedProperties();
             } catch (ELException ele) {
                 throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
             } finally {
                 expression.setSource(null);
             }
 
-            // NEED TO INSTALL LISTENERS
-            System.out.println("NEED TO INSTALL LISTENERS");
+            for (ResolvedProperty prop : resolvedProperties) {
+                System.out.println(prop.getSource() + "." + prop.getProperty());
+            }
+
+            // Uninstall all listeners that are no longer along the path.
+            for (RegisteredListener listener : lastRegisteredListeners) {
+                unregisterListener(listener, this);
+            }
+
+            lastRegisteredListeners = null;
         }
 
         // flag -1 - validate all

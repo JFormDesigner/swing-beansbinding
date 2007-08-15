@@ -49,7 +49,7 @@ public final class AstIdentifier extends SimpleNode {
         ctx.setPropertyResolved(false);
         Object source = getSource(ctx);
         if (source != null) {
-            ctx.resolvingProperty(source, this.image);
+            ctx.resolvedProperty(source, this.image);
         }
         return ctx.getELResolver().getValue(ctx, source, this.image);
     }
