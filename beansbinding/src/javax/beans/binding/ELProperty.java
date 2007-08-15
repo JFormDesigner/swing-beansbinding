@@ -51,6 +51,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                 sourceProperty.addPropertyStateListener(source, this);
             }
 
+            registeredListeners = new HashSet<RegisteredListener>(1);
             updateCachedBean();
             updateCache();
         }
