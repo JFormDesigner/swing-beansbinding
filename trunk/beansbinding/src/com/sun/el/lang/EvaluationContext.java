@@ -81,7 +81,17 @@ public final class EvaluationContext extends ELContext {
         this.elContext.setPropertyResolved(resolved);
     }
     
+    public void clearResolvedProperties() {
+        if (resolvedProperties != null) {
+            resolvedProperties.clear();
+        }
+    }
+    
     public void resolvedProperty(Object base, Object property) {
+        if (base == null || property == null) {
+            return;
+        }
+
         if (resolvedProperties != null) {
             resolvedProperties.add(new Expression.ResolvedProperty(base, property));
         }

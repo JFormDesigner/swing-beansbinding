@@ -48,10 +48,11 @@ public final class AstIdentifier extends SimpleNode {
         }
         ctx.setPropertyResolved(false);
         Object source = getSource(ctx);
-        if (source != null) {
+        Object retVal = ctx.getELResolver().getValue(ctx, source, this.image);
+        if (retVal != ELContext.UNRESOLVABLE_RESULT) {
             ctx.resolvedProperty(source, this.image);
         }
-        return ctx.getELResolver().getValue(ctx, source, this.image);
+        return retVal;
     }
 
     public boolean isReadOnly(EvaluationContext ctx) throws ELException {
