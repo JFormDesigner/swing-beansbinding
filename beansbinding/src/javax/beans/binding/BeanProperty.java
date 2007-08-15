@@ -123,7 +123,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                     
                     if (src == null) {
                         loggedYet = true;
-                        System.err.println("LOG: updateCachedSources(): source is null");
+                        log("updateCachedSources()", "source is null");
                     } else {
                         registerListener(src, this);
                     }
@@ -144,12 +144,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                     if (src == null) {
                         if (!loggedYet) {
                             loggedYet = true;
-                            System.err.println("LOG: updateCachedSources(): missing source");
+                            log("updateCachedSources()", "missing source");
                         }
                     } else if (src == NOREAD) {
                         if (!loggedYet) {
                             loggedYet = true;
-                            System.err.println("LOG: updateCachedSources(): missing read method");
+                            log("updateCachedSources()", "missing read method");
                         }
                     } else {
                         registerListener(src, this);
@@ -175,7 +175,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                 Object next = getProperty(src, path.get(i));
                 
                 if (!match(next, cache[i + 1])) {
-                    System.err.println("LOG: validateCache(): concurrent modification");
+                    log("validateCache()", "concurrent modification");
                 }
             }
             
@@ -799,4 +799,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return false;
     }
 
+    private static final boolean LOG = false;
+
+    private static void log(String method, String message) {
+        if (LOG) {
+            System.err.println("LOG: " + method + ": " + message);
+        }
+    }
+    
 }
