@@ -921,5 +921,57 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             System.err.println("LOG: " + method + ": " + message);
         }
     }
-    
+
+    private static final class RegisteredListener {
+        private final Object source;
+        private final String property;
+        
+        RegisteredListener(Object source) {
+            this(source, null);
+        }
+        
+        RegisteredListener(Object source, String property) {
+            this.source = source;
+            if (property != null) {
+                property = property.intern();
+            }
+            this.property = property;
+        }
+        
+        public Object getSource() {
+            return source;
+        }
+        
+        public String getProperty() {
+            return property;
+        }
+
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof RegisteredListener) {
+                RegisteredListener orl = (RegisteredListener) obj;
+                return (orl.source == source && orl.property == property);
+            }
+            return false;
+        }
+
+        public int hashCode() {
+            int result = 17;
+            result = 37 * result + source.hashCode();
+            if (property != null) {
+                result = 37 * result + property.hashCode();
+            }
+            return result;
+        }
+
+        public String toString() {
+            return "RegisteredListener [" +
+                    " source=" + source +
+                    " property=" + property + 
+                    "]";
+        }
+    }
+
 }
