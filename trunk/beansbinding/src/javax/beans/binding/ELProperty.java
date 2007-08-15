@@ -3,27 +3,6 @@
  * subject to license terms.
  */
 
-/*
- *   TO DO LIST:
- *
- *   - Re-think use of PropertyResolutionException.
- *     Many of the cases should be AssertionErrors, because they shouldn't happen.
- *     For the others, we should either use an Error subclass to indicate they're
- *     unrecoverable, or we need to try to leave the object in a consistent state.
- *     This is very difficult in methods like updateCachedSources where an
- *     exception can occur at any time while processing the chain.
- *
- *   - Do testing with applets/security managers.
- *
- *   - Introspector/reflection doesn't work for non-public classes. EL handles this
- *     by trying to find a version of the method in a public superclass/interface.
- *     Looking at the code for Introspector (also used by EL), I got the idea that
- *     it already does something like this. Investigate why EL handles this in an
- *     extra step, and decide what we need to do in this class.
- *
- *   - Add option to turn on validation. For now it's hard-coded to be off.
- */
-
 package javax.beans.binding;
 
 import com.sun.el.ExpressionFactoryImpl;
@@ -50,225 +29,70 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
     private Property<S, ?> sourceProperty;
     private final ValueExpression expression;
     private final ELContext context = new TempELContext();
-    /*private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();*/
+    private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
 
-    /*private final class SourceEntry implements PropertyChangeListener,
+    private final class SourceEntry implements PropertyChangeListener,
                                                ObservableMapListener,
                                                PropertyStateListener {
 
         private S source;
         private Object cachedBean;
-        private Object[] cache;
         private Object cachedValue;
-        private Object cachedWriter;
+        private boolean cachedIsWriteable;
         private boolean ignoreChange;
+        private Set<RegisteredListener> registeredListeners;
+        private Set<RegisteredListener> lastRegisteredListeners;
 
         private SourceEntry(S source) {
             this.source = source;
-            cache = new Object[path.length()];
-            cache[0] = NOREAD;
 
             if (sourceProperty != null) {
                 sourceProperty.addPropertyStateListener(source, this);
             }
 
             updateCachedBean();
-            updateCachedSources(0);
-            updateCachedValue();
-            updateCachedWriter();
+            updateCache();
         }
 
         private void cleanup() {
-            for (int i = 0; i < path.length(); i++) {
-                unregisterListener(cache[i], this);
+            for (RegisteredListener rl : registeredListeners) {
+                removeListener(rl);
             }
 
             if (sourceProperty != null) {
                 sourceProperty.removePropertyStateListener(source, this);
             }
-            
-            cache = null;
+
+            cachedBean = null;
+            registeredListeners = null;
             cachedValue = null;
-            cachedWriter = null;
         }
 
         private boolean cachedIsReadable() {
             return cachedValue != NOREAD;
         }
 
-        private boolean cachedIsWriteable() {
-            return cachedWriter != null;
-        }
-
-        private int getSourceIndex(Object object) {
-            for (int i = 0; i < cache.length; i++) {
-                if (cache[i] == object) {
-                    return i;
-                }
-            }
-            
-            return -1;
-        }
-
         private void updateCachedBean() {
-            cachedBean = getBeanFromSource(source);
-        }
-        
-        private void updateCachedSources(int index) {
-            boolean loggedYet = false;
-            
-            Object src;
-            
-            if (index == 0) {
-                src = cachedBean;
-                
-                if (cache[0] != src) {
-                    unregisterListener(cache[0], this);
-                    
-                    cache[0] = src;
-                    
-                    if (src == null) {
-                        loggedYet = true;
-                        System.err.println("LOG: updateCachedSources(): source is null");
-                    } else {
-                        registerListener(src, this);
-                    }
-                }
-                
-                index++;
-            }
-            
-            for (int i = index; i < path.length(); i++) {
-                Object old = cache[i];
-                src = getProperty(cache[i - 1], path.get(i - 1));
-                
-                if (src != old) {
-                    unregisterListener(old, this);
-                    
-                    cache[i] = src;
-                    
-                    if (src == null) {
-                        if (!loggedYet) {
-                            loggedYet = true;
-                            System.err.println("LOG: updateCachedSources(): missing source");
-                        }
-                    } else if (src == NOREAD) {
-                        if (!loggedYet) {
-                            loggedYet = true;
-                            System.err.println("LOG: updateCachedSources(): missing read method");
-                        }
-                    } else {
-                        registerListener(src, this);
-                    }
-                }
-            }
+            cachedBean = getBeanFromSource(source, true);
         }
 
-        // -1 already used to mean validate all
-        // 0... means something in the path changed
-        private void validateCache(int ignore) {
-            for (int i = 0; i < path.length() - 1; i++) {
-                if (i == ignore - 1) {
-                    continue;
-                }
-                
-                Object src = cache[i];
-                
-                if (src == NOREAD) {
-                    return;
-                }
-                
-                Object next = getProperty(src, path.get(i));
-                
-                if (!match(next, cache[i + 1])) {
-                    System.err.println("LOG: validateCache(): concurrent modification");
-                }
-            }
-            
-            if (path.length() != ignore) {
-                Object next = getProperty(cache[path.length() - 1], path.getLast());
-                if (!match(cachedValue, next)) {
-                    System.err.println("LOG: validateCache(): concurrent modification");
-                }
-                
-                Object src = cache[path.length() - 1];
-                Object writer;
-                if (src == null || src == NOREAD) {
-                    writer = null;
-                } else {
-                    writer = getWriter(cache[path.length() - 1], path.getLast());
-                }
-                
-                if (cachedWriter != writer && (cachedWriter == null || !cachedWriter.equals(writer))) {
-                    System.err.println("LOG: validateCache(): concurrent modification");
-                }
-            }
-        }
-        
-        private void updateCachedWriter() {
-            Object src = cache[path.length() - 1];
-            if (src == null || src == NOREAD) {
-                cachedWriter = null;
-            } else {
-                cachedWriter = getWriter(src, path.getLast());
-                if (cachedWriter == null) {
-                    System.err.println("LOG: updateCachedWriter(): missing write method");
-                }
-            }
-        }
-        
-        private void updateCachedValue() {
-            Object src = cache[path.length() - 1];
-            if (src == null || src == NOREAD) {
-                cachedValue = NOREAD;
-            } else {
-                cachedValue = getProperty(cache[path.length() - 1], path.getLast());
-                if (cachedValue == NOREAD) {
-                    System.err.println("LOG: updateCachedValue(): missing read method");
-                }
-            }
+        private void updateCache() {
+            // UPDATE VALUE AND WRITEABILITY
+            System.out.println("update value and writeability and install listeners");
         }
 
-        private void bindingPropertyChanged(PropertyStateEvent pse) {
-            validateCache(0);
-            Object oldValue = cachedValue;
-            boolean wasWriteable = cachedIsWriteable();
-            updateCachedBean();
-            updateCachedSources(0);
-            updateCachedValue();
-            updateCachedWriter();
-            notifyListeners(wasWriteable, oldValue, this);
-        }
-        
-        private void cachedValueChanged(int index) {
-            validateCache(index);
-            
-            boolean wasWriteable = cachedIsWriteable();
-            Object oldValue = cachedValue;
-            
-            updateCachedSources(index);
-            updateCachedValue();
-            if (index != path.length()) {
-                updateCachedWriter();
+        // flag -1 - validate all
+        // flag  0 - source property changed value or readability
+        // flag  1 - something else changed
+        private void validateCache(int flag) {
+            if (flag != 0 && getBeanFromSource(source, false) != cachedBean) {
+                System.err.println("LOG: validateCache(): concurrent modification");
             }
-            
-            notifyListeners(wasWriteable, oldValue, this);
-        }
-        
-        private void mapValueChanged(ObservableMap map, Object key) {
-            if (ignoreChange) {
-                return;
-            }
-            
-            int index = getSourceIndex(map);
-            
-            if (index == -1) {
-                throw new AssertionError();
-            }
-            
-            if (key.equals(path.get(index))) {
-                cachedValueChanged(index + 1);
+
+            if (flag != 1) {
+                System.out.println("validate value and writeability");
+                // CHECK THAT VALUE AND WRITEABILITY ARE THE SAME
             }
         }
 
@@ -277,42 +101,63 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                 return;
             }
 
-            bindingPropertyChanged(pe);
+            validateCache(0);
+            Object oldValue = cachedValue;
+            boolean wasWriteable = cachedIsWriteable;
+            updateCachedBean();
+            updateCache();
+            notifyListeners(wasWriteable, oldValue, this);
         }
 
-        private void propertyValueChanged(PropertyChangeEvent pce) {
+        private void processSourceChanged() {
+            validateCache(1);
+
+            boolean wasWriteable = cachedIsWriteable;
+            Object oldValue = cachedValue;
+
+            updateCache();
+            notifyListeners(wasWriteable, oldValue, this);
+        }
+
+        private void sourceChanged(Object source, String property) {
             if (ignoreChange) {
                 return;
             }
-            
-            int index = getSourceIndex(pce.getSource());
-            
-            if (index == -1) {
-                throw new AssertionError();
+
+            if (property != null) {
+                property = property.intern();
             }
-            
-            String propertyName = pce.getPropertyName();
-            if (propertyName == null || path.get(index).equals(propertyName)) {
-                cachedValueChanged(index + 1);
+
+            for (RegisteredListener rl : registeredListeners) {
+                if (rl.getSource() == source && (property == null || rl.getProperty() == property)) {
+                    processSourceChanged();
+                    break;
+                }
             }
         }
 
         public void propertyChange(PropertyChangeEvent e) {
-           propertyValueChanged(e);
+           sourceChanged(e.getSource(), e.getPropertyName());
         }
 
         public void mapKeyValueChanged(ObservableMap map, Object key, Object lastValue) {
-            mapValueChanged(map, key);
+            if (key instanceof String) {
+                sourceChanged(map, (String)key);
+            }
         }
 
         public void mapKeyAdded(ObservableMap map, Object key) {
-            mapValueChanged(map, key);
+            if (key instanceof String) {
+                sourceChanged(map, (String)key);
+            }
         }
 
         public void mapKeyRemoved(ObservableMap map, Object key, Object value) {
-            mapValueChanged(map, key);
+            if (key instanceof String) {
+                sourceChanged(map, (String)key);
+            }
         }
-    }*/
+    }
 
     public static final <S, V> ELProperty<S, V> create(String expression) {
         return new ELProperty<S, V>(expression);
@@ -346,29 +191,6 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         this.sourceProperty = sourceProperty;
     }
 
-    /*private Object getLastSource(S source) {
-        Object src = getBeanFromSource(source);
-
-        if (src == null || src == NOREAD) {
-            return src;
-        }
-
-        for (int i = 0; i < path.length() - 1; i++) {
-            src = getProperty(src, path.get(i));
-            if (src == null) {
-                System.err.println("LOG: getLastSource(): missing source");
-                return null;
-            }
-            
-            if (src == NOREAD) {
-                System.err.println("LOG: getLastSource(): missing read method");
-                return NOREAD;
-            }
-        }
-        
-        return src;
-    }*/
-
     public Class<? extends V> getWriteType(S source) {
         /*SourceEntry entry = map.get(source);
 
@@ -385,7 +207,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return (Class<? extends V>)getType(getLastSource(source), path.getLast());*/
 
         try {
-            expression.setSource(getBeanFromSource(source));
+            expression.setSource(getBeanFromSource(source, true));
             Expression.Result result = expression.getResult(context);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
@@ -433,7 +255,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return (V)src;*/
 
         try {
-            expression.setSource(getBeanFromSource(source));
+            expression.setSource(getBeanFromSource(source, true));
             Expression.Result result = expression.getResult(context);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
@@ -474,7 +296,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         }*/
 
         try {
-            expression.setSource(getBeanFromSource(source));
+            expression.setSource(getBeanFromSource(source, true));
             Expression.Result result = expression.getResult(context);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
@@ -517,7 +339,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return true;*/
 
         try {
-            expression.setSource(getBeanFromSource(source));
+            expression.setSource(getBeanFromSource(source, true));
             Expression.Result result = expression.getResult(context);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
@@ -555,7 +377,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return true;*/
         
         try {
-            expression.setSource(getBeanFromSource(source));
+            expression.setSource(getBeanFromSource(source, true));
             Expression.Result result = expression.getResult(context);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
@@ -576,23 +398,29 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         }
     }
 
-    private Object getBeanFromSource(S source) {
+    private Object getBeanFromSource(S source, boolean logErrors) {
         if (sourceProperty == null) {
             if (source == null) {
-                log("getBeanFromSource()", "source is null");
+                if (logErrors) {
+                    log("getBeanFromSource()", "source is null");
+                }
             }
 
             return source;
         }
 
         if (!sourceProperty.isReadable(source)) {
-            log("getBeanFromSource()", "unreadable source property");
+            if (logErrors) {
+                log("getBeanFromSource()", "unreadable source property");
+            }
             return NOREAD;
         }
 
         Object bean = sourceProperty.getValue(source);
         if (bean == null) {
-            log("getBeanFromSource()", "source property returned null");
+            if (logErrors) {
+                log("getBeanFromSource()", "source property returned null");
+            }
             return null;
         }
         
@@ -618,7 +446,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return oldValue == null || newValue == null || !oldValue.equals(newValue);
     }
 
-    /*private void notifyListeners(boolean wasWriteable, Object oldValue, SourceEntry entry) {
+    private void notifyListeners(boolean wasWriteable, Object oldValue, SourceEntry entry) {
         PropertyStateListener[] listeners = getPropertyStateListeners(entry.source);
 
         if (listeners == null || listeners.length == 0) {
@@ -628,7 +456,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         oldValue = toUNREADABLE(oldValue);
         Object newValue = toUNREADABLE(entry.cachedValue);
         boolean valueChanged = didValueChange(oldValue, newValue);
-        boolean writeableChanged = (wasWriteable != entry.cachedIsWriteable());
+        boolean writeableChanged = (wasWriteable != entry.cachedIsWriteable);
 
         if (!valueChanged && !writeableChanged) {
             return;
@@ -640,10 +468,10 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                                                         oldValue,
                                                         newValue,
                                                         writeableChanged,
-                                                        entry.cachedIsWriteable());
+                                                        entry.cachedIsWriteable);
 
         this.firePropertyStateChange(pse);
-    }*/
+    }
 
     public String toString() {
         return getClass().getName() + "[" + expression + "]";
@@ -660,22 +488,6 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         } catch (IntrospectionException ie) {
             throw new PropertyResolutionException("Exception while introspecting " + object.getClass().getName(), ie);
         }
-    }
-
-    /**
-     * @throws PropertyResolutionException
-     */
-    private static PropertyDescriptor getPropertyDescriptor(Object object, String string) {
-        assert object != null;
-
-        PropertyDescriptor[] pds = getBeanInfo(object).getPropertyDescriptors();
-        for (PropertyDescriptor pd : pds) {
-            if (!(pd instanceof IndexedPropertyDescriptor) && pd.getName().equals(string)) {
-                return pd;
-            }
-        }
-
-        return null;
     }
 
     private static EventSetDescriptor getEventSetDescriptor(Object object) {

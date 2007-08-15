@@ -79,7 +79,8 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             if (sourceProperty != null) {
                 sourceProperty.removePropertyStateListener(source, this);
             }
-            
+
+            cachedBean = null;
             cache = null;
             cachedValue = null;
             cachedWriter = null;
