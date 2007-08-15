@@ -428,18 +428,18 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
     }
 
     protected final void listeningStarted(S source) {
-        /*SourceEntry entry = map.get(source);
+        SourceEntry entry = map.get(source);
         if (entry == null) {
             entry = new SourceEntry(source);
             map.put(source, entry);
-        }*/
+        }
     }
 
     protected final void listeningStopped(S source) {
-        /*SourceEntry entry = map.remove(source);
+        SourceEntry entry = map.remove(source);
         if (entry != null) {
             entry.cleanup();
-        }*/
+        }
     }
 
     private static boolean didValueChange(Object oldValue, Object newValue) {
@@ -520,114 +520,6 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         }
 
         throw new PropertyResolutionException("Exception invoking method " + method + " on " + object, reason);
-    }
-
-    private static Object getReader(Object object, String string) {
-        assert object != null;
-
-        if (object instanceof Map) {
-            return object;
-        }
-
-        PropertyDescriptor pd = getPropertyDescriptor(object, string);
-        Method readMethod = null;
-        return pd == null ? null : pd.getReadMethod();
-    }
-
-    /**
-     * @throws PropertyResolutionException
-     */
-    private static Object read(Object reader, Object object, String string) {
-        assert reader != null;
-
-        if (reader instanceof Map) {
-            assert reader == object;
-            return ((Map)reader).get(string);
-        }
-
-        return invokeMethod((Method)reader, object);
-    }
-
-    /**
-     * @throws PropertyResolutionException
-     */
-    private static Object getProperty(Object object, String string) {
-        if (object == null || object == NOREAD) {
-            return NOREAD;
-        }
-
-        Object reader = getReader(object, string);
-        if (reader == null) {
-            return NOREAD;
-        }
-        
-        return read(reader, object, string);
-    }
-
-    /**
-     * @throws PropertyResolutionException
-     */
-    private static Class<?> getType(Object object, String string) {
-        if (object == null || object == NOREAD) {
-            throw new UnsupportedOperationException("Unwritable");
-        }
-
-        if (object instanceof Map) {
-            return Object.class;
-        }
-
-        PropertyDescriptor pd = getPropertyDescriptor(object, string);
-        if (pd == null || pd.getWriteMethod() == null) {
-            log("getType()", "missing write method");
-            throw new UnsupportedOperationException("Unwritable");
-        }
-
-        return pd.getPropertyType();
-    }
-
-    private static Object getWriter(Object object, String string) {
-        assert object != null;
-
-        if (object instanceof Map) {
-            return object;
-        }
-
-        PropertyDescriptor pd = getPropertyDescriptor(object, string);
-        Method writeMethod = null;
-        return pd == null ? null : pd.getWriteMethod();
-    }
-
-    /**
-     * @throws PropertyResolutionException
-     */
-    private static void write(Object writer, Object object, String string, Object value) {
-        assert writer != null;
-
-        if (writer instanceof Map) {
-            assert writer == object;
-            ((Map)writer).put(string, value);
-            return;
-        }
-            
-        invokeMethod((Method)writer, object, value);
-    }
-
-    /**
-     * @throws PropertyResolutionException
-     * @throws IllegalStateException
-     */
-    private static void setProperty(Object object, String string, Object value) {
-        if (object == null || object == NOREAD) {
-            throw new UnsupportedOperationException("Unwritable");
-        }
-
-        Object writer = getWriter(object, string);
-        if (writer == null) {
-            log("setProperty()", "missing write method");
-            throw new UnsupportedOperationException("Unwritable");
-        }
-
-        write(writer, object, string, value);
     }
 
     private static Object toUNREADABLE(Object src) {
