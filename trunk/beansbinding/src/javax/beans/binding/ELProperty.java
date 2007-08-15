@@ -419,13 +419,8 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             expression.setSource(getBeanFromSource(source));
             Expression.Result result = expression.getResult(context);
 
-            if (!context.isPropertyResolved()) {
-                log("getValue()", "property could not be resolved");
-                throw new UnsupportedOperationException("Unreadable");
-            }
-
-            if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
-                log("getValue()", "path is incomplete");
+            if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
+                log("getValue()", "expression is unresolvable");
                 throw new UnsupportedOperationException("Unreadable");
             }
 
@@ -464,14 +459,9 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         try {
             expression.setSource(getBeanFromSource(source));
             Expression.Result result = expression.getResult(context);
-            
-            if (!context.isPropertyResolved()) {
-                log("setValue()", "property could not be resolved");
-                throw new UnsupportedOperationException("Unwriteable");
-            }
-            
-            if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
-                log("setValue()", "path is incomplete");
+
+            if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
+                log("setValue()", "expression is unresolvable");
                 throw new UnsupportedOperationException("Unwriteable");
             }
 
@@ -513,13 +503,8 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             expression.setSource(getBeanFromSource(source));
             Expression.Result result = expression.getResult(context);
 
-            if (!context.isPropertyResolved()) {
-                log("isReadable()", "property could not be resolved");
-                return false;
-            }
-
-            if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
-                log("isReadable()", "path is incomplete");
+            if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
+                log("isReadable()", "expression is unresolvable");
                 return false;
             }
             
@@ -556,13 +541,8 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             expression.setSource(getBeanFromSource(source));
             Expression.Result result = expression.getResult(context);
 
-            if (!context.isPropertyResolved()) {
-                log("isWriteable()", "property could not be resolved");
-                return false;
-            }
-
-            if (result.getType() == Expression.Result.Type.INCOMPLETE_PATH) {
-                log("isWriteable()", "path is incomplete");
+            if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
+                log("isWriteable()", "expression is unresolvable");
                 return false;
             }
 
@@ -917,7 +897,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return false;
     }
 
-    private static final boolean LOG = true;
+    private static final boolean LOG = false;
 
     private static void log(String method, String message) {
         if (LOG) {

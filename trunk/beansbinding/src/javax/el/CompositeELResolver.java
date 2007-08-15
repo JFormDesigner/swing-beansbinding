@@ -128,7 +128,7 @@ public class CompositeELResolver extends ELResolver {
             }
             i++;
         } 
-        return null;
+        return ELContext.UNRESOLVABLE_RESULT;
     }
 
     /**
