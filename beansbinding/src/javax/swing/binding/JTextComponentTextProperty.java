@@ -68,7 +68,7 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
         // flag  3 - editability of text field changed
         private void validateCache(int flag) {
             if (flag != 0 && getJTextComponentFromSource(source, false) != cachedComponent) {
-                System.err.println("LOG: validateCache(): concurrent modification");
+                log("validateCache()", "concurrent modification");
             }
             
             Object value;
@@ -86,15 +86,15 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
             }
             
             if (flag != 1 && cachedDocument != document && (cachedDocument == null || !cachedDocument.equals(document))) {
-                System.err.println("LOG: validateCache(): concurrent modification");
+                log("validateCache()", "concurrent modification");
             }
             
             if (flag != 2 && liveValue != value && (liveValue == null || !liveValue.equals(value))) {
-                System.err.println("LOG: validateCache(): concurrent modification");
+                log("validateCache()", "concurrent modification");
             }
             
             if (flag != 3 && writeable != cachedIsWriteable) {
-                System.err.println("LOG: validateCache(): concurrent modification");
+                log("validateCache()", "concurrent modification");
             }
         }
         
@@ -388,7 +388,7 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
         if (comp == null) {
             throw new UnsupportedOperationException("Unwriteable");
         } else if (!comp.isEditable()) {
-            System.err.println("LOG: getWriteType(): target JTextComponent is non-editable");
+            log("getWriteType()", "target JTextComponent is non-editable");
             throw new UnsupportedOperationException("Unwriteable");
         }
 
@@ -445,7 +445,7 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
             if (comp == null) {
                 throw new UnsupportedOperationException("Unwriteable");
             } else if (!comp.isEditable()) {
-                System.err.println("LOG: setValue(): target JTextComponent is non-editable");
+                log("setValue()", "target JTextComponent is non-editable");
                 throw new UnsupportedOperationException("Unwriteable");
             }
 
@@ -476,7 +476,7 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
         if (comp == null) {
             return false;
         } else if (!comp.isEditable()) {
-            System.err.println("LOG: isWriteable(): target JTextComponent is non-editable");
+            log("isWriteable()", "target JTextComponent is non-editable");
             return false;
         }
 
@@ -486,7 +486,7 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
     private JTextComponent getJTextComponentFromSource(S source, boolean logErrors) {
         if (!sourceProperty.isReadable(source)) {
             if (logErrors) {
-                System.err.println("LOG: getJTextComponentFromSource(): unreadable source property");
+                log("getJTextComponentFromSource()", "unreadable source property");
             }
             return null;
         }
@@ -494,7 +494,7 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
         JTextComponent comp = sourceProperty.getValue(source);
         if (comp == null) {
             if (logErrors) {
-                System.err.println("LOG: getJTextComponentFromSource(): source property returned null");
+                log("getJTextComponentFromSource()", "source property returned null");
             }
             return null;
         }
@@ -556,4 +556,12 @@ public final class JTextComponentTextProperty<S> extends AbstractProperty<S, Str
         return "JTextComponent.text";
     }
 
+    private static final boolean LOG = false;
+    
+    private static void log(String method, String message) {
+        if (LOG) {
+            System.err.println("LOG: " + method + ": " + message);
+        }
+    }
+    
 }

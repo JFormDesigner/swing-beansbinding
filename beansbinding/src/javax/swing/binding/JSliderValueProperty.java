@@ -51,13 +51,13 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
         // flag  1 - value changed
         private void validateCache(int flag) {
             if (flag != 0 && getJSliderFromSource(source, false) != cachedComponent) {
-                System.err.println("LOG: validateCache(): concurrent modification");
+                log("validateCache()", "concurrent modification");
             }
             
             if (flag != 1) {
                 Object value = (cachedComponent == null ? NOREAD : cachedComponent.getValue());
                 if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
-                    System.err.println("LOG: validateCache(): concurrent modification");
+                    log("validateCache()", "concurrent modification");
                 }
             }
         }
@@ -233,7 +233,7 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
     private JSlider getJSliderFromSource(S source, boolean logErrors) {
         if (!sourceProperty.isReadable(source)) {
             if (logErrors) {
-                System.err.println("LOG: getJSliderFromSource(): unreadable source property");
+                log("getJSliderFromSource()", "unreadable source property");
             }
             return null;
         }
@@ -241,7 +241,7 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
         JSlider slider = sourceProperty.getValue(source);
         if (slider == null) {
             if (logErrors) {
-                System.err.println("LOG: getJSliderFromSource(): source property returned null");
+                log("getJSliderFromSource()", "source property returned null");
             }
             return null;
         }
@@ -303,4 +303,12 @@ public final class JSliderValueProperty<S> extends AbstractProperty<S, Integer> 
         return "JSlider.value";
     }
 
+    private static final boolean LOG = false;
+    
+    private static void log(String method, String message) {
+        if (LOG) {
+            System.err.println("LOG: " + method + ": " + message);
+        }
+    }
+    
 }

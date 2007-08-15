@@ -51,13 +51,13 @@ public final class ButtonSelectedProperty<S> extends AbstractProperty<S, Boolean
         // flag  1 - value changed
         private void validateCache(int flag) {
             if (flag != 0 && getButtonFromSource(source, false) != cachedComponent) {
-                System.err.println("LOG: validateCache(): concurrent modification");
+                log("validateCache()", "concurrent modification");
             }
             
             if (flag != 1) {
                 Object value = (cachedComponent == null ? NOREAD : cachedComponent.isSelected());
                 if (cachedValue != value && (cachedValue == null || !cachedValue.equals(value))) {
-                    System.err.println("LOG: validateCache(): concurrent modification");
+                    log("validateCache()", "concurrent modification");
                 }
             }
         }
@@ -233,7 +233,7 @@ public final class ButtonSelectedProperty<S> extends AbstractProperty<S, Boolean
     private AbstractButton getButtonFromSource(S source, boolean logErrors) {
         if (!sourceProperty.isReadable(source)) {
             if (logErrors) {
-                System.err.println("LOG: getButtonFromSource(): unreadable source property");
+                log("getButtonFromSource()", "unreadable source property");
             }
             return null;
         }
@@ -241,7 +241,7 @@ public final class ButtonSelectedProperty<S> extends AbstractProperty<S, Boolean
         AbstractButton button = sourceProperty.getValue(source);
         if (button == null) {
             if (logErrors) {
-                System.err.println("LOG: getButtonFromSource(): source property returned null");
+                log("getButtonFromSource()", "source property returned null");
             }
             return null;
         }
@@ -303,4 +303,12 @@ public final class ButtonSelectedProperty<S> extends AbstractProperty<S, Boolean
         return "Button.isSelected";
     }
 
+    private static final boolean LOG = false;
+    
+    private static void log(String method, String message) {
+        if (LOG) {
+            System.err.println("LOG: " + method + ": " + message);
+        }
+    }
+    
 }
