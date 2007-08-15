@@ -89,8 +89,8 @@ public final class AstValue extends SimpleNode {
     public Object getValue(EvaluationContext ctx) throws ELException {
         Object base = this.children[0].getValue(ctx);
         int propCount = this.jjtGetNumChildren();
-        if (base == ELContext.UNRESOLVABLE_RESULT ||
-                (base == null && propCount > 1)) {
+        if (base == ELContext.UNRESOLVABLE_RESULT || (base == null && propCount > 1)) {
+            ctx.clearResolvedProperties();
             return ELContext.UNRESOLVABLE_RESULT;
         }
         int i = 1;
@@ -105,6 +105,7 @@ public final class AstValue extends SimpleNode {
                 Object origBase = base;
                 base = resolver.getValue(ctx, base, property);
                 if (base == ELContext.UNRESOLVABLE_RESULT) {
+                    ctx.clearResolvedProperties();
                     return base;
                 } else {
                     ctx.resolvedProperty(origBase, property);
@@ -113,6 +114,7 @@ public final class AstValue extends SimpleNode {
             i++;
         }
         if (base == null && i < propCount) {
+            ctx.clearResolvedProperties();
             return ELContext.UNRESOLVABLE_RESULT;
         }
         return base;
