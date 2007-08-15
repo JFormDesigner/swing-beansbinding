@@ -9,6 +9,7 @@ package com.sun.el.parser;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.FunctionMapper;
 
@@ -86,6 +87,9 @@ public final class AstFunction extends SimpleNode {
             try {
                 for (int i = 0; i < numParams; i++) {
                     params[i] = this.children[i].getValue(ctx);
+                    if (params[i] == ELContext.UNRESOLVABLE_RESULT) {
+                        return ELContext.UNRESOLVABLE_RESULT;
+                    }
                     params[i] = coerceToType(params[i], paramTypes[i]);
                 }
             } catch (ELException ele) {
