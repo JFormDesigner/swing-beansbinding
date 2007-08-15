@@ -9,6 +9,7 @@ package com.sun.el.parser;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import javax.el.ELContext;
 import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.MethodInfo;
@@ -45,7 +46,7 @@ public final class AstValue extends SimpleNode {
         Object base = this.children[0].getValue(ctx);
 
         // if our base is null (we know there are more properites to evaluate)
-        if (base == null) {
+        if (base == null || base == ELContext.UNRESOLVABLE_RESULT) {
             throw new PropertyNotFoundException(MessageFactory.get(
                     "error.unreachable.base", this.children[0].getImage()));
         }
@@ -58,7 +59,7 @@ public final class AstValue extends SimpleNode {
         // evaluate any properties before our target
         ELResolver resolver = ctx.getELResolver();
         if (propCount > 1) {
-            while (base != null && i < propCount) {
+            while (base != null && base != ELContext.UNRESOLVABLE_RESULT && i < propCount) {
                 property = this.children[i].getValue(ctx);
                 ctx.setPropertyResolved(false);
                 base = resolver.getValue(ctx, base, property);
@@ -66,7 +67,7 @@ public final class AstValue extends SimpleNode {
             }
             // if we are in this block, we have more properties to resolve,
             // but our base was null
-            if (base == null || property == null) {
+            if (base == ELContext.UNRESOLVABLE_RESULT || base == null || property == null) {
                 throw new PropertyNotFoundException(MessageFactory.get(
                         "error.unreachable.property", property));
             }
@@ -88,6 +89,10 @@ public final class AstValue extends SimpleNode {
     public Object getValue(EvaluationContext ctx) throws ELException {
         Object base = this.children[0].getValue(ctx);
         int propCount = this.jjtGetNumChildren();
+        if (base == ELContext.UNRESOLVABLE_RESULT ||
+                (base == null && propCount > 1)) {
+            return ELContext.UNRESOLVABLE_RESULT;
+        }
         int i = 1;
         Object property = null;
         ELResolver resolver = ctx.getELResolver();
@@ -98,8 +103,15 @@ public final class AstValue extends SimpleNode {
             } else {
                 ctx.setPropertyResolved(false);
                 base = resolver.getValue(ctx, base, property);
+                ctx.resolvingProperty(base, property);
+                if (base == ELContext.UNRESOLVABLE_RESULT) {
+                    return base;
+                }
             }
             i++;
+        }
+        if (base == null && i < propCount) {
+            return ELContext.UNRESOLVABLE_RESULT;
         }
         return base;
     }
