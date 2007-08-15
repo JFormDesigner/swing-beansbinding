@@ -102,8 +102,8 @@ public final class AstValue extends SimpleNode {
                 return null;
             } else {
                 ctx.setPropertyResolved(false);
+                ctx.resolvedProperty(base, property);
                 base = resolver.getValue(ctx, base, property);
-                ctx.resolvingProperty(base, property);
                 if (base == ELContext.UNRESOLVABLE_RESULT) {
                     return base;
                 }
