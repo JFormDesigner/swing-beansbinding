@@ -184,11 +184,11 @@ public final class ValueExpressionImpl extends ValueExpression implements
         Object value = this.getNode().getValue(ctx);
         
         if (value == ELContext.UNRESOLVABLE_RESULT) {
-            return new Result(Result.Type.UNRESOLVABLE, null, ctx.getResolvedObjects());
+            return new Result(Result.Type.UNRESOLVABLE, null, ctx.getResolvedProperties());
         }
         
         value = ELSupport.coerceToType(value, this.expectedType);
-        return new Result(Result.Type.VALUE, value, ctx.getResolvedObjects());
+        return new Result(Result.Type.VALUE, value, ctx.getResolvedProperties());
     }
     
     /*

@@ -109,20 +109,20 @@ public abstract class Expression
     public static final class Result {
         private final Type type;
         private final Object result;
-        private final List<ResolvedObject> resolvedObjects;
+        private final List<ResolvedProperty> resolvedProperties;
         
         public enum Type {
             UNRESOLVABLE,
             VALUE
         }
         
-        public Result(Type type, Object result, List<ResolvedObject> resolvedObjects) {
+        public Result(Type type, Object result, List<ResolvedProperty> resolvedProperties) {
             this.type = type;
             this.result = result;
-            this.resolvedObjects = resolvedObjects;
-            if (type == null || resolvedObjects == null) {
+            this.resolvedProperties = resolvedProperties;
+            if (type == null || resolvedProperties == null) {
                 throw new NullPointerException(
-                        "Type, result and resolvedObjects must be non-null");
+                        "Type, result and resolvedProperties must be non-null");
             }
         }
         
@@ -134,18 +134,13 @@ public abstract class Expression
             return result;
         }
         
-        public List<ResolvedObject> getResolvedObjects() {
+        public List<ResolvedProperty> getResolvedProperties() {
             // PENDING: Return a copy?
-            return resolvedObjects;
+            return resolvedProperties;
         }
     }
     
-    
-    public abstract static class ResolvedObject {
-    }
-    
-    
-    public static final class ResolvedProperty extends ResolvedObject {
+    public static final class ResolvedProperty {
         private final Object source;
         private final Object property;
         
@@ -186,39 +181,6 @@ public abstract class Expression
             return hash;
         }
     }
-    
-    
-    public static final class ResolvedList extends ResolvedObject {
-        private final List source;
-        
-        public ResolvedList(List source) {
-            this.source = source;
-            if (source == null) {
-                throw new IllegalArgumentException(
-                        "Source must be non-null");
-            }
-        }
-        
-        public List getSource() {
-            return source;
-        }
-        
-        public boolean equals(Object o) {
-            if (o == this) {
-                return true;
-            }
-            if (o instanceof ResolvedList) {
-                ResolvedList orl = (ResolvedList)o;
-                return (orl.source == source);
-            }
-            return false;
-        }
-        
-        public int hashCode() {
-            int hash = 17;
-            hash = 37 * hash + source.hashCode();
-            return hash;
-        }
-    }
+
 }
 
