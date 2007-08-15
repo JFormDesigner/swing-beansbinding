@@ -641,10 +641,6 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return read(reader, object, string);
     }
 
-    private static String capitalize(String name) {
-	return name.substring(0, 1).toUpperCase() + name.substring(1);
-    }
-
     /**
      * @throws PropertyResolutionException
      */
