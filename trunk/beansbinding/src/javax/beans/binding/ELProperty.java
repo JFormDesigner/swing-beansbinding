@@ -323,7 +323,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
     public static final <S, V> ELProperty<S, V> createForProperty(Property<S, ?> sourceProperty, String expression) {
         return new ELProperty<S, V>(sourceProperty, expression);
     }
-    
+
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
@@ -386,7 +386,26 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         return (Class<? extends V>)getType(getLastSource(source), path.getLast());*/
 
-        return null;
+        try {
+            expression.setSource(getBeanFromSource(source));
+            Expression.Result result = expression.getResult(context);
+
+            if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
+                log("getWriteType()", "expression is unresolvable");
+                throw new UnsupportedOperationException("Unwriteable");
+            }
+
+            if (expression.isReadOnly(context)) {
+                log("getWriteType()", "property is unwriteable");
+                throw new UnsupportedOperationException("Unwriteable");
+            }
+
+            return (Class<? extends V>)expression.getType(context);
+        } catch (ELException ele) {
+            throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
+        } finally {
+            expression.setSource(null);
+        }
     }
     
     public V getValue(S source) {
