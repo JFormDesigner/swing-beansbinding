@@ -102,7 +102,7 @@ public abstract class ValueExpression
             ELException {
         Object value = getValue(context);
         List<ResolvedObject> resolved = Collections.emptyList();
-        return new Result(Result.Type.SINGLE_VALUE, value, resolved);
+        return new Result(Result.Type.VALUE, value, resolved);
     }
 
     /**

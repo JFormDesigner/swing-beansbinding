@@ -112,10 +112,8 @@ public abstract class Expression
         private final List<ResolvedObject> resolvedObjects;
         
         public enum Type {
-            INCOMPLETE_PATH,
-            MULTI_LIST_VALUE,
-            CAPPED_MULTI_LIST_VALUE,
-            SINGLE_VALUE
+            UNRESOLVABLE,
+            VALUE
         }
         
         public Result(Type type, Object result, List<ResolvedObject> resolvedObjects) {
