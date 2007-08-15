@@ -178,9 +178,9 @@ public final class ValueExpressionImpl extends ValueExpression implements
         return value;
     }
     
-    public Result getResult(ELContext context) throws PropertyNotFoundException, 
+    public Result getResult(ELContext context, boolean trackResolvedObjects) throws PropertyNotFoundException, 
             ELException {
-        EvaluationContext ctx = new EvaluationContext(context, this.fnMapper, this.varMapper, this, true);
+        EvaluationContext ctx = new EvaluationContext(context, this.fnMapper, this.varMapper, this, trackResolvedObjects);
         Object value = this.getNode().getValue(ctx);
         
         if (value == ELContext.UNRESOLVABLE_RESULT) {

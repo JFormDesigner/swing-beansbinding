@@ -85,7 +85,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
             try {
                 expression.setSource(getBeanFromSource(source, true));
-                Expression.Result result = expression.getResult(context);
+                Expression.Result result = expression.getResult(context, true);
                 
                 if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
                     log("updateCache()", "expression is unresolvable");
@@ -126,7 +126,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             if (flag != 1) {
                 try {
                     expression.setSource(getBeanFromSource(source, true));
-                    Expression.Result result = expression.getResult(context);
+                    Expression.Result result = expression.getResult(context, false);
 
                     Object currValue;
                     boolean currIsWriteable;
@@ -262,7 +262,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         try {
             expression.setSource(getBeanFromSource(source, true));
-            Expression.Result result = expression.getResult(context);
+            Expression.Result result = expression.getResult(context, false);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
                 log("getWriteType()", "expression is unresolvable");
@@ -310,7 +310,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         try {
             expression.setSource(getBeanFromSource(source, true));
-            Expression.Result result = expression.getResult(context);
+            Expression.Result result = expression.getResult(context, false);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
                 log("getValue()", "expression is unresolvable");
@@ -351,7 +351,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         try {
             expression.setSource(getBeanFromSource(source, true));
-            Expression.Result result = expression.getResult(context);
+            Expression.Result result = expression.getResult(context, false);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
                 log("setValue()", "expression is unresolvable");
@@ -394,7 +394,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         try {
             expression.setSource(getBeanFromSource(source, true));
-            Expression.Result result = expression.getResult(context);
+            Expression.Result result = expression.getResult(context, false);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
                 log("isReadable()", "expression is unresolvable");
@@ -432,7 +432,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         
         try {
             expression.setSource(getBeanFromSource(source, true));
-            Expression.Result result = expression.getResult(context);
+            Expression.Result result = expression.getResult(context, false);
 
             if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
                 log("isWriteable()", "expression is unresolvable");

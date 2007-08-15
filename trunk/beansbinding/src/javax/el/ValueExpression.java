@@ -98,7 +98,7 @@ public abstract class ValueExpression
      */
     public abstract Object getValue(ELContext context);
     
-    public Result getResult(ELContext context) throws PropertyNotFoundException, 
+    public Result getResult(ELContext context, boolean trackResolvedObjects) throws PropertyNotFoundException, 
             ELException {
         Object value = getValue(context);
         List<ResolvedProperty> resolved = Collections.emptyList();
