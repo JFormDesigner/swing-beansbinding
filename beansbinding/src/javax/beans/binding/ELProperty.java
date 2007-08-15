@@ -57,7 +57,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
         private void cleanup() {
             for (RegisteredListener rl : registeredListeners) {
-                removeListener(rl);
+                unregisterListener(rl, this);
             }
 
             if (sourceProperty != null) {
@@ -526,30 +526,35 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return src == NOREAD ? UNREADABLE : src;
     }
 
-    /*private void registerListener(Object object, SourceEntry entry) {
-        assert object != null;
+    private void registerListener(ResolvedProperty resolved, SourceEntry entry) {
+        Object source = resolved.getSource();
+        Object property = resolved.getProperty();
+        if (source != null && property instanceof String) {
+            String sProp = (String)property;
+            RegisteredListener rl = new RegisteredListener(source, sProp);
 
-        if (object != NOREAD) {
-            if (object instanceof ObservableMap) {
-                ((ObservableMap)object).addObservableMapListener(entry);
-            } else if (!(object instanceof Map)) {
-                addPropertyChangeListener(object, entry);
+            if (!entry.registeredListeners.contains(rl)) {
+                if (!entry.lastRegisteredListeners.remove(rl)) {
+                    if (source instanceof ObservableMap) {
+                       ((ObservableMap)source).addObservableMapListener(entry);
+                    } else {
+                        addPropertyChangeListener(source, entry);
+                    }
+                }
+
+                entry.registeredListeners.add(rl);
             }
         }
-    }*/
+    }
 
-    /**
-     * @throws PropertyResolutionException
-     */
-    /*private void unregisterListener(Object object, SourceEntry entry) {
-        if (object != null && object != NOREAD) {
-            if (object instanceof ObservableMap) {
-                ((ObservableMap)object).removeObservableMapListener(entry);
-            } else if (!(object instanceof Map)) {
-                removePropertyChangeListener(object, entry);
-            }
+    private void unregisterListener(RegisteredListener rl, SourceEntry entry) {
+        Object source = rl.getSource();
+        if (source instanceof ObservableMap) {
+            ((ObservableMap)source).removeObservableMapListener(entry);
+        } else {
+            removePropertyChangeListener(source, entry);
         }
-    }*/
+    }
 
     /**
      * @throws PropertyResolutionException
