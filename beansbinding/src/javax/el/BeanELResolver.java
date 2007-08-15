@@ -236,12 +236,8 @@ public class BeanELResolver extends ELResolver {
             throw new NullPointerException();
         }
 
-        if (base == null) {
-            if (property != null) {
-                return ELContext.INCOMPLETE_PATH_RESULT;
-            } else {
-                return null;
-            }
+        if (base == null || property == null) {
+            return null;
         }
 
         Method method;
