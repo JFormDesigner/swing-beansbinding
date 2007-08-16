@@ -171,7 +171,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
 
         TableModel model = table.getModel();
         return model instanceof ListBindingManager ? ((ListBindingManager)model).getElement(index)
-                                                   : model.getElementAt(index);
+                                                   : null;
     }
     
     public Class<E> getWriteType(S source) {
