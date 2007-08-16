@@ -176,7 +176,10 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
             int columnCount = model.getColumnCount();
             HashMap map = new HashMap(columnCount);
             for (int i = 0; i < columnCount; i++) {
-                map.put(model.getColumnName(i), model.getValueAt(index, i));
+                // PENDING(shannonh) - find better identifiers
+                // can't use plain column name since it might be a bad identifier
+                // but can we convert it to a propert identifier?
+                map.put("column" + i, model.getValueAt(index, i));
             }
             return map;
         }
