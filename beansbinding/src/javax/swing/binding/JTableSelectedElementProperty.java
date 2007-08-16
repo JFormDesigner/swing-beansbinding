@@ -19,14 +19,14 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  */
 public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<S, E> {
 
-    private Property<S, ? extends JList> sourceProperty;
+    private Property<S, ? extends JTable> sourceProperty;
     private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
     private final Class<E> valueType;
 
     private final class SourceEntry implements PropertyStateListener, ListSelectionListener, PropertyChangeListener {
         private S source;
-        private JList cachedComponent;
+        private JTable cachedComponent;
         private Object cachedValue;
         private boolean ignoreChange;
 
@@ -53,7 +53,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
         // flag  0 - source property changed value or readability
         // flag  1 - value changed (or selection model changed)
         private void validateCache(int flag) {
-            if (flag != 0 && getJListFromSource(source, false) != cachedComponent) {
+            if (flag != 0 && getJTableFromSource(source, false) != cachedComponent) {
                 System.err.println("LOG: validateCache(): concurrent modification");
             }
 
@@ -66,7 +66,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
         }
         
         private void updateCachedComponent() {
-            JList comp = getJListFromSource(source, true);
+            JTable comp = getJTableFromSource(source, true);
 
             if (comp != cachedComponent) {
                 if (cachedComponent != null) {
@@ -129,7 +129,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
         }
     }
 
-    private JTableSelectedElementProperty(Property<S, ? extends JList> sourceProperty, Class<E> valueType) {
+    private JTableSelectedElementProperty(Property<S, ? extends JTable> sourceProperty, Class<E> valueType) {
         if (sourceProperty == null) {
             throw new IllegalArgumentException("can't have null source property");
         }
@@ -140,29 +140,29 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
         this.valueType = valueType;
     }
 
-    public static final JListSelectedElementProperty<JList, Object> create() {
-        return createForProperty(new ObjectProperty<JList>());
+    public static final JTableSelectedElementProperty<JTable, Object> create() {
+        return createForProperty(new ObjectProperty<JTable>());
     }
 
-    public static final <S> JListSelectedElementProperty<S, Object> createForProperty(Property<S, ? extends JList> sourceProperty) {
+    public static final <S> JTableSelectedElementProperty<S, Object> createForProperty(Property<S, ? extends JTable> sourceProperty) {
         return createForProperty(sourceProperty, Object.class);
     }
 
-    public static final <E> JListSelectedElementProperty<JList, E> create(Class<E> valueType) {
-        return createForProperty(new ObjectProperty<JList>(), valueType);
+    public static final <E> JTableSelectedElementProperty<JTable, E> create(Class<E> valueType) {
+        return createForProperty(new ObjectProperty<JTable>(), valueType);
     }
 
-    public static final <S, E> JListSelectedElementProperty<S, E> createForProperty(Property<S, ? extends JList> sourceProperty, Class<E> valueType) {
-        return new JListSelectedElementProperty<S, E>(sourceProperty, valueType);
+    public static final <S, E> JTableSelectedElementProperty<S, E> createForProperty(Property<S, ? extends JTable> sourceProperty, Class<E> valueType) {
+        return new JTableSelectedElementProperty<S, E>(sourceProperty, valueType);
     }
 
-    private static int getSelectionIndex(JList list) {
+    private static int getSelectionIndex(JTable list) {
         assert list != null;
         int index = list.getSelectionModel().getLeadSelectionIndex();
         return list.getSelectionModel().isSelectedIndex(index) ? index : -1;
     }
     
-    private static Object getListObject(JList list, int index) {
+    private static Object getListObject(JTable list, int index) {
         assert list != null;
         if (index == -1) {
             return null;
@@ -174,7 +174,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
     }
     
     public Class<E> getWriteType(S source) {
-        JList component;
+        JTable component;
 
         SourceEntry entry = map.get(source);
 
@@ -182,7 +182,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
             entry.validateCache(-1);
             component = entry.cachedComponent;
         } else {
-            component = getJListFromSource(source, true);
+            component = getJTableFromSource(source, true);
         }
 
         if (component == null) {
@@ -205,7 +205,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
             return (E)getListObject(entry.cachedComponent, (Integer)entry.cachedValue);
         }
 
-        JList comp = getJListFromSource(source, true);
+        JTable comp = getJTableFromSource(source, true);
         if (comp == null) {
             throw new UnsupportedOperationException("Unreadable");
         }
@@ -233,7 +233,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
                 entry.ignoreChange = false;
             }
         } else {
-            JList component = getJListFromSource(source, true);
+            JTable component = getJTableFromSource(source, true);
             if (component == null) {
                 throw new UnsupportedOperationException("Unwriteable");
             }
@@ -250,7 +250,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
             return entry.cachedIsReadable();
         }
 
-        return (getJListFromSource(source, true) != null);
+        return (getJTableFromSource(source, true) != null);
     }
 
     public boolean isWriteable(S source) {
@@ -261,21 +261,21 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
             return entry.cachedIsWriteable();
         }
 
-        return (getJListFromSource(source, true) != null);
+        return (getJTableFromSource(source, true) != null);
     }
 
-    private JList getJListFromSource(S source, boolean logErrors) {
+    private JTable getJTableFromSource(S source, boolean logErrors) {
         if (!sourceProperty.isReadable(source)) {
             if (logErrors) {
-                System.err.println("LOG: getJListFromSource(): unreadable source property");
+                System.err.println("LOG: getJTableFromSource(): unreadable source property");
             }
             return null;
         }
 
-        JList list = sourceProperty.getValue(source);
+        JTable list = sourceProperty.getValue(source);
         if (list == null) {
             if (logErrors) {
-                System.err.println("LOG: getJListFromSource(): source property returned null");
+                System.err.println("LOG: getJTableFromSource(): source property returned null");
             }
             return null;
         }
@@ -334,7 +334,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
     }
 
     public String toString() {
-        return "JList.selectedElement";
+        return "JTable.selectedElement";
     }
 
 }
