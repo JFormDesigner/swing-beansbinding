@@ -321,6 +321,9 @@ public final class JListSelectedElementProperty<S, E> extends AbstractProperty<S
         if (!valueChanged && !writeableChanged) {
             return;
         }
+
+        oldValue = (oldValue == UNREADABLE ? UNREADABLE : getListObject(entry.cachedComponent, (Integer)oldValue));
+        newValue = (oldValue == UNREADABLE ? UNREADABLE : getListObject(entry.cachedComponent, (Integer)newValue));
         
         PropertyStateEvent pse = new PropertyStateEvent(this,
                                                         entry.source,
