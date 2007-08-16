@@ -8,6 +8,7 @@ package javax.swing.binding;
 import javax.beans.binding.*;
 import java.beans.*;
 import javax.swing.*;
+import javax.swing.table.*;
 import javax.swing.event.*;
 import java.awt.event.*;
 import java.util.*;
@@ -100,11 +101,11 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
         }
 
         public void valueChanged(ListSelectionEvent e) {
-            listSelectionChanged();
+            tableSelectionChanged();
         }
 
         public void propertyChange(PropertyChangeEvent pce) {
-            listSelectionChanged();
+            tableSelectionChanged();
         }
         
         private void bindingPropertyChanged(PropertyStateEvent pse) {
@@ -117,7 +118,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
             notifyListeners(wasWriteable, oldValue, this);
         }
 
-        private void listSelectionChanged() {
+        private void tableSelectionChanged() {
             if (ignoreChange) {
                 return;
             }
@@ -156,19 +157,19 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
         return new JTableSelectedElementProperty<S, E>(sourceProperty, valueType);
     }
 
-    private static int getSelectionIndex(JTable list) {
-        assert list != null;
-        int index = list.getSelectionModel().getLeadSelectionIndex();
-        return list.getSelectionModel().isSelectedIndex(index) ? index : -1;
+    private static int getSelectionIndex(JTable table) {
+        assert table != null;
+        int index = table.getSelectionModel().getLeadSelectionIndex();
+        return table.getSelectionModel().isSelectedIndex(index) ? index : -1;
     }
     
-    private static Object getListObject(JTable list, int index) {
-        assert list != null;
+    private static Object getTableObject(JTable table, int index) {
+        assert table != null;
         if (index == -1) {
             return null;
         }
 
-        ListModel model = list.getModel();
+        TableModel model = table.getModel();
         return model instanceof ListBindingManager ? ((ListBindingManager)model).getElement(index)
                                                    : model.getElementAt(index);
     }
@@ -202,7 +203,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
                 throw new UnsupportedOperationException("Unreadable");
             }
 
-            return (E)getListObject(entry.cachedComponent, (Integer)entry.cachedValue);
+            return (E)getTableObject(entry.cachedComponent, (Integer)entry.cachedValue);
         }
 
         JTable comp = getJTableFromSource(source, true);
@@ -210,7 +211,7 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
             throw new UnsupportedOperationException("Unreadable");
         }
 
-        return (E)getListObject(comp, getSelectionIndex(comp));
+        return (E)getTableObject(comp, getSelectionIndex(comp));
     }
 
     public void setValue(S source, E value) {
@@ -272,15 +273,15 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
             return null;
         }
 
-        JTable list = sourceProperty.getValue(source);
-        if (list == null) {
+        JTable table = sourceProperty.getValue(source);
+        if (table == null) {
             if (logErrors) {
                 System.err.println("LOG: getJTableFromSource(): source property returned null");
             }
             return null;
         }
         
-        return list;
+        return table;
     }
 
     protected final void listeningStarted(S source) {
