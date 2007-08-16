@@ -170,10 +170,18 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
         }
 
         TableModel model = table.getModel();
-        return model instanceof ListBindingManager ? ((ListBindingManager)model).getElement(index)
-                                                   : null;
+        if (model instanceof ListBindingManager) {
+            return ((ListBindingManager)model).getElement(index);
+        } else {
+            int columnCount = model.getColumnCount();
+            HashMap map = new HashMap(columnCount);
+            for (int i = 0; i < columnCount; i++) {
+                map.put(model.getColumnName(i), model.getValueAt(index, i));
+            }
+            return map;
+        }
     }
-    
+
     public Class<E> getWriteType(S source) {
         JTable component;
 
