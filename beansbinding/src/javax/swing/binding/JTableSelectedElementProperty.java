@@ -330,7 +330,10 @@ public final class JTableSelectedElementProperty<S, E> extends AbstractProperty<
         if (!valueChanged && !writeableChanged) {
             return;
         }
-        
+
+        oldValue = (oldValue == UNREADABLE ? UNREADABLE : getTableObject(entry.cachedComponent, (Integer)oldValue));
+        newValue = (oldValue == UNREADABLE ? UNREADABLE : getTableObject(entry.cachedComponent, (Integer)newValue));
+
         PropertyStateEvent pse = new PropertyStateEvent(this,
                                                         entry.source,
                                                         valueChanged,
