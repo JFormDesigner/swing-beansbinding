@@ -11,12 +11,12 @@ import java.beans.*;
  * @author Shannon Hickey
  */
 public class DelegateBase {
-    private String property;
+    protected final String property;
     private PropertyChangeSupport support;
 
     protected DelegateBase(String property) {
         assert property != null;
-        property = property.intern();
+        this.property = property.intern();
     }
 
     protected void listeningStarted() {}
