@@ -33,6 +33,7 @@ import java.util.*;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
+import javax.beans.binding.ext.*;
 
 /**
  * @author Shannon Hickey
@@ -44,6 +45,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     private final PropertyPath path;
     private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
+    private BeanDelegateFactory factory;
 
     private final class SourceEntry implements PropertyChangeListener,
                                                ObservableMapListener,
@@ -73,7 +75,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
         private void cleanup() {
             for (int i = 0; i < path.length(); i++) {
-                unregisterListener(cache[i], this);
+                unregisterListener(cache[i], path.get(i), this);
             }
 
             if (sourceProperty != null) {
@@ -100,7 +102,20 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                     return i;
                 }
             }
-            
+
+            if (object instanceof Map) {
+                return -1;
+            }
+
+            for (int i = 0; i < cache.length; i++) {
+                if (cache[i] != null) {
+                    Object delegate = getDelegate(cache[i], path.get(i));
+                    if (delegate == object) {
+                        return i;
+                    }
+                }
+            }
+
             return -1;
         }
 
@@ -117,7 +132,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                 src = cachedBean;
                 
                 if (cache[0] != src) {
-                    unregisterListener(cache[0], this);
+                    unregisterListener(cache[0], path.get(0), this);
                     
                     cache[0] = src;
                     
@@ -125,7 +140,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                         loggedYet = true;
                         log("updateCachedSources()", "source is null");
                     } else {
-                        registerListener(src, this);
+                        registerListener(src, path.get(0), this);
                     }
                 }
                 
@@ -137,7 +152,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                 src = getProperty(cache[i - 1], path.get(i - 1));
                 
                 if (src != old) {
-                    unregisterListener(old, this);
+                    unregisterListener(old, path.get(i), this);
                     
                     cache[i] = src;
                     
@@ -152,7 +167,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                             log("updateCachedSources()", "missing read method");
                         }
                     } else {
-                        registerListener(src, this);
+                        registerListener(src, path.get(i), this);
                     }
                 }
             }
@@ -307,27 +322,27 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         }
     }
 
-    public static final <S, V> BeanProperty<S, V> create(String path) {
-        return new BeanProperty<S, V>(path);
+    public static final <S, V> BeanProperty<S, V> create(String path, BeanDelegateProvider... providers) {
+        return new BeanProperty<S, V>(null, path, providers);
     }
 
-    public static final <S, V> BeanProperty<S, V> createForProperty(Property<S, ?> sourceProperty, String path) {
-        return new BeanProperty<S, V>(sourceProperty, path);
-    }
-
-    /**
-     * @throws IllegalArgumentException for empty or {@code null} path.
-     */
-    public BeanProperty(String path) {
-        this(null, path);
+    public static final <S, V> BeanProperty<S, V> createForProperty(Property<S, ?> sourceProperty, String path, BeanDelegateProvider... providers) {
+        return new BeanProperty<S, V>(sourceProperty, path, providers);
     }
 
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    public BeanProperty(Property<S, ?> sourceProperty, String path) {
+    private BeanProperty(Property<S, ?> sourceProperty, String path, BeanDelegateProvider... providers) {
         this.path = PropertyPath.createPropertyPath(path);
         this.sourceProperty = sourceProperty;
+        if (providers != null && providers.length != 0) {
+            ArrayList<BeanDelegateProvider> list = new ArrayList<BeanDelegateProvider>(providers.length);
+            for (BeanDelegateProvider provider : providers) {
+                list.add(provider);
+            }
+            this.factory = new BeanDelegateFactory(list);
+        }
     }
 
     private Object getLastSource(S source) {
@@ -599,12 +614,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         throw new PropertyResolutionException("Exception invoking method " + method + " on " + object, reason);
     }
 
-    private static Object getReader(Object object, String string) {
+    private Object getReader(Object object, String string) {
         assert object != null;
 
         if (object instanceof Map) {
             return object;
         }
+
+        object = getDelegate(object, string);
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         Method readMethod = null;
@@ -614,7 +631,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private static Object read(Object reader, Object object, String string) {
+    private Object read(Object reader, Object object, String string) {
         assert reader != null;
 
         if (reader instanceof Map) {
@@ -622,13 +639,15 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return ((Map)reader).get(string);
         }
 
+        object = getDelegate(object, string);
+        
         return invokeMethod((Method)reader, object);
     }
 
     /**
      * @throws PropertyResolutionException
      */
-    private static Object getProperty(Object object, String string) {
+    private Object getProperty(Object object, String string) {
         if (object == null || object == NOREAD) {
             return NOREAD;
         }
@@ -644,7 +663,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private static Class<?> getType(Object object, String string) {
+    private Class<?> getType(Object object, String string) {
         if (object == null || object == NOREAD) {
             throw new UnsupportedOperationException("Unwritable");
         }
@@ -653,6 +672,8 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return Object.class;
         }
 
+        object = getDelegate(object, string);
+        
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         if (pd == null || pd.getWriteMethod() == null) {
             log("getType()", "missing write method");
@@ -662,12 +683,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return pd.getPropertyType();
     }
 
-    private static Object getWriter(Object object, String string) {
+    private Object getWriter(Object object, String string) {
         assert object != null;
 
         if (object instanceof Map) {
             return object;
         }
+
+        object = getDelegate(object, string);
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         Method writeMethod = null;
@@ -677,7 +700,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private static void write(Object writer, Object object, String string, Object value) {
+    private void write(Object writer, Object object, String string, Object value) {
         assert writer != null;
 
         if (writer instanceof Map) {
@@ -685,7 +708,9 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             ((Map)writer).put(string, value);
             return;
         }
-            
+
+        object = getDelegate(object, string);
+        
         invokeMethod((Method)writer, object, value);
     }
 
@@ -693,7 +718,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
      * @throws PropertyResolutionException
      * @throws IllegalStateException
      */
-    private static void setProperty(Object object, String string, Object value) {
+    private void setProperty(Object object, String string, Object value) {
         if (object == null || object == NOREAD) {
             throw new UnsupportedOperationException("Unwritable");
         }
@@ -711,13 +736,14 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return src == NOREAD ? UNREADABLE : src;
     }
 
-    private void registerListener(Object object, SourceEntry entry) {
+    private void registerListener(Object object, String property, SourceEntry entry) {
         assert object != null;
 
         if (object != NOREAD) {
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).addObservableMapListener(entry);
             } else if (!(object instanceof Map)) {
+                object = getDelegate(object, property);
                 addPropertyChangeListener(object, entry);
             }
         }
@@ -726,11 +752,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws PropertyResolutionException
      */
-    private void unregisterListener(Object object, SourceEntry entry) {
+    private void unregisterListener(Object object, String property, SourceEntry entry) {
         if (object != null && object != NOREAD) {
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).removeObservableMapListener(entry);
             } else if (!(object instanceof Map)) {
+                object = getDelegate(object, property);
                 removePropertyChangeListener(object, entry);
             }
         }
@@ -799,6 +826,19 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return false;
     }
 
+    private Object getDelegate(Object o, String property) {
+        Object delegate = null;
+        if (factory != null) {
+            delegate = factory.getPropertyDelegate0(o, property);
+        }
+        
+        if (delegate == null) {
+            delegate = factory.getPropertyDelegate(o, property);
+        }
+
+        return delegate == null ? o : delegate;
+    }
+    
     private static final boolean LOG = false;
 
     private static void log(String method, String message) {
