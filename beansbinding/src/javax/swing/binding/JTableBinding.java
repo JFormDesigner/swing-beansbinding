@@ -25,36 +25,8 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
     private boolean editableSet;
     private List<TableColumnBinding> columnBindings = new ArrayList<TableColumnBinding>();
 
-    public static <E> JTableBinding<E, List<E>, JTable> createDirectBinding(List<E> sourceList, JTable targetJTable) {
-        return createDirectBinding(null, sourceList, targetJTable);
-    }
-
-    public static <E> JTableBinding<E, List<E>, JTable> createDirectBinding(String name, List<E> sourceList, JTable targetJTable) {
-        return new JTableBinding<E, List<E>, JTable>(name, sourceList, new ObjectProperty<List<E>>(), targetJTable, new ObjectProperty<JTable>());
-    }
-
-    public static <E, SS> JTableBinding<E, SS, JTable> createDirectBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, JTable targetJTable) {
-        return createDirectBinding(null, sourceObject, sourceListProperty, targetJTable);
-    }
-
-    public static <E, SS> JTableBinding<E, SS, JTable> createDirectBinding(String name, SS sourceObject, Property<SS, List<E>> sourceListProperty, JTable targetJTable) {
-        return new JTableBinding<E, SS, JTable>(name, sourceObject, sourceListProperty, targetJTable, new ObjectProperty<JTable>());
-    }
-
-    public static <E, TS> JTableBinding<E, List<E>, TS> createDirectBinding(List<E> sourceList, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty) {
-        return createDirectBinding(null, sourceList, targetObject, targetJTableProperty);
-    }
-
-    public static <E, TS> JTableBinding<E, List<E>, TS> createDirectBinding(String name, List<E> sourceList, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty) {
-        return new JTableBinding<E, List<E>, TS>(name, sourceList, new ObjectProperty<List<E>>(), targetObject, targetJTableProperty);
-    }
-
-    public JTableBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty) {
-        this(null, sourceObject, sourceListProperty, targetObject, targetJTableProperty);
-    }
-
-    public JTableBinding(String name, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty) {
-        super(name, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetJTableProperty));
+    protected JTableBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
+        super(sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetJTableProperty), name);
         ep = (ElementsProperty<TS, JTable>)getTargetProperty();
     }
 
@@ -87,33 +59,33 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
     }
 
     public TableColumnBinding addColumnBinding(Property<E, ?> columnProperty) {
-        return addColumnBinding(null, columnProperty);
+        return addColumnBinding(columnProperty, null);
     }
 
-    public TableColumnBinding addColumnBinding(String name, Property<E, ?> columnProperty) {
+    public TableColumnBinding addColumnBinding(Property<E, ?> columnProperty, String name) {
         throwIfBound();
 
         if (columnProperty == null) {
             throw new IllegalArgumentException("can't have null column property");
         }
 
-        TableColumnBinding binding = new TableColumnBinding(name, columnBindings.size(), columnProperty);
+        TableColumnBinding binding = new TableColumnBinding(columnBindings.size(), columnProperty, name);
         columnBindings.add(binding);
         return binding;
     }
 
     public TableColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty) {
-        return addColumnBinding(null, index, columnProperty);
+        return addColumnBinding(index, columnProperty, null);
     }
 
-    public TableColumnBinding addColumnBinding(String name, int index, Property<E, ?> columnProperty) {
+    public TableColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty, String name) {
         throwIfBound();
 
         if (columnProperty == null) {
             throw new IllegalArgumentException("can't have null column property");
         }
 
-        TableColumnBinding binding = new TableColumnBinding(name, index, columnProperty);
+        TableColumnBinding binding = new TableColumnBinding(index, columnProperty, name);
         columnBindings.add(index, binding);
         adjustIndices(index + 1, true);
         return binding;
@@ -199,8 +171,8 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
         private boolean editableSet;
         private String columnName;
 
-        public TableColumnBinding(String name, int column, Property<E, ?> columnProperty) {
-            super(name, column, columnProperty, new TableColumnProperty());
+        public TableColumnBinding(int column, Property<E, ?> columnProperty, String name) {
+            super(column, columnProperty, new TableColumnProperty(), name);
             ((TableColumnProperty)getTargetProperty()).binding = this;
         }
 
