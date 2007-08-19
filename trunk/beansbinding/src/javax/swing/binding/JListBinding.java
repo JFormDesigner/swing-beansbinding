@@ -10,6 +10,8 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import sun.swing.binding.ColumnBinding;
+import sun.swing.binding.ListBindingManager;
 
 /**
  * @author Shannon Hickey

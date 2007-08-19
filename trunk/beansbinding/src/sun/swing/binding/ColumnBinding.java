@@ -3,14 +3,14 @@
  * subject to license terms.
  */
 
-package javax.swing.binding;
+package sun.swing.binding;
 
 import javax.beans.binding.*;
 
 /**
  * @author Shannon Hickey
  */
-class ColumnBinding extends Binding {
+public class ColumnBinding extends Binding {
 
     private int column;
 
@@ -19,11 +19,11 @@ class ColumnBinding extends Binding {
         this.column = column;
     }
 
-    int getColumn() {
+    public final int getColumn() {
         return column;
     }
 
-    void setColumn(int column) {
+    protected final void setColumn(int column) {
         this.column = column;
     }
 

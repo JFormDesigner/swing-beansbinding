@@ -11,6 +11,8 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import sun.swing.binding.ColumnBinding;
+import sun.swing.binding.ListBindingManager;
 
 /**
  * @author Shannon Hickey
@@ -124,8 +126,8 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
     private void adjustIndices(int start, boolean up) {
         int size = columnBindings.size();
         for (int i = start; i < size; i++) {
-            ColumnBinding cb = columnBindings.get(i);
-            cb.setColumn(cb.getColumn() + (up ? 1 : -1));
+            TableColumnBinding cb = columnBindings.get(i);
+            cb.adjustColumn(cb.getColumn() + (up ? 1 : -1));
         }
     }
     
@@ -174,6 +176,10 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
         public TableColumnBinding(int column, Property<E, ?> columnProperty, String name) {
             super(column, columnProperty, new TableColumnProperty(), name);
             ((TableColumnProperty)getTargetProperty()).binding = this;
+        }
+
+        private void adjustColumn(int newCol) {
+            setColumn(newCol);
         }
 
         public TableColumnBinding setColumnName(String name) {
