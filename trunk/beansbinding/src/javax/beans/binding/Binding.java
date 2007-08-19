@@ -146,28 +146,16 @@ public class Binding<SS, SV, TS, TV> {
         }
     }
 
-    public static <SS, TS, TV> Binding<SS, SS, TS, TV> createDirectBinding(SS source, TS targetObject, Property<TS, TV> targetProperty) {
-        return createDirectBinding(null, source, targetObject, targetProperty);
-    }
-
-    public static <SS, TS, TV> Binding<SS, SS, TS, TV> createDirectBinding(String name, SS source, TS targetObject, Property<TS, TV> targetProperty) {
-        return new Binding<SS, SS, TS, TV>(name, source, new ObjectProperty<SS>(), targetObject, targetProperty);
-    }
-
-    public Binding(SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty) {
-        this(null, sourceObject, sourceProperty, targetObject, targetProperty);
-    }
-
-    public Binding(String name, SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty) {
+    protected Binding(SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty, String name) {
         if (sourceProperty == null || targetProperty == null) {
             throw new IllegalArgumentException("source and target properties must be non-null");
         }
 
-        this.name = name;
         this.sourceObject = sourceObject;
         this.sourceProperty = sourceProperty;
         this.targetObject = targetObject;
         this.targetProperty = targetProperty;
+        this.name = name;
     }
 
     public final String getName() {
