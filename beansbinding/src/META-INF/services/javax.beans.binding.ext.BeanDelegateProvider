@@ -1,0 +1,5 @@
+# Copyright (C) 2007 Sun Microsystems, Inc. All rights reserved. Use is
+# subject to license terms.
+
+com.sun.java.swing.binding.AbstractButtonDelegateProvider
+com.sun.java.swing.binding.JTextComponentDelegateProvider
