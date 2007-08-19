@@ -5,16 +5,12 @@
 
 package com.sun.java.swing.binding;
 
-import javax.beans.binding.*;
 import javax.beans.binding.ext.*;
 import java.beans.*;
 import javax.swing.*;
-import javax.swing.binding.*;
 import javax.swing.event.*;
 import java.awt.event.*;
-import java.util.*;
 import javax.swing.text.*;
-import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
 /**
  * @author Shannon Hickey

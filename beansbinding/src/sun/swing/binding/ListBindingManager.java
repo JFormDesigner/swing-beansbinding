@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.swing.binding;
+package sun.swing.binding;
 
 import com.sun.java.util.ObservableList;
 import com.sun.java.util.ObservableListListener;
@@ -17,13 +17,10 @@ import javax.beans.binding.*;
  * @author sky
  * @author Shannon Hickey
  */
-abstract class ListBindingManager implements ObservableListListener {
+public abstract class ListBindingManager implements ObservableListListener {
     private ColumnBinding[] bindings;
     private List<?> elements;
     private List<ColumnDescriptionManager> managers;
-
-    public ListBindingManager() {
-    }
 
     private List<ColumnDescriptionManager> createManagers() {
         bindings = getColBindings();

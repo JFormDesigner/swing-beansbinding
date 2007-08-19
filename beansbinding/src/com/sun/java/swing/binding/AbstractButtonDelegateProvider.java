@@ -5,14 +5,10 @@
 
 package com.sun.java.swing.binding;
 
-import javax.beans.binding.*;
 import javax.beans.binding.ext.*;
-import java.beans.*;
 import javax.swing.*;
-import javax.swing.binding.*;
-import javax.swing.event.*;
 import java.awt.event.*;
-import java.util.*;
+import java.beans.*;
 
 /**
  * @author Shannon Hickey
@@ -48,9 +44,13 @@ public final class AbstractButtonDelegateProvider implements BeanDelegateProvide
             itemListener = null;
         }
         
-        private class Handler implements ItemListener {
+        private class Handler implements ItemListener, PropertyChangeListener {
             public void itemStateChanged(ItemEvent ie) {
                 firePropertyChange(!button.isSelected(), button.isSelected());
+            }
+
+            public void propertyChange(PropertyChangeEvent pe) {
+                firePropertyChange(null, button.isSelected());
             }
         }
     }

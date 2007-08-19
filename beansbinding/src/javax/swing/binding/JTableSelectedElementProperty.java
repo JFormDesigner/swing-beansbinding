@@ -13,6 +13,7 @@ import javax.swing.event.*;
 import java.awt.event.*;
 import java.util.*;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
+import sun.swing.binding.ListBindingManager;
 
 /**
  * @author Shannon Hickey
