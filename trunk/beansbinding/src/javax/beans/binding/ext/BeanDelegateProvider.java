@@ -6,7 +6,7 @@
 package javax.beans.binding.ext;
 
 /**
- * {@code PropertyDelegateProvider} is responsible for providing a property
+ * {@code BeanDelegateProvider} is responsible for providing a property
  * delegate. A property delegate is an {@code Object} that supplies a
  * named property for another class. For example, {@code JList} does not
  * provide an {@code "elements"} property. The following illustrates
@@ -19,10 +19,10 @@ package javax.beans.binding.ext;
  *       public void setElements(List&lt;?&gt; elements) { ... }
  *       public List&lt;?&gt; getElements() { ... }
  *   }
- *
- *   // The PropertyDelegateProvider must be public, and override the
+ * 
+ *   // The BeanDelegateProvider must be public, and override the
  *   // necessary methods.
- *   public class MyPropertyDelegateProvider extends PropertyDelegateProvider {
+ *   public class MyPropertyDelegateProvider extends BeanDelegateProvider {
  *       public Object getPropertyDelegate(Object source, String property) {
  *           return new JListProvider();
  *       }
@@ -35,15 +35,15 @@ package javax.beans.binding.ext;
  *       }
  *   };
  * </pre>
- * The set of {@code PropertyDelegateProvider}s are obtained using the 
+ * The set of {@code BeanDelegateProvider}s are obtained using the 
  * {@code ServiceLoader} class, see it for details on how to register a
  * provider.
- *
- * @see PropertyDelegateFactory
- *
+ * 
+ * 
  * @author sky
+ * @see PropertyDelegateFactory
  */
-public abstract class PropertyDelegateProvider {
+public interface BeanDelegateProvider {
     /**
      * Used to identify if a particular {@code FeatureDescriptor} is a 
      * preferred property for binding. If a {@code FeatureDescriptor} has a value
@@ -59,9 +59,10 @@ public abstract class PropertyDelegateProvider {
             "PreferredBindingProperty";
 
     /**
-     * Returns whether this {@code PropertyDelegateProvider} provides a delegate
+     * Returns whether this {@code BeanDelegateProvider} provides a delegate
      * for the {@code Class} and property pair.
-     *
+     * 
+     * 
      * @param type the {@code Class}
      * @param property the property
      */
@@ -72,7 +73,7 @@ public abstract class PropertyDelegateProvider {
      * {@code PropertyDelegateFactory} only invokes this method once for a
      * particular provider and object pair. For example, consider the following:
      * <pre>
-     *   PropertyDelegateProvider myProvider = createProvider();
+     *   BeanDelegateProvider myProvider = createProvider();
      *   PropertyDelegateFactory.registerPropertyDelegateProvider(
      *       Foo.class, "foo", myProvider);
      *   PropertyDelegateFactory.registerPropertyDelegateProvider(
@@ -80,12 +81,12 @@ public abstract class PropertyDelegateProvider {
      * </pre>
      * Then {@code createPropertyDelegate} is only invoked once for each
      * unique instance of {@code Foo}.
-     *
+     * 
+     * 
      * @param source the source to return the property delegate for
      * @param property the property
      * @return the property delegate, or {@code null} if the pair does not
      *         identify a legal property delegate
-     *
      * @throws NullPointerException if {@code source} or {@code property} are
      *         {@code null}
      */

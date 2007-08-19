@@ -23,20 +23,22 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 /**
- * {@code PropertyDelegateFactory} is a factory used to look up property
- * delegates. See {@code PropertyDelegateProvider} for details.
- *
- * @see PropertyDelegateProvider
- *
+ * {@code BeanDelegateFactory} is a factory used to look up property
+ * delegates. See {@code BeanDelegateProvider} for details.
+ * 
+ * 
+ * 
  * @author sky
+ * @see BeanDelegateProvider
  */
-public final class PropertyDelegateFactory {
-    private static final PropertyDelegateFactory INSTANCE =
-            new PropertyDelegateFactory();
+public final class BeanDelegateFactory {
+    private static final BeanDelegateFactory INSTANCE =
+            new BeanDelegateFactory(null);
     private final Map<Object, List<VendedDelegate>> vendedDelegates;
-    private final List<PropertyDelegateProvider> providers;
+    private final List<BeanDelegateProvider> providers;
     private final Set<ClassLoader> classLoaders;
     private final Set<URL> serviceURLs;
+    private boolean providedInConstructor;
     
     /**
      * Returns the property delegate for the specified object and property.
@@ -65,15 +67,28 @@ public final class PropertyDelegateFactory {
     public static List<Class<?>> getPropertyDelegateClass(Class<?> type) {
         return INSTANCE.getPropertyDelegateClass0(type);
     }
-    
-    private PropertyDelegateFactory() {
-        providers = new ArrayList<PropertyDelegateProvider>();
-        classLoaders = new HashSet<ClassLoader>();
-        serviceURLs = new HashSet<URL>();
+
+    public BeanDelegateFactory(List<BeanDelegateProvider> providers) {
+        if (providers == null) {
+            providedInConstructor = false;
+            this.providers = new ArrayList<BeanDelegateProvider>();
+            classLoaders = new HashSet<ClassLoader>();
+            serviceURLs = new HashSet<URL>();
+        } else {
+            providedInConstructor = true;
+            classLoaders = null;
+            serviceURLs = null;
+            this.providers = providers;
+        }
+
         vendedDelegates = new WeakHashMap<Object, List<VendedDelegate>>();
     }
     
     private void loadProvidersIfNecessary() {
+        if (providedInConstructor) {
+            return;
+        }
+
         ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
         if (!classLoaders.contains(currentLoader)) {
             classLoaders.add(currentLoader);
@@ -84,7 +99,7 @@ public final class PropertyDelegateFactory {
     private void loadProviders(ClassLoader classLoader) {
         // PENDING: this needs to be rewriten in terms of ServiceLoader
         String serviceName = "META-INF/services/" + 
-                PropertyDelegateProvider.class.getName();
+                BeanDelegateProvider.class.getName();
         try {
             Enumeration<URL> urls = classLoader.getResources(serviceName);
             while (urls.hasMoreElements()) {
@@ -107,7 +122,7 @@ public final class PropertyDelegateFactory {
             String line;
             while ((line = reader.readLine()) != null) {
                 try {
-                    providers.add((PropertyDelegateProvider)Class.forName(line).newInstance());
+                    providers.add((BeanDelegateProvider)Class.forName(line).newInstance());
                 } catch (IllegalAccessException ex) {
                 } catch (InstantiationException ex) {
                 } catch (ClassNotFoundException ex) {
@@ -124,13 +139,13 @@ public final class PropertyDelegateFactory {
         }
     }
     
-    private Object getPropertyDelegate0(Object source, String property) {
+    public Object getPropertyDelegate0(Object source, String property) {
         if (source == null || property == null) {
             throw new IllegalArgumentException();
         }
         loadProvidersIfNecessary();
         property = property.intern();
-        PropertyDelegateProvider provider = getProvider(source, property);
+        BeanDelegateProvider provider = getProvider(source, property);
         if (provider != null) {
             List<VendedDelegate> delegates = vendedDelegates.get(source);
             if (delegates != null) {
@@ -154,9 +169,9 @@ public final class PropertyDelegateFactory {
         return null;
     }
     
-    private PropertyDelegateProvider getProvider(Object source, String property) {
+    private BeanDelegateProvider getProvider(Object source, String property) {
         Class<?> type = source.getClass();
-        for (PropertyDelegateProvider provider : providers) {
+        for (BeanDelegateProvider provider : providers) {
             if (provider.providesDelegate(type, property)) {
                 return provider;
             }
@@ -171,7 +186,7 @@ public final class PropertyDelegateFactory {
         }
         loadProvidersIfNecessary();
         List<Class<?>> pdTypes = null;
-        for (PropertyDelegateProvider provider : providers) {
+        for (BeanDelegateProvider provider : providers) {
             Class<?> pdType = provider.getPropertyDelegateClass(type);
             if (pdType != null) {
                 if (pdTypes == null) {
@@ -189,10 +204,10 @@ public final class PropertyDelegateFactory {
     
     
     private static final class VendedDelegate {
-        private final PropertyDelegateProvider provider;
+        private final BeanDelegateProvider provider;
         private final WeakReference<Object> delegate;
         
-        public VendedDelegate(PropertyDelegateProvider provider, 
+        public VendedDelegate(BeanDelegateProvider provider, 
                 Object delegate) {
             this.delegate = new WeakReference<Object>(delegate);
             this.provider = provider;
@@ -202,7 +217,7 @@ public final class PropertyDelegateFactory {
             return delegate.get();
         }
         
-        public PropertyDelegateProvider getProvider() {
+        public BeanDelegateProvider getProvider() {
             return provider;
         }
     }
@@ -210,10 +225,10 @@ public final class PropertyDelegateFactory {
     
     private static final class RegisteredProvider {
         private final String property;
-        private final PropertyDelegateProvider provider;
+        private final BeanDelegateProvider provider;
         
         RegisteredProvider(String property,
-                PropertyDelegateProvider provider) {
+                BeanDelegateProvider provider) {
             this.property = property;
             this.provider = provider;
         }
@@ -222,7 +237,7 @@ public final class PropertyDelegateFactory {
             return property;
         }
         
-        public PropertyDelegateProvider getProvider() {
+        public BeanDelegateProvider getProvider() {
             return provider;
         }
     }
