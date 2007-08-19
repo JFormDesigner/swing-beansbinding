@@ -21,22 +21,10 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  */
 public final class JTextComponentDelegateProvider implements BeanDelegateProvider {
 
-    private static final String PROPERTY = "text";
-    private ChangeStrategy strategy;
-    
-    public enum ChangeStrategy {
-        ON_TYPE,
-        ON_ACTION_OR_FOCUS_LOST,
-        ON_FOCUS_LOST
-    };
-
-    public JTextComponentDelegateProvider() {
-        this(ChangeStrategy.ON_ACTION_OR_FOCUS_LOST);
-    }
-
-    public JTextComponentDelegateProvider(ChangeStrategy strategy) {
-        this.strategy = strategy;
-    }
+    private static final String PROPERTY_BASE = "text";
+    private static final String ON_TYPE = PROPERTY_BASE + "_ON_TYPE";
+    private static final String ON_ACTION_OR_FOCUS_LOST = PROPERTY_BASE + "_ON_ACTION_OR_FOCUS_LOST";
+    private static final String ON_FOCUS_LOST = PROPERTY_BASE + "_ON_FOCUS_LOST";
 
     public final class Delegate extends DelegateBase {
         private JTextComponent component;
@@ -46,13 +34,25 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         private String cachedText;
         private Handler handler;
 
-        private Delegate(JTextComponent component) {
-            super(PROPERTY);
+        private Delegate(JTextComponent component, String property) {
+            super(property);
             this.component = component;
         }
 
         public String getText() {
             return isListening() ? cachedText : component.getText();
+        }
+
+        public String getText_ON_TYPE() {
+            return getText();
+        }
+
+        public String getText_ON_ACTION_OR_FOCUS_LOST() {
+            return getText();
+        }
+
+        public String getText_ON_FOCUS_LOST() {
+            return getText();
         }
 
         public void setText(String text) {
@@ -61,16 +61,28 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
             cachedText = text;
         }
 
+        public void setText_ON_TYPE(String text) {
+            setText(text);
+        }
+
+        public void setText_ON_ACTION_OR_FOCUS_LOST(String text) {
+            setText(text);
+        }
+
+        public void setText_ON_FOCUS_LOST(String text) {
+            setText(text);
+        }
+        
         protected void listeningStarted() {
             cachedText = component.getText();
             handler = new Handler();
             component.addPropertyChangeListener(handler);
 
-            if (strategy != ChangeStrategy.ON_TYPE) {
+            if (property != ON_TYPE) {
                 component.addFocusListener(handler);
             }
 
-            if (strategy == ChangeStrategy.ON_ACTION_OR_FOCUS_LOST && (component instanceof JTextField)) {
+            if (property == ON_ACTION_OR_FOCUS_LOST && (component instanceof JTextField)) {
                 ((JTextField)component).addActionListener(handler);
             }
 
@@ -83,11 +95,11 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
             cachedText = null;
             component.removePropertyChangeListener(handler);
             
-            if (strategy != ChangeStrategy.ON_TYPE) {
+            if (property != ON_TYPE) {
                 component.removeFocusListener(handler);
             }
             
-            if (strategy == ChangeStrategy.ON_ACTION_OR_FOCUS_LOST && (component instanceof JTextField)) {
+            if (property == ON_ACTION_OR_FOCUS_LOST && (component instanceof JTextField)) {
                 ((JTextField)component).removeActionListener(handler);
             }
 
@@ -97,7 +109,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         }
 
         private void installDocumentListener() {
-            if (strategy != ChangeStrategy.ON_TYPE) {
+            if (property != ON_TYPE) {
                 return;
             }
 
@@ -114,7 +126,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         }
         
         private void uninstallDocumentListener() {
-            if (strategy != ChangeStrategy.ON_TYPE) {
+            if (property != ON_TYPE) {
                 return;
             }
 
@@ -206,7 +218,17 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
     }
     
     public boolean providesDelegate(Class<?> type, String property) {
-        return JTextComponent.class.isAssignableFrom(type) && property.intern() == PROPERTY;
+        property = property.intern();
+
+        if (!JTextComponent.class.isAssignableFrom(type)) {
+            return false;
+        }
+
+        return property == PROPERTY_BASE ||
+               property == ON_TYPE ||
+               property == ON_ACTION_OR_FOCUS_LOST ||
+               property == ON_FOCUS_LOST;
+                 
     }
     
     public Object createPropertyDelegate(Object source, String property) {
@@ -214,7 +236,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
             throw new IllegalArgumentException();
         }
         
-        return new Delegate((JTextComponent)source);
+        return new Delegate((JTextComponent)source, property);
     }
     
     public Class<?> getPropertyDelegateClass(Class<?> type) {
