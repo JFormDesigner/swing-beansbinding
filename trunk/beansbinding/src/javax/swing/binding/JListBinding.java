@@ -22,36 +22,8 @@ public final class JListBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List
     private JList list;
     private ListDetailBinding detailBinding;
 
-    public static <E> JListBinding<E, List<E>, JList> createDirectBinding(List<E> sourceList, JList targetJList) {
-        return createDirectBinding(null, sourceList, targetJList);
-    }
-
-    public static <E> JListBinding<E, List<E>, JList> createDirectBinding(String name, List<E> sourceList, JList targetJList) {
-        return new JListBinding<E, List<E>, JList>(name, sourceList, new ObjectProperty<List<E>>(), targetJList, new ObjectProperty<JList>());
-    }
-
-    public static <E, SS> JListBinding<E, SS, JList> createDirectBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, JList targetJList) {
-        return createDirectBinding(null, sourceObject, sourceListProperty, targetJList);
-    }
-
-    public static <E, SS> JListBinding<E, SS, JList> createDirectBinding(String name, SS sourceObject, Property<SS, List<E>> sourceListProperty, JList targetJList) {
-        return new JListBinding<E, SS, JList>(name, sourceObject, sourceListProperty, targetJList, new ObjectProperty<JList>());
-    }
-
-    public static <E, TS> JListBinding<E, List<E>, TS> createDirectBinding(List<E> sourceList, TS targetObject, Property<TS, ? extends JList> targetJListProperty) {
-        return createDirectBinding(null, sourceList, targetObject, targetJListProperty);
-    }
-
-    public static <E, TS> JListBinding<E, List<E>, TS> createDirectBinding(String name, List<E> sourceList, TS targetObject, Property<TS, ? extends JList> targetJListProperty) {
-        return new JListBinding<E, List<E>, TS>(name, sourceList, new ObjectProperty<List<E>>(), targetObject, targetJListProperty);
-    }
-
-    public JListBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty) {
-        this(null, sourceObject, sourceListProperty, targetObject, targetJListProperty);
-    }
-
-    public JListBinding(String name, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty) {
-        super(name, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty));
+    protected JListBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
+        super(sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
         ep = (ElementsProperty<TS, JList>)getTargetProperty();
         setDetailBinding(null);
     }
@@ -63,7 +35,7 @@ public final class JListBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List
         super.bindImpl();
     }
 
-    protected final void unbinImpl() {
+    protected final void unbindImpl() {
         super.unbindImpl();
         ep.uninstallBinding();
         ep.removePropertyStateListener(null, handler);
@@ -72,18 +44,18 @@ public final class JListBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List
 
     public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty) {
         return detailProperty == null ?
-            setDetailBinding("AUTO_DETAIL", new ObjectProperty<E>()) :
-            setDetailBinding(null, detailProperty);
+            setDetailBinding(new ObjectProperty<E>(), "AUTO_DETAIL") :
+            setDetailBinding(detailProperty, null);
     }
 
-    public ListDetailBinding setDetailBinding(String name, Property<E, ?> detailProperty) {
+    public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty, String name) {
         throwIfBound();
 
         if (detailProperty == null) {
             throw new IllegalArgumentException("can't have null detail property");
         }
 
-        detailBinding = new ListDetailBinding(name, detailProperty);
+        detailBinding = new ListDetailBinding(detailProperty, name);
         return detailBinding;
     }
 
@@ -127,8 +99,8 @@ public final class JListBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List
 
     public final class ListDetailBinding extends ColumnBinding {
 
-        public ListDetailBinding(String name, Property<E, ?> detailProperty) {
-            super(name, 0, detailProperty, DETAIL_PROPERTY);
+        public ListDetailBinding(Property<E, ?> detailProperty, String name) {
+            super(0, detailProperty, DETAIL_PROPERTY, name);
         }
 
     }
