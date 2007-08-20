@@ -154,7 +154,7 @@ public final class BeanDelegateFactory {
                     Object delegate = vendedDelegate.getDelegate();
                     if (delegate == null) {
                         vendedDelegates.remove(i);
-                    } else if (vendedDelegate.getProvider() == provider) {
+                    } else if (vendedDelegate.getProvider() == provider && vendedDelegate.getProperty() == property) {
                         return delegate;
                     }
                 }
@@ -163,7 +163,7 @@ public final class BeanDelegateFactory {
                 vendedDelegates.put(source, delegates);
             }
             Object delegate = provider.createPropertyDelegate(source, property);
-            delegates.add(new VendedDelegate(provider, delegate));
+            delegates.add(new VendedDelegate(property, provider, delegate));
             return delegate;
         }
         return null;
@@ -205,34 +205,19 @@ public final class BeanDelegateFactory {
     
     private static final class VendedDelegate {
         private final BeanDelegateProvider provider;
+        private final String property;
         private final WeakReference<Object> delegate;
-        
-        public VendedDelegate(BeanDelegateProvider provider, 
-                Object delegate) {
+
+        public VendedDelegate(String property, BeanDelegateProvider provider, Object delegate) {
+            this.property = property;
             this.delegate = new WeakReference<Object>(delegate);
             this.provider = provider;
         }
-        
+
         public Object getDelegate() {
             return delegate.get();
         }
-        
-        public BeanDelegateProvider getProvider() {
-            return provider;
-        }
-    }
-    
-    
-    private static final class RegisteredProvider {
-        private final String property;
-        private final BeanDelegateProvider provider;
-        
-        RegisteredProvider(String property,
-                BeanDelegateProvider provider) {
-            this.property = property;
-            this.provider = provider;
-        }
-        
+
         public String getProperty() {
             return property;
         }
@@ -241,4 +226,5 @@ public final class BeanDelegateFactory {
             return provider;
         }
     }
+
 }
