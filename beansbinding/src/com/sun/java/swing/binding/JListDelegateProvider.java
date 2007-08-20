@@ -23,7 +23,7 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
     public final class Delegate extends DelegateBase {
         private JList list;
         private Handler handler;
-        private int cachedIndex;
+        private Object cachedElement;
 
         private Delegate(JList component, String property) {
             super(property);
@@ -31,7 +31,7 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
         }
 
         public Object getSelectedElement() {
-            return getListObject(list, cachedIndex);
+            return JListDelegateProvider.getSelectedElement(list);
         }
         
         public Object getSelectedElement_IGNORE_ADJUSTING() {
@@ -44,7 +44,7 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
         
         protected void listeningStarted() {
             handler = new Handler();
-            cachedIndex = getSelectionIndex(list);
+            cachedElement = JListDelegateProvider.getSelectedElement(list);
             list.addPropertyChangeListener("selectionModel", handler);
             list.getSelectionModel().addListSelectionListener(handler);
         }
@@ -52,19 +52,19 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
         protected void listeningStopped() {
             list.getSelectionModel().removeListSelectionListener(handler);
             list.removePropertyChangeListener("selectionModel", handler);
+            cachedElement = null;
             handler = null;
         }
 
         private class Handler implements ListSelectionListener, PropertyChangeListener {
             private void listSelectionChanged() {
-                Object oldElement = getListObject(list, cachedIndex);
-                cachedIndex = getSelectionIndex(list);
-                Object newElement = getListObject(list, cachedIndex);
-                firePropertyChange(oldElement, newElement);
+                Object oldElement = cachedElement;
+                cachedElement = getSelectedElement();
+                firePropertyChange(oldElement, cachedElement);
             }
 
             public void valueChanged(ListSelectionEvent e) {
-                if (property == IGNORE_ADJUSTING && e.getValueIsAdjusting()) {
+                if ((property == PROPERTY_BASE || property == IGNORE_ADJUSTING) && e.getValueIsAdjusting()) {
                     return;
                 }
 
@@ -77,9 +77,13 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
         }
     }
 
-    private static Object getListObject(JList list, int index) {
+    private static Object getSelectedElement(JList list) {
         assert list != null;
 
+        // PENDING(shannonh) - more cases to consider
+        int index = list.getSelectionModel().getLeadSelectionIndex();
+        index = list.getSelectionModel().isSelectedIndex(index) ? index : -1;
+        
         if (index == -1) {
             return null;
         }
@@ -87,13 +91,6 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
         ListModel model = list.getModel();
         return model instanceof ListBindingManager ? ((ListBindingManager)model).getElement(index)
                                                    : model.getElementAt(index);
-    }
-
-    // PENDING(shannonh) - more cases to consider
-    private static int getSelectionIndex(JList list) {
-        assert list != null;
-        int index = list.getSelectionModel().getLeadSelectionIndex();
-        return list.getSelectionModel().isSelectedIndex(index) ? index : -1;
     }
     
     public boolean providesDelegate(Class<?> type, String property) {
