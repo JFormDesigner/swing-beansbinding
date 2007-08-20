@@ -79,7 +79,7 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
 
     private static Object getListObject(JList list, int index) {
         assert list != null;
-System.out.println("HERE " + index);
+
         if (index == -1) {
             return null;
         }
