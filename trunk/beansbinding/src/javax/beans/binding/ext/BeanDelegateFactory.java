@@ -32,13 +32,11 @@ import java.util.WeakHashMap;
  * @see BeanDelegateProvider
  */
 public final class BeanDelegateFactory {
-    private static final BeanDelegateFactory INSTANCE =
-            new BeanDelegateFactory(null);
+    private static final BeanDelegateFactory INSTANCE =  new BeanDelegateFactory();
     private final Map<Object, List<VendedDelegate>> vendedDelegates;
     private final List<BeanDelegateProvider> providers;
     private final Set<ClassLoader> classLoaders;
     private final Set<URL> serviceURLs;
-    private boolean providedInConstructor;
     
     /**
      * Returns the property delegate for the specified object and property.
@@ -68,27 +66,14 @@ public final class BeanDelegateFactory {
         return INSTANCE.getPropertyDelegateClass0(type);
     }
 
-    public BeanDelegateFactory(List<BeanDelegateProvider> providers) {
-        if (providers == null) {
-            providedInConstructor = false;
-            this.providers = new ArrayList<BeanDelegateProvider>();
-            classLoaders = new HashSet<ClassLoader>();
-            serviceURLs = new HashSet<URL>();
-        } else {
-            providedInConstructor = true;
-            classLoaders = null;
-            serviceURLs = null;
-            this.providers = providers;
-        }
-
+    public BeanDelegateFactory() {
+        this.providers = new ArrayList<BeanDelegateProvider>();
+        classLoaders = new HashSet<ClassLoader>();
+        serviceURLs = new HashSet<URL>();
         vendedDelegates = new WeakHashMap<Object, List<VendedDelegate>>();
     }
     
     private void loadProvidersIfNecessary() {
-        if (providedInConstructor) {
-            return;
-        }
-
         ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
         if (!classLoaders.contains(currentLoader)) {
             classLoaders.add(currentLoader);
