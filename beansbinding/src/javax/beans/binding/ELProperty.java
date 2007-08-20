@@ -26,7 +26,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  */
 public final class ELProperty<S, V> extends AbstractProperty<S, V> {
 
-    private Property<S, ?> sourceProperty;
+    private Property<S, ?> baseProperty;
     private final ValueExpression expression;
     private final ELContext context = new TempELContext();
     private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
@@ -47,8 +47,8 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         private SourceEntry(S source) {
             this.source = source;
 
-            if (sourceProperty != null) {
-                sourceProperty.addPropertyStateListener(source, this);
+            if (baseProperty != null) {
+                baseProperty.addPropertyStateListener(source, this);
             }
 
             registeredListeners = new HashSet<RegisteredListener>(1);
@@ -61,8 +61,8 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
                 unregisterListener(rl, this);
             }
 
-            if (sourceProperty != null) {
-                sourceProperty.removePropertyStateListener(source, this);
+            if (baseProperty != null) {
+                baseProperty.removePropertyStateListener(source, this);
             }
 
             cachedBean = null;
@@ -217,8 +217,8 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return new ELProperty<S, V>(expression);
     }
 
-    public static final <S, V> ELProperty<S, V> createForProperty(Property<S, ?> sourceProperty, String expression) {
-        return new ELProperty<S, V>(sourceProperty, expression);
+    public static final <S, V> ELProperty<S, V> create(Property<S, ?> baseProperty, String expression) {
+        return new ELProperty<S, V>(baseProperty, expression);
     }
 
     /**
@@ -231,7 +231,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    public ELProperty(Property<S, ?> sourceProperty, String expression) {
+    public ELProperty(Property<S, ?> baseProperty, String expression) {
         if (expression == null || expression.length() == 0) {
             throw new IllegalArgumentException("expression must be non-null and non-empty");
         }
@@ -242,7 +242,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             throw new PropertyResolutionException("Error creating EL expression " + expression, ele);
         }
 
-        this.sourceProperty = sourceProperty;
+        this.baseProperty = baseProperty;
     }
 
     public Class<? extends V> getWriteType(S source) {
@@ -453,7 +453,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
     }
 
     private Object getBeanFromSource(S source, boolean logErrors) {
-        if (sourceProperty == null) {
+        if (baseProperty == null) {
             if (source == null) {
                 if (logErrors) {
                     log("getBeanFromSource()", "source is null");
@@ -463,14 +463,14 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
             return source;
         }
 
-        if (!sourceProperty.isReadable(source)) {
+        if (!baseProperty.isReadable(source)) {
             if (logErrors) {
                 log("getBeanFromSource()", "unreadable source property");
             }
             return NOREAD;
         }
 
-        Object bean = sourceProperty.getValue(source);
+        Object bean = baseProperty.getValue(source);
         if (bean == null) {
             if (logErrors) {
                 log("getBeanFromSource()", "source property returned null");

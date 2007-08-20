@@ -41,7 +41,7 @@ import javax.beans.binding.ext.*;
  */
 public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
-    private Property<S, ?> sourceProperty;
+    private Property<S, ?> baseProperty;
     private final PropertyPath path;
     private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
@@ -63,8 +63,8 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             cache = new Object[path.length()];
             cache[0] = NOREAD;
 
-            if (sourceProperty != null) {
-                sourceProperty.addPropertyStateListener(source, this);
+            if (baseProperty != null) {
+                baseProperty.addPropertyStateListener(source, this);
             }
 
             updateCachedBean();
@@ -78,8 +78,8 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
                 unregisterListener(cache[i], path.get(i), this);
             }
 
-            if (sourceProperty != null) {
-                sourceProperty.removePropertyStateListener(source, this);
+            if (baseProperty != null) {
+                baseProperty.removePropertyStateListener(source, this);
             }
 
             cachedBean = null;
@@ -326,16 +326,16 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return new BeanProperty<S, V>(null, path, providers);
     }
 
-    public static final <S, V> BeanProperty<S, V> createForProperty(Property<S, ?> sourceProperty, String path, BeanDelegateProvider... providers) {
-        return new BeanProperty<S, V>(sourceProperty, path, providers);
+    public static final <S, V> BeanProperty<S, V> create(Property<S, ?> baseProperty, String path, BeanDelegateProvider... providers) {
+        return new BeanProperty<S, V>(baseProperty, path, providers);
     }
 
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    private BeanProperty(Property<S, ?> sourceProperty, String path, BeanDelegateProvider... providers) {
+    private BeanProperty(Property<S, ?> baseProperty, String path, BeanDelegateProvider... providers) {
         this.path = PropertyPath.createPropertyPath(path);
-        this.sourceProperty = sourceProperty;
+        this.baseProperty = baseProperty;
         if (providers != null && providers.length != 0) {
             ArrayList<BeanDelegateProvider> list = new ArrayList<BeanDelegateProvider>(providers.length);
             for (BeanDelegateProvider provider : providers) {
@@ -481,7 +481,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     }
 
     private Object getBeanFromSource(S source) {
-        if (sourceProperty == null) {
+        if (baseProperty == null) {
             if (source == null) {
                 log("getBeanFromSource()", "source is null");
             }
@@ -489,12 +489,12 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return source;
         }
 
-        if (!sourceProperty.isReadable(source)) {
+        if (!baseProperty.isReadable(source)) {
             log("getBeanFromSource()", "unreadable source property");
             return NOREAD;
         }
 
-        Object bean = sourceProperty.getValue(source);
+        Object bean = baseProperty.getValue(source);
         if (bean == null) {
             log("getBeanFromSource()", "source property returned null");
             return null;

@@ -10,27 +10,29 @@ import java.beans.*;
 import javax.swing.*;
 import sun.swing.binding.*;
 import javax.swing.event.*;
+import javax.swing.table.*;
+import java.util.HashMap;
 
 /**
  * @author Shannon Hickey
  */
-public final class JListDelegateProvider implements BeanDelegateProvider {
+public final class JTableDelegateProvider implements BeanDelegateProvider {
 
     private static final String PROPERTY_BASE = "selectedElement";
     private static final String IGNORE_ADJUSTING = PROPERTY_BASE + "_IGNORE_ADJUSTING";
 
     public final class Delegate extends DelegateBase {
-        private JList list;
+        private JTable table;
         private Handler handler;
         private Object cachedElement;
 
-        private Delegate(JList list, String property) {
+        private Delegate(JTable table, String property) {
             super(property);
-            this.list = list;
+            this.table = table;
         }
 
         public Object getSelectedElement() {
-            return JListDelegateProvider.getSelectedElement(list);
+            return JTableDelegateProvider.getSelectedElement(table);
         }
         
         public Object getSelectedElement_IGNORE_ADJUSTING() {
@@ -39,20 +41,20 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
 
         protected void listeningStarted() {
             handler = new Handler();
-            cachedElement = JListDelegateProvider.getSelectedElement(list);
-            list.addPropertyChangeListener("selectionModel", handler);
-            list.getSelectionModel().addListSelectionListener(handler);
+            cachedElement = JTableDelegateProvider.getSelectedElement(table);
+            table.addPropertyChangeListener("selectionModel", handler);
+            table.getSelectionModel().addListSelectionListener(handler);
         }
         
         protected void listeningStopped() {
-            list.getSelectionModel().removeListSelectionListener(handler);
-            list.removePropertyChangeListener("selectionModel", handler);
+            table.getSelectionModel().removeListSelectionListener(handler);
+            table.removePropertyChangeListener("selectionModel", handler);
             cachedElement = null;
             handler = null;
         }
 
         private class Handler implements ListSelectionListener, PropertyChangeListener {
-            private void listSelectionChanged() {
+            private void tableSelectionChanged() {
                 Object oldElement = cachedElement;
                 cachedElement = getSelectedElement();
                 firePropertyChange(oldElement, cachedElement);
@@ -63,35 +65,47 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
                     return;
                 }
 
-                listSelectionChanged();
+                tableSelectionChanged();
             }
             
             public void propertyChange(PropertyChangeEvent pce) {
-                listSelectionChanged();
+                tableSelectionChanged();
             }
         }
     }
 
-    private static Object getSelectedElement(JList list) {
-        assert list != null;
+    private static Object getSelectedElement(JTable table) {
+        assert table != null;
 
         // PENDING(shannonh) - more cases to consider
-        int index = list.getSelectionModel().getLeadSelectionIndex();
-        index = list.getSelectionModel().isSelectedIndex(index) ? index : -1;
+        int index = table.getSelectionModel().getLeadSelectionIndex();
+        index = table.getSelectionModel().isSelectedIndex(index) ? index : -1;
         
         if (index == -1) {
             return null;
         }
 
-        ListModel model = list.getModel();
-        return model instanceof ListBindingManager ? ((ListBindingManager)model).getElement(index)
-                                                   : model.getElementAt(index);
+        TableModel model = table.getModel();
+        if (model instanceof ListBindingManager) {
+            return ((ListBindingManager)model).getElement(index);
+        } else {
+            int columnCount = model.getColumnCount();
+            // PENDING(shannonh) - need to support editing values in this map!
+            HashMap map = new HashMap(columnCount);
+            for (int i = 0; i < columnCount; i++) {
+                // PENDING(shannonh) - find better identifiers
+                // can't use plain column name since it might be a bad identifier
+                // but can we convert it to a propert identifier?
+                map.put("column" + i, model.getValueAt(index, i));
+            }
+            return map;
+        }
     }
     
     public boolean providesDelegate(Class<?> type, String property) {
         property = property.intern();
 
-        if (!JList.class.isAssignableFrom(type)) {
+        if (!JTable.class.isAssignableFrom(type)) {
             return false;
         }
 
@@ -105,11 +119,11 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
             throw new IllegalArgumentException();
         }
         
-        return new Delegate((JList)source, property);
+        return new Delegate((JTable)source, property);
     }
     
     public Class<?> getPropertyDelegateClass(Class<?> type) {
-        return JListDelegateProvider.Delegate.class;
+        return JTableDelegateProvider.Delegate.class;
     }
     
 }
