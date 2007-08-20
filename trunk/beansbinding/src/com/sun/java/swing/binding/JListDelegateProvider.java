@@ -45,7 +45,6 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
         protected void listeningStarted() {
             handler = new Handler();
             cachedIndex = getSelectionIndex(list);
-            System.out.println(cachedIndex);
             list.addPropertyChangeListener("selectionModel", handler);
             list.getSelectionModel().addListSelectionListener(handler);
         }
@@ -59,7 +58,6 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
         private class Handler implements ListSelectionListener, PropertyChangeListener {
             private void listSelectionChanged() {
                 Object oldElement = getListObject(list, cachedIndex);
-                System.out.println(cachedIndex);
                 cachedIndex = getSelectionIndex(list);
                 Object newElement = getListObject(list, cachedIndex);
                 firePropertyChange(oldElement, newElement);
