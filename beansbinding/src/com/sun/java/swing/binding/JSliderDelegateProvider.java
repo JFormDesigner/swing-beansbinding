@@ -33,8 +33,24 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
             return slider.getValue();
         }
 
+        public int getValue_IGNORE_ADJUSTING() {
+            return getValue();
+        }
+
+        public int getValue_ON_ADJUSTING() {
+            return getValue();
+        }
+
         public void setValue(int value) {
             slider.setValue(value);
+        }
+        
+        public void setValue_IGNORE_ADJUSTING(int value) {
+            setValue(value);
+        }
+        
+        public void setValue_ON_ADJUSTING(int value) {
+            setValue(value);
         }
 
         protected void listeningStarted() {
