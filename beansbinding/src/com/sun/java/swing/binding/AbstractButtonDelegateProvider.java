@@ -77,7 +77,9 @@ public final class AbstractButtonDelegateProvider implements BeanDelegateProvide
     }
 
     public Class<?> getPropertyDelegateClass(Class<?> type) {
-        return AbstractButtonDelegateProvider.Delegate.class;
+        return AbstractButton.class.isAssignableFrom(type) ?
+            AbstractButtonDelegateProvider.Delegate.class :
+            null;
     }
 
 }

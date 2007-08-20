@@ -109,7 +109,9 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
     }
     
     public Class<?> getPropertyDelegateClass(Class<?> type) {
-        return JListDelegateProvider.Delegate.class;
+        return JList.class.isAssignableFrom(type) ? 
+            JListDelegateProvider.Delegate.class :
+            null;
     }
     
 }
