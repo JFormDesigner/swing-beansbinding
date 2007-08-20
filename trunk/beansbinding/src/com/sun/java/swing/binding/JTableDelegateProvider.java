@@ -123,7 +123,9 @@ public final class JTableDelegateProvider implements BeanDelegateProvider {
     }
     
     public Class<?> getPropertyDelegateClass(Class<?> type) {
-        return JTableDelegateProvider.Delegate.class;
+        return JTable.class.isAssignableFrom(type) ?
+            JTableDelegateProvider.Delegate.class :
+            null;
     }
     
 }

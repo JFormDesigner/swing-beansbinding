@@ -226,7 +226,9 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
     }
     
     public Class<?> getPropertyDelegateClass(Class<?> type) {
-        return JTextComponentDelegateProvider.Delegate.class;
+        return JTextComponent.class.isAssignableFrom(type) ?
+            JTextComponentDelegateProvider.Delegate.class :
+            null;
     }
     
 }

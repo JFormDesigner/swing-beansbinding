@@ -96,7 +96,9 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
     }
 
     public Class<?> getPropertyDelegateClass(Class<?> type) {
-        return JSliderDelegateProvider.Delegate.class;
+        return JSlider.class.isAssignableFrom(type) ?
+            JSliderDelegateProvider.Delegate.class :
+            null;
     }
 
 }
