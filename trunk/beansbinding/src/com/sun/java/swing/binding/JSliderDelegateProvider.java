@@ -90,7 +90,7 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
     }
 
     public Class<?> getPropertyDelegateClass(Class<?> type) {
-        return AbstractButtonDelegateProvider.Delegate.class;
+        return JSliderDelegateProvider.Delegate.class;
     }
 
 }

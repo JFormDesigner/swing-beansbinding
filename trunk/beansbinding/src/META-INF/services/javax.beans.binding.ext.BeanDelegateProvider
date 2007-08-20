@@ -4,3 +4,4 @@
 com.sun.java.swing.binding.AbstractButtonDelegateProvider
 com.sun.java.swing.binding.JTextComponentDelegateProvider
 com.sun.java.swing.binding.JListDelegateProvider
+com.sun.java.swing.binding.JSliderDelegateProvider
