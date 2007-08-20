@@ -19,7 +19,8 @@ public final class AbstractButtonDelegateProvider implements BeanDelegateProvide
 
     public static final class Delegate extends DelegateBase {
         private AbstractButton button;
-        private ItemListener itemListener;
+        private Handler handler;
+        private boolean cachedSelected;
 
         private Delegate(AbstractButton button) {
             super(PROPERTY);
@@ -35,22 +36,30 @@ public final class AbstractButtonDelegateProvider implements BeanDelegateProvide
         }
 
         protected void listeningStarted() {
-            itemListener = new Handler();
-            button.addItemListener(itemListener);
+            handler = new Handler();
+            button.addItemListener(handler);
+            button.addPropertyChangeListener("model", handler);
         }
 
         protected void listeningStopped() {
-            button.removeItemListener(itemListener);
-            itemListener = null;
+            button.removeItemListener(handler);
+            button.removePropertyChangeListener("model", handler);
+            handler = null;
         }
         
         private class Handler implements ItemListener, PropertyChangeListener {
+            private void buttonSelectedChanged() {
+                boolean oldSelected = cachedSelected;
+                cachedSelected = isSelected();
+                firePropertyChange(oldSelected, cachedSelected);
+            }
+            
             public void itemStateChanged(ItemEvent ie) {
-                firePropertyChange(!button.isSelected(), button.isSelected());
+                buttonSelectedChanged();
             }
 
             public void propertyChange(PropertyChangeEvent pe) {
-                firePropertyChange(null, button.isSelected());
+                buttonSelectedChanged();
             }
         }
     }
