@@ -36,7 +36,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         }
 
         public String getText() {
-            return isListening() ? cachedText : component.getText();
+            return component.getText();
         }
 
         public String getText_ON_TYPE() {
@@ -78,7 +78,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
                 component.addFocusListener(handler);
             }
 
-            if (property == ON_ACTION_OR_FOCUS_LOST && (component instanceof JTextField)) {
+            if ((property == PROPERTY_BASE || property == ON_ACTION_OR_FOCUS_LOST) && (component instanceof JTextField)) {
                 ((JTextField)component).addActionListener(handler);
             }
 
@@ -95,7 +95,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
                 component.removeFocusListener(handler);
             }
             
-            if (property == ON_ACTION_OR_FOCUS_LOST && (component instanceof JTextField)) {
+            if ((property == PROPERTY_BASE || property == ON_ACTION_OR_FOCUS_LOST) && (component instanceof JTextField)) {
                 ((JTextField)component).removeActionListener(handler);
             }
 
@@ -221,8 +221,8 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         }
 
         return property == PROPERTY_BASE ||
-               property == ON_TYPE ||
                property == ON_ACTION_OR_FOCUS_LOST ||
+               property == ON_TYPE ||
                property == ON_FOCUS_LOST;
                  
     }
