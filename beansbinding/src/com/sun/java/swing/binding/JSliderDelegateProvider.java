@@ -17,7 +17,6 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
 
     private static final String PROPERTY_BASE = "value";
     private static final String IGNORE_ADJUSTING = PROPERTY_BASE + "_IGNORE_ADJUSTING";
-    private static final String ON_ADJUSTING = PROPERTY_BASE + "_ON_ADJUSTING";
 
     public static final class Delegate extends DelegateBase {
         private JSlider slider;
@@ -37,16 +36,8 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
             return getValue();
         }
 
-        public int getValue_ON_ADJUSTING() {
-            return getValue();
-        }
-
         public void setValue(int value) {
             slider.setValue(value);
-        }
-        
-        public void setValue_IGNORE_ADJUSTING(int value) {
-            setValue(value);
         }
         
         public void setValue_ON_ADJUSTING(int value) {
@@ -74,7 +65,7 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
             }
 
             public void stateChanged(ChangeEvent ce) {
-                if ((property == PROPERTY_BASE || property == IGNORE_ADJUSTING) && slider.getValueIsAdjusting()) {
+                if (property == IGNORE_ADJUSTING && slider.getValueIsAdjusting()) {
                     return;
                 }
 
@@ -93,8 +84,7 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
         }
 
         return property == PROPERTY_BASE ||
-               property == IGNORE_ADJUSTING ||
-               property == ON_ADJUSTING;
+               property == IGNORE_ADJUSTING;
     }
 
     public Object createPropertyDelegate(Object source, String property) {

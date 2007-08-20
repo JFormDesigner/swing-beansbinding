@@ -18,7 +18,6 @@ import javax.swing.text.*;
 public final class JTextComponentDelegateProvider implements BeanDelegateProvider {
 
     private static final String PROPERTY_BASE = "text";
-    private static final String ON_TYPE = PROPERTY_BASE + "_ON_TYPE";
     private static final String ON_ACTION_OR_FOCUS_LOST = PROPERTY_BASE + "_ON_ACTION_OR_FOCUS_LOST";
     private static final String ON_FOCUS_LOST = PROPERTY_BASE + "_ON_FOCUS_LOST";
 
@@ -39,10 +38,6 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
             return component.getText();
         }
 
-        public String getText_ON_TYPE() {
-            return getText();
-        }
-
         public String getText_ON_ACTION_OR_FOCUS_LOST() {
             return getText();
         }
@@ -55,10 +50,6 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
             component.setText(text);
             component.setCaretPosition(0);
             cachedText = text;
-        }
-
-        public void setText_ON_TYPE(String text) {
-            setText(text);
         }
 
         public void setText_ON_ACTION_OR_FOCUS_LOST(String text) {
@@ -74,11 +65,11 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
             handler = new Handler();
             component.addPropertyChangeListener(handler);
 
-            if (property != ON_TYPE) {
+            if (property != PROPERTY_BASE) {
                 component.addFocusListener(handler);
             }
 
-            if ((property == PROPERTY_BASE || property == ON_ACTION_OR_FOCUS_LOST) && (component instanceof JTextField)) {
+            if (property == ON_ACTION_OR_FOCUS_LOST && component instanceof JTextField) {
                 ((JTextField)component).addActionListener(handler);
             }
 
@@ -91,11 +82,11 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
             cachedText = null;
             component.removePropertyChangeListener(handler);
             
-            if (property != ON_TYPE) {
+            if (property != PROPERTY_BASE) {
                 component.removeFocusListener(handler);
             }
             
-            if ((property == PROPERTY_BASE || property == ON_ACTION_OR_FOCUS_LOST) && (component instanceof JTextField)) {
+            if (property == ON_ACTION_OR_FOCUS_LOST && (component instanceof JTextField)) {
                 ((JTextField)component).removeActionListener(handler);
             }
 
@@ -105,7 +96,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         }
 
         private void installDocumentListener() {
-            if (property != ON_TYPE) {
+            if (property != PROPERTY_BASE) {
                 return;
             }
 
@@ -122,7 +113,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         }
         
         private void uninstallDocumentListener() {
-            if (property != ON_TYPE) {
+            if (property != PROPERTY_BASE) {
                 return;
             }
 
@@ -222,7 +213,6 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
 
         return property == PROPERTY_BASE ||
                property == ON_ACTION_OR_FOCUS_LOST ||
-               property == ON_TYPE ||
                property == ON_FOCUS_LOST;
                  
     }

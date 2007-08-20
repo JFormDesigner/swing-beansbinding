@@ -18,7 +18,6 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
 
     private static final String PROPERTY_BASE = "selectedElement";
     private static final String IGNORE_ADJUSTING = PROPERTY_BASE + "_IGNORE_ADJUSTING";
-    private static final String ON_ADJUSTING = PROPERTY_BASE + "_ON_ADJUSTING";
 
     public final class Delegate extends DelegateBase {
         private JList list;
@@ -38,10 +37,6 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
             return getSelectedElement();
         }
 
-        public Object getSelectedElement_ON_ADJUSTING() {
-            return getSelectedElement();
-        }
-        
         protected void listeningStarted() {
             handler = new Handler();
             cachedElement = JListDelegateProvider.getSelectedElement(list);
@@ -64,7 +59,7 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
             }
 
             public void valueChanged(ListSelectionEvent e) {
-                if ((property == PROPERTY_BASE || property == IGNORE_ADJUSTING) && e.getValueIsAdjusting()) {
+                if (property == IGNORE_ADJUSTING && e.getValueIsAdjusting()) {
                     return;
                 }
 
@@ -101,8 +96,7 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
         }
 
         return property == PROPERTY_BASE ||
-               property == IGNORE_ADJUSTING ||
-               property == ON_ADJUSTING;
+               property == IGNORE_ADJUSTING;
                  
     }
     
