@@ -45,7 +45,6 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
     private final PropertyPath path;
     private IdentityHashMap<S, SourceEntry> map = new IdentityHashMap<S, SourceEntry>();
     private static final Object NOREAD = new Object();
-    private BeanDelegateFactory factory;
 
     private final class SourceEntry implements PropertyChangeListener,
                                                ObservableMapListener,
@@ -322,27 +321,20 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         }
     }
 
-    public static final <S, V> BeanProperty<S, V> create(String path, BeanDelegateProvider... providers) {
-        return new BeanProperty<S, V>(null, path, providers);
+    public static final <S, V> BeanProperty<S, V> create(String path) {
+        return new BeanProperty<S, V>(null, path);
     }
 
-    public static final <S, V> BeanProperty<S, V> create(Property<S, ?> baseProperty, String path, BeanDelegateProvider... providers) {
-        return new BeanProperty<S, V>(baseProperty, path, providers);
+    public static final <S, V> BeanProperty<S, V> create(Property<S, ?> baseProperty, String path) {
+        return new BeanProperty<S, V>(baseProperty, path);
     }
 
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    private BeanProperty(Property<S, ?> baseProperty, String path, BeanDelegateProvider... providers) {
+    private BeanProperty(Property<S, ?> baseProperty, String path) {
         this.path = PropertyPath.createPropertyPath(path);
         this.baseProperty = baseProperty;
-        if (providers != null && providers.length != 0) {
-            ArrayList<BeanDelegateProvider> list = new ArrayList<BeanDelegateProvider>(providers.length);
-            for (BeanDelegateProvider provider : providers) {
-                list.add(provider);
-            }
-            this.factory = new BeanDelegateFactory(list);
-        }
     }
 
     private Object getLastSource(S source) {
@@ -828,14 +820,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
     private Object getDelegate(Object o, String property) {
         Object delegate = null;
-        if (factory != null) {
-            delegate = factory.getPropertyDelegate0(o, property);
-        }
-        
-        if (delegate == null) {
-            delegate = factory.getPropertyDelegate(o, property);
-        }
-
+        delegate = BeanDelegateFactory.getPropertyDelegate(o, property);
         return delegate == null ? o : delegate;
     }
     
