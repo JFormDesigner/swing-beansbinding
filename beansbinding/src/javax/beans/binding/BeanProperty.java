@@ -552,6 +552,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         assert object != null;
 
         try {
+            // PENDING(shannonh) - not sure about the last flag
             return Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
         } catch (IntrospectionException ie) {
             throw new PropertyResolutionException("Exception while introspecting " + object.getClass().getName(), ie);
