@@ -16,7 +16,7 @@ import javax.swing.OLDBINDING.ParameterKeys;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.DocumentFilter;
 import junit.framework.*;
-import org.jdesktop.beans.binding.Binding;
+import org.jdesktop.beansbinding.Binding;
 import javax.swing.JTextField;
 import javax.swing.binding.TextChangeStrategy;
 

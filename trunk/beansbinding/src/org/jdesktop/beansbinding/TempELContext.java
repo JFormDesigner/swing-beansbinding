@@ -1,10 +1,10 @@
-package org.jdesktop.beans.binding;
+package org.jdesktop.beansbinding;
 
 import javax.el.*;
 import com.sun.el.lang.*;
 import java.util.*;
 import java.beans.*;
-import org.jdesktop.beans.binding.ext.BeanAdapterFactory;
+import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 
 /**
  * This class is temporary. Moving forward, we'll instead have a factory for

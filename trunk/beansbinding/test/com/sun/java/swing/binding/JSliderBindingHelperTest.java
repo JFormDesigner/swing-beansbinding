@@ -7,7 +7,7 @@ package com.sun.java.swing.binding;
 
 import javax.beans.binding.BindingContext;
 import javax.beans.binding.TestBean;
-import org.jdesktop.beans.binding.Binding;
+import org.jdesktop.beansbinding.Binding;
 import javax.swing.OLDBINDING.ParameterKeys;
 import junit.framework.*;
 import javax.swing.JSlider;

@@ -11,10 +11,10 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.jdesktop.beans.binding.AutoBinding;
-import org.jdesktop.beans.binding.Property;
-import org.jdesktop.beans.binding.PropertyStateEvent;
-import org.jdesktop.beans.binding.PropertyStateListener;
+import org.jdesktop.beansbinding.AutoBinding;
+import org.jdesktop.beansbinding.Property;
+import org.jdesktop.beansbinding.PropertyStateEvent;
+import org.jdesktop.beansbinding.PropertyStateListener;
 import sun.swing.binding.ColumnBinding;
 import sun.swing.binding.ListBindingManager;
 

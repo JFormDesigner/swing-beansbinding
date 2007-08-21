@@ -24,7 +24,7 @@
  *   - Add option to turn on validation. For now it's hard-coded to be off.
  */
 
-package org.jdesktop.beans.binding;
+package org.jdesktop.beansbinding;
 
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
@@ -32,9 +32,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
-import static org.jdesktop.beans.binding.PropertyStateEvent.UNREADABLE;
+import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
 import javax.beans.binding.ext.*;
-import org.jdesktop.beans.binding.ext.BeanAdapterFactory;
+import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 
 /**
  * @author Shannon Hickey
