@@ -5,7 +5,7 @@
 
 package com.sun.java.binding;
 
-import com.sun.java.util.BindingCollections;
+import com.sun.java.util.ObservableCollections;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 import java.util.HashMap;
@@ -41,7 +41,7 @@ public class ObservableMapTest extends TestCase {
 
     protected void setUp() throws Exception {
         realMap = new HashMap();
-        map = BindingCollections.observableMap(realMap);
+        map = ObservableCollections.observableMap(realMap);
         handler = new ObservableMapHandler();
         map.addObservableMapListener(handler);
     }

@@ -7,7 +7,7 @@ package com.sun.java.swing.binding;
 
 import javax.beans.binding.EventListenerRecorder;
 import javax.beans.binding.TestBean;
-import com.sun.java.util.BindingCollections;
+import com.sun.java.util.ObservableCollections;
 import java.awt.Component;
 import org.jdesktop.beansbinding.Binding;
 import javax.swing.ListCellRenderer;
@@ -88,7 +88,7 @@ public class JListBindingHelperTest extends TestCase {
     }
     
     public void testObservableList() {
-        values = BindingCollections.observableList(values);
+        values = ObservableCollections.observableList(values);
         lbd = new Binding(values, null, jlist, "elements");
         lbd.addChildBinding(new Binding("${value}", null));
         context.addBinding(lbd);

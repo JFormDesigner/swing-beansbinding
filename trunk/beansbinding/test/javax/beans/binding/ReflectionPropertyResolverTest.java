@@ -5,7 +5,7 @@
 
 package javax.beans.binding;
 
-import com.sun.java.util.BindingCollections;
+import com.sun.java.util.ObservableCollections;
 import java.util.HashMap;
 import javax.beans.binding.ext.PropertyDelegateFactory;
 import javax.beans.binding.ext.TestBeanPropertyDelegate;
@@ -162,7 +162,7 @@ public class ReflectionPropertyResolverTest extends TestCase {
     
     public void testObservableMap() {
         Map<Object,Object> map = new HashMap<Object, Object>();
-        map = BindingCollections.observableMap(map);
+        map = ObservableCollections.observableMap(map);
         resolver = createResolver(map, "source.value");
         resolver.setDelegate(delegate);
         resolver.bind();

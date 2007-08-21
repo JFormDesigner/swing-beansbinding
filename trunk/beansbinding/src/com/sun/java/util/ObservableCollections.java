@@ -17,12 +17,13 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * {@code BindingCollections} provides factory methods for creating
+ * {@code ObservableCollections} provides factory methods for creating
  * observable lists and maps.
- *
+ * 
+ * 
  * @author sky
  */
-public final class BindingCollections {
+public final class ObservableCollections {
     /**
      * Creates and returns an {@code ObservableMap} wrapping the supplied
      * {@code Map}.

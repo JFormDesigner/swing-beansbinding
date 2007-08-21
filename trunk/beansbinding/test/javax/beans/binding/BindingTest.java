@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.beans.binding.ext.TestBeanBindingTarget;
 import javax.beans.binding.ext.TestBeanPropertyDelegate;
-import com.sun.java.util.BindingCollections;
+import com.sun.java.util.ObservableCollections;
 import javax.beans.binding.ext.TestBeanPropertyDelegateProvider;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -51,7 +51,7 @@ public class BindingTest extends TestCase {
         source = new TestBean();
         target = new TestBean();
         map = new HashMap<Object,Object>(1);
-        map = BindingCollections.observableMap(map);
+        map = ObservableCollections.observableMap(map);
     }
     
     protected void tearDown() throws Exception {
