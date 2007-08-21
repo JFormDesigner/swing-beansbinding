@@ -115,12 +115,14 @@ public class BindingGroup {
         return editedTargets != null && editedTargets.size() != 0;
     }
 
-    public Set<Binding> getChangedTargetBindings() {
+    public List<Binding> getEditedTargetBindings() {
         if (editedTargets == null) {
-            return Collections.unmodifiableSet(new HashSet<Binding>());
+            return Collections.emptyList();
         }
 
-        return Collections.unmodifiableSet(editedTargets);
+        List<Binding> retVal = new ArrayList<Binding>();
+        retVal.addAll(editedTargets);
+        return retVal;
     }
 
     private void updateEditedTargets(Binding binding, boolean add) {
