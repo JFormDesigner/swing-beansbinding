@@ -131,7 +131,7 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
         }
     }
     
-    private final class TableColumnProperty implements Property {
+    private final class TableColumnProperty extends Property {
         private TableColumnBinding binding;
 
         public Class<? extends Object> getWriteType(Object source) {

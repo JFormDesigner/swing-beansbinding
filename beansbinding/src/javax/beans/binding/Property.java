@@ -8,22 +8,22 @@ package javax.beans.binding;
 /**
  * @author Shannon Hickey
  */
-public interface Property<S, V> {
+public abstract class Property<S, V> {
 
-    Class<? extends V> getWriteType(S source);
+    public abstract Class<? extends V> getWriteType(S source);
 
-    V getValue(S source);
+    public abstract V getValue(S source);
 
-    void setValue(S source, V value);
+    public abstract void setValue(S source, V value);
 
-    boolean isReadable(S source);
+    public abstract boolean isReadable(S source);
 
-    boolean isWriteable(S source);
+    public abstract boolean isWriteable(S source);
 
-    void addPropertyStateListener(S source, PropertyStateListener listener);
+    public abstract void addPropertyStateListener(S source, PropertyStateListener listener);
 
-    void removePropertyStateListener(S source, PropertyStateListener listener);
+    public abstract void removePropertyStateListener(S source, PropertyStateListener listener);
 
-    PropertyStateListener[] getPropertyStateListeners(S source);
+    public abstract PropertyStateListener[] getPropertyStateListeners(S source);
 
 }
