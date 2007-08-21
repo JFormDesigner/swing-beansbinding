@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package org.jdesktop.util;
+package org.jdesktop.observablecollections;
 
 import java.util.List;
 

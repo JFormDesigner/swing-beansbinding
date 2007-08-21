@@ -5,7 +5,7 @@
 
 package com.sun.java.swing.binding;
 
-import org.jdesktop.util.ObservableCollections;
+import org.jdesktop.observablecollections.ObservableCollections;
 import java.util.ArrayList;
 import javax.beans.binding.TestBean;
 import javax.swing.OLDBINDING.ParameterKeys;

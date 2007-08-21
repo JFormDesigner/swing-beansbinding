@@ -5,7 +5,7 @@
 
 package javax.beans.binding;
 
-import org.jdesktop.util.ObservableCollections;
+import org.jdesktop.observablecollections.ObservableCollections;
 import java.util.HashMap;
 import javax.beans.binding.ext.PropertyDelegateFactory;
 import javax.beans.binding.ext.TestBeanPropertyDelegate;

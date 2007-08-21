@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package org.jdesktop.util;
+package org.jdesktop.observablecollections;
 
 /**
  * Notification types from an {@code ObservableMap}.
