@@ -10,16 +10,16 @@ import java.util.*;
 /**
  * @author Shannon Hickey
  */
-public abstract class AbstractProperty<S, V> extends Property<S, V> {
+public abstract class PropertyHelper<S, V> extends Property<S, V> {
 
     private final boolean ignoresSource;
     private Object listeners;
 
-    public AbstractProperty() {
+    public PropertyHelper() {
         this(false);
     }
 
-    public AbstractProperty(boolean ignoresSource) {
+    public PropertyHelper(boolean ignoresSource) {
         this.ignoresSource = ignoresSource;
     }
 

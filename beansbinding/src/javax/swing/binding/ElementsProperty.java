@@ -12,7 +12,7 @@ import javax.swing.*;
 /**
  * @author Shannon Hickey
  */
-class ElementsProperty<TS, T extends JComponent> extends AbstractProperty<TS, List> implements PropertyStateListener {
+class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List> implements PropertyStateListener {
 
     private Property tableTargetProperty;
     private List list;

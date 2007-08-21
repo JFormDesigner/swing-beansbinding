@@ -25,7 +25,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class ELProperty<S, V> extends AbstractProperty<S, V> {
+public final class ELProperty<S, V> extends PropertyHelper<S, V> {
 
     private Property<S, ?> baseProperty;
     private final ValueExpression expression;
