@@ -34,17 +34,17 @@ public final class BeanDelegateFactory {
         return INSTANCE.getBeanDelegate0(source, property);
     }
 
-    public static List<PropertyDescriptor> getPropertyDescriptors(Object source) {
-        return INSTANCE.getPropertyDescriptors0(source);
+    public static List<PropertyDescriptor> getPropertyDescriptors(Class<?> type) {
+        return INSTANCE.getPropertyDescriptors0(type);
     }
-    
+
     public BeanDelegateFactory() {
         this.providers = new ArrayList<BeanDelegateProvider>();
         classLoaders = new HashSet<ClassLoader>();
         serviceURLs = new HashSet<URL>();
         vendedDelegates = new WeakHashMap<Object, List<VendedDelegate>>();
     }
-    
+
     private void loadProvidersIfNecessary() {
         ClassLoader currentLoader = Thread.currentThread().getContextClassLoader();
         if (!classLoaders.contains(currentLoader)) {
@@ -159,11 +159,11 @@ public final class BeanDelegateFactory {
             return list;
         }
 
-    private List<PropertyDescriptor> getPropertyDescriptors0(Object source) {
+    private List<PropertyDescriptor> getPropertyDescriptors0(Class<?> type) {
         return null;
         
     }
-    
+
     private List<Class<?>> getBeanDelegateClasses0(Class<?> type) {
         if (type == null) {
             throw new IllegalArgumentException(

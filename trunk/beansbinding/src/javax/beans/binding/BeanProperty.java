@@ -820,7 +820,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
     private Object getDelegate(Object o, String property) {
         Object delegate = null;
-        delegate = BeanDelegateFactory.getPropertyDelegate(o, property);
+        delegate = BeanDelegateFactory.getBeanDelegate(o, property);
         return delegate == null ? o : delegate;
     }
     
