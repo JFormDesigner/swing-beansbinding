@@ -10,6 +10,7 @@ import java.util.*;
 /**
  * @author Shannon Hickey
  */
+// PENDING(shannonh) - needs a better name
 public abstract class PropertyHelper<S, V> extends Property<S, V> {
 
     private final boolean ignoresSource;
