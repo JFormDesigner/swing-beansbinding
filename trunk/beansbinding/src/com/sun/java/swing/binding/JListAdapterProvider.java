@@ -14,23 +14,23 @@ import javax.swing.event.*;
 /**
  * @author Shannon Hickey
  */
-public final class JListDelegateProvider implements BeanDelegateProvider {
+public final class JListAdapterProvider implements BeanAdapterProvider {
 
     private static final String PROPERTY_BASE = "selectedElement";
     private static final String IGNORE_ADJUSTING = PROPERTY_BASE + "_IGNORE_ADJUSTING";
 
-    public final class Delegate extends DelegateBase {
+    public final class Adapter extends BeanAdapterBase {
         private JList list;
         private Handler handler;
         private Object cachedElement;
 
-        private Delegate(JList list, String property) {
+        private Adapter(JList list, String property) {
             super(property);
             this.list = list;
         }
 
         public Object getSelectedElement() {
-            return JListDelegateProvider.getSelectedElement(list);
+            return JListAdapterProvider.getSelectedElement(list);
         }
         
         public Object getSelectedElement_IGNORE_ADJUSTING() {
@@ -39,7 +39,7 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
 
         protected void listeningStarted() {
             handler = new Handler();
-            cachedElement = JListDelegateProvider.getSelectedElement(list);
+            cachedElement = JListAdapterProvider.getSelectedElement(list);
             list.addPropertyChangeListener("selectionModel", handler);
             list.getSelectionModel().addListSelectionListener(handler);
         }
@@ -88,7 +88,7 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
                                                    : model.getElementAt(index);
     }
     
-    public boolean providesDelegate(Class<?> type, String property) {
+    public boolean providesAdapter(Class<?> type, String property) {
         property = property.intern();
 
         if (!JList.class.isAssignableFrom(type)) {
@@ -100,17 +100,17 @@ public final class JListDelegateProvider implements BeanDelegateProvider {
                  
     }
     
-    public Object createPropertyDelegate(Object source, String property) {
-        if (!providesDelegate(source.getClass(), property)) {
+    public Object createAdapter(Object source, String property) {
+        if (!providesAdapter(source.getClass(), property)) {
             throw new IllegalArgumentException();
         }
         
-        return new Delegate((JList)source, property);
+        return new Adapter((JList)source, property);
     }
     
-    public Class<?> getPropertyDelegateClass(Class<?> type) {
+    public Class<?> getAdapterClass(Class<?> type) {
         return JList.class.isAssignableFrom(type) ? 
-            JListDelegateProvider.Delegate.class :
+            JListAdapterProvider.Adapter.class :
             null;
     }
     

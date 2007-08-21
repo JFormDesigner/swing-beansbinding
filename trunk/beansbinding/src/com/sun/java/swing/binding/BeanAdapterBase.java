@@ -10,11 +10,11 @@ import java.beans.*;
 /**
  * @author Shannon Hickey
  */
-public class DelegateBase {
+public class BeanAdapterBase {
     protected final String property;
     private PropertyChangeSupport support;
 
-    protected DelegateBase(String property) {
+    protected BeanAdapterBase(String property) {
         assert property != null;
         this.property = property.intern();
     }
