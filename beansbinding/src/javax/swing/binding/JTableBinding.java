@@ -17,7 +17,7 @@ import sun.swing.binding.ListBindingManager;
 /**
  * @author Shannon Hickey
  */
-public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List> {
+public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, List> {
 
     private ElementsProperty<TS, JTable> ep;
     private Handler handler = new Handler();
@@ -27,23 +27,23 @@ public final class JTableBinding<E, SS, TS> extends Binding<SS, List<E>, TS, Lis
     private boolean editableSet;
     private List<TableColumnBinding> columnBindings = new ArrayList<TableColumnBinding>();
 
-    protected JTableBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
-        super(sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetJTableProperty), name);
+    protected JTableBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
+        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetJTableProperty), name);
         ep = (ElementsProperty<TS, JTable>)getTargetProperty();
     }
 
-    protected final void bindImpl() {
+    protected boolean bindImpl() {
         model = new BindingTableModel();
         ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
-        super.bindImpl();
+        return super.bindImpl();
     }
 
-    protected final void unbinImpl() {
-        super.unbindImpl();
+    protected boolean unbindImpl() {
         ep.uninstallBinding();
         ep.removePropertyStateListener(null, handler);
         model = null;
+        return super.unbindImpl();
     }
     
     public void setEditable(boolean editable) {

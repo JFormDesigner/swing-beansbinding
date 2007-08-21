@@ -315,8 +315,10 @@ public abstract class Binding<SS, SV, TS, TV> {
             psl = new PSL();
             sourceProperty.addPropertyStateListener(sourceObject, psl);
             targetProperty.addPropertyStateListener(targetObject, psl);
-            for (BindingListener listener : listeners) {
-                listener.bindingBecameBound(this);
+            if (listeners != null) {
+                for (BindingListener listener : listeners) {
+                    listener.bindingBecameBound(this);
+                }
             }
         }
     }
@@ -331,8 +333,10 @@ public abstract class Binding<SS, SV, TS, TV> {
             sourceProperty.removePropertyStateListener(sourceObject, psl);
             targetProperty.removePropertyStateListener(targetObject, psl);
             psl = null;
-            for (BindingListener listener : listeners) {
-                listener.bindingBecameUnbound(this);
+            if (listeners != null) {
+                for (BindingListener listener : listeners) {
+                    listener.bindingBecameUnbound(this);
+                }
             }
         }
     }
@@ -351,7 +355,8 @@ public abstract class Binding<SS, SV, TS, TV> {
         return hasEditedTarget;
     }
 
-    protected void addingToBindingGroup(BindingGroup group) {
+    protected boolean isManaged() {
+        return false;
     }
 
     protected final void notifySynced() {
