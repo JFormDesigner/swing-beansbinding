@@ -27,6 +27,10 @@ public class BindingGroup {
             throw new IllegalArgumentException("Binding must be non-null");
         }
 
+        if (binding.isManaged()) {
+            throw new IllegalArgumentException("Managed bindings can't be in a group");
+        }
+
         if (bound.contains(binding) || unbound.contains(binding)) {
             throw new IllegalArgumentException("Group already contains this binding");
         }

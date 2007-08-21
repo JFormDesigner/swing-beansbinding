@@ -21,14 +21,14 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
         READ_WRITE
     }
 
-    protected AutoBinding(SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty, UpdateStrategy strategy, String name) {
+    protected AutoBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty, String name) {
         super(sourceObject, sourceProperty, targetObject, targetProperty, name);
 
         if (strategy == null) {
             throw new IllegalArgumentException("must provide update strategy");
         }
 
-        this.strategy = (strategy == null ? UpdateStrategy.READ_WRITE : strategy);
+        this.strategy = strategy;
     }
 
     public final UpdateStrategy getUpdateStrategy() {

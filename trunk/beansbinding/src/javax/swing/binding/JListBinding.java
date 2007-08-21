@@ -16,7 +16,7 @@ import sun.swing.binding.ListBindingManager;
 /**
  * @author Shannon Hickey
  */
-public final class JListBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List> {
+public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, List> {
 
     private ElementsProperty<TS, JList> ep;
     private Handler handler = new Handler();
@@ -24,24 +24,24 @@ public final class JListBinding<E, SS, TS> extends Binding<SS, List<E>, TS, List
     private JList list;
     private ListDetailBinding detailBinding;
 
-    protected JListBinding(SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
-        super(sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
+    protected JListBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
+        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
         ep = (ElementsProperty<TS, JList>)getTargetProperty();
         setDetailBinding(null);
     }
 
-    protected final void bindImpl() {
+    protected boolean bindImpl() {
         model = new BindingListModel();
         ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
-        super.bindImpl();
+        return super.bindImpl();
     }
 
-    protected final void unbindImpl() {
-        super.unbindImpl();
-        ep.uninstallBinding();
+    protected boolean unbindImpl() {
         ep.removePropertyStateListener(null, handler);
+        ep.uninstallBinding();
         model = null;
+        return super.unbindImpl();
     }
 
     public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty) {
