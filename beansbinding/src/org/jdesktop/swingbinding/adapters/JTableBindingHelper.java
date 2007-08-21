@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package org.jdesktrop.swingbinding.adapters;
+package org.jdesktop.swingbinding.adapters;
 
 import java.awt.Component;
 import javax.beans.OLDBINDING.Binding;
