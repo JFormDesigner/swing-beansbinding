@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package sun.swing.binding;
+package org.jdesktop.swingbinding.impl;
 
 import org.jdesktop.beansbinding.*;
 

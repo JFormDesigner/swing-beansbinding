@@ -14,8 +14,8 @@ import org.jdesktop.beansbinding.ObjectProperty;
 import org.jdesktop.beansbinding.Property;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.PropertyStateListener;
-import sun.swing.binding.ColumnBinding;
-import sun.swing.binding.ListBindingManager;
+import org.jdesktop.swingbinding.impl.ColumnBinding;
+import org.jdesktop.swingbinding.impl.ListBindingManager;
 
 /**
  * @author Shannon Hickey
