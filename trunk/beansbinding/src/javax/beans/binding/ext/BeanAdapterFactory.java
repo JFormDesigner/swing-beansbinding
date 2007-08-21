@@ -172,19 +172,28 @@ public final class BeanAdapterFactory {
             throw new IllegalArgumentException("Type must be non-null");
         }
 
+        loadProvidersIfNecessary();
+        
         ArrayList<PropertyDescriptor> des = new ArrayList<PropertyDescriptor>();
 
         for (BeanAdapterProvider provider : providers) {
             Class<?> pdType = provider.getAdapterClass(type);
             if (pdType != null) {
-                BeanInfo info = getBeanInfo(type);
+                BeanInfo info = getBeanInfo(pdType);
                 if (info != null) {
-                    
+                    PropertyDescriptor[] pds = info.getPropertyDescriptors();
+                    if (pds != null) {
+                        for (PropertyDescriptor pd : pds) {
+                            if (provider.providesAdapter(type, pd.getName())) {
+                                des.add(pd);
+                            }
+                        }
+                    }
                 }
             }
         }
         
-        return null;
+        return des;
     }
     
     private static final class VendedAdapter {
