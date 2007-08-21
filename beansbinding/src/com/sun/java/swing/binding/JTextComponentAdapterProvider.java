@@ -15,13 +15,13 @@ import javax.swing.text.*;
 /**
  * @author Shannon Hickey
  */
-public final class JTextComponentDelegateProvider implements BeanDelegateProvider {
+public final class JTextComponentAdapterProvider implements BeanAdapterProvider {
 
     private static final String PROPERTY_BASE = "text";
     private static final String ON_ACTION_OR_FOCUS_LOST = PROPERTY_BASE + "_ON_ACTION_OR_FOCUS_LOST";
     private static final String ON_FOCUS_LOST = PROPERTY_BASE + "_ON_FOCUS_LOST";
 
-    public final class Delegate extends DelegateBase {
+    public final class Adapter extends BeanAdapterBase {
         private JTextComponent component;
         private Document document;
         private boolean inDocumentListener;
@@ -29,7 +29,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         private String cachedText;
         private Handler handler;
 
-        private Delegate(JTextComponent component, String property) {
+        private Adapter(JTextComponent component, String property) {
             super(property);
             this.component = component;
         }
@@ -204,7 +204,7 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
         
     }
     
-    public boolean providesDelegate(Class<?> type, String property) {
+    public boolean providesAdapter(Class<?> type, String property) {
         property = property.intern();
 
         if (!JTextComponent.class.isAssignableFrom(type)) {
@@ -217,17 +217,17 @@ public final class JTextComponentDelegateProvider implements BeanDelegateProvide
                  
     }
     
-    public Object createPropertyDelegate(Object source, String property) {
-        if (!providesDelegate(source.getClass(), property)) {
+    public Object createAdapter(Object source, String property) {
+        if (!providesAdapter(source.getClass(), property)) {
             throw new IllegalArgumentException();
         }
         
-        return new Delegate((JTextComponent)source, property);
+        return new Adapter((JTextComponent)source, property);
     }
     
-    public Class<?> getPropertyDelegateClass(Class<?> type) {
+    public Class<?> getAdapterClass(Class<?> type) {
         return JTextComponent.class.isAssignableFrom(type) ?
-            JTextComponentDelegateProvider.Delegate.class :
+            JTextComponentAdapterProvider.Adapter.class :
             null;
     }
     

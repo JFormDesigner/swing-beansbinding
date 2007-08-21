@@ -16,23 +16,23 @@ import java.util.HashMap;
 /**
  * @author Shannon Hickey
  */
-public final class JTableDelegateProvider implements BeanDelegateProvider {
+public final class JTableAdapterProvider implements BeanAdapterProvider {
 
     private static final String PROPERTY_BASE = "selectedElement";
     private static final String IGNORE_ADJUSTING = PROPERTY_BASE + "_IGNORE_ADJUSTING";
 
-    public final class Delegate extends DelegateBase {
+    public final class Adapter extends BeanAdapterBase {
         private JTable table;
         private Handler handler;
         private Object cachedElement;
 
-        private Delegate(JTable table, String property) {
+        private Adapter(JTable table, String property) {
             super(property);
             this.table = table;
         }
 
         public Object getSelectedElement() {
-            return JTableDelegateProvider.getSelectedElement(table);
+            return JTableAdapterProvider.getSelectedElement(table);
         }
         
         public Object getSelectedElement_IGNORE_ADJUSTING() {
@@ -41,7 +41,7 @@ public final class JTableDelegateProvider implements BeanDelegateProvider {
 
         protected void listeningStarted() {
             handler = new Handler();
-            cachedElement = JTableDelegateProvider.getSelectedElement(table);
+            cachedElement = JTableAdapterProvider.getSelectedElement(table);
             table.addPropertyChangeListener("selectionModel", handler);
             table.getSelectionModel().addListSelectionListener(handler);
         }
@@ -102,7 +102,7 @@ public final class JTableDelegateProvider implements BeanDelegateProvider {
         }
     }
     
-    public boolean providesDelegate(Class<?> type, String property) {
+    public boolean providesAdapter(Class<?> type, String property) {
         property = property.intern();
 
         if (!JTable.class.isAssignableFrom(type)) {
@@ -114,17 +114,17 @@ public final class JTableDelegateProvider implements BeanDelegateProvider {
                  
     }
     
-    public Object createPropertyDelegate(Object source, String property) {
-        if (!providesDelegate(source.getClass(), property)) {
+    public Object createAdapter(Object source, String property) {
+        if (!providesAdapter(source.getClass(), property)) {
             throw new IllegalArgumentException();
         }
         
-        return new Delegate((JTable)source, property);
+        return new Adapter((JTable)source, property);
     }
     
-    public Class<?> getPropertyDelegateClass(Class<?> type) {
+    public Class<?> getAdapterClass(Class<?> type) {
         return JTable.class.isAssignableFrom(type) ?
-            JTableDelegateProvider.Delegate.class :
+            JTableAdapterProvider.Adapter.class :
             null;
     }
     

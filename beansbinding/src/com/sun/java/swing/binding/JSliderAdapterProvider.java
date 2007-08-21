@@ -13,17 +13,17 @@ import java.beans.*;
 /**
  * @author Shannon Hickey
  */
-public final class JSliderDelegateProvider implements BeanDelegateProvider {
+public final class JSliderAdapterProvider implements BeanAdapterProvider {
 
     private static final String PROPERTY_BASE = "value";
     private static final String IGNORE_ADJUSTING = PROPERTY_BASE + "_IGNORE_ADJUSTING";
 
-    public static final class Delegate extends DelegateBase {
+    public static final class Adapter extends BeanAdapterBase {
         private JSlider slider;
         private Handler handler;
         private int cachedValue;
 
-        private Delegate(JSlider slider, String property) {
+        private Adapter(JSlider slider, String property) {
             super(property);
             this.slider = slider;
         }
@@ -78,7 +78,7 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
         }
     }
 
-    public boolean providesDelegate(Class<?> type, String property) {
+    public boolean providesAdapter(Class<?> type, String property) {
         if (!JSlider.class.isAssignableFrom(type)) {
             return false;
         }
@@ -87,17 +87,17 @@ public final class JSliderDelegateProvider implements BeanDelegateProvider {
                property == IGNORE_ADJUSTING;
     }
 
-    public Object createPropertyDelegate(Object source, String property) {
-        if (!providesDelegate(source.getClass(), property)) {
+    public Object createAdapter(Object source, String property) {
+        if (!providesAdapter(source.getClass(), property)) {
             throw new IllegalArgumentException();
         }
 
-        return new Delegate((JSlider)source, property);
+        return new Adapter((JSlider)source, property);
     }
 
-    public Class<?> getPropertyDelegateClass(Class<?> type) {
+    public Class<?> getAdapterClass(Class<?> type) {
         return JSlider.class.isAssignableFrom(type) ?
-            JSliderDelegateProvider.Delegate.class :
+            JSliderAdapterProvider.Adapter.class :
             null;
     }
 

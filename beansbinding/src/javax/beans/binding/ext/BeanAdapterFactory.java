@@ -23,26 +23,26 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.beans.*;
 
-public final class BeanDelegateFactory {
-    private static final BeanDelegateFactory INSTANCE =  new BeanDelegateFactory();
-    private final Map<Object, List<VendedDelegate>> vendedDelegates;
-    private final List<BeanDelegateProvider> providers;
+public final class BeanAdapterFactory {
+    private static final BeanAdapterFactory INSTANCE =  new BeanAdapterFactory();
+    private final Map<Object, List<VendedAdapter>> vendedAdapters;
+    private final List<BeanAdapterProvider> providers;
     private final Set<ClassLoader> classLoaders;
     private final Set<URL> serviceURLs;
 
-    public static Object getBeanDelegate(Object source, String property) {
-        return INSTANCE.getBeanDelegate0(source, property);
+    public static Object getAdapter(Object source, String property) {
+        return INSTANCE.getAdapter0(source, property);
     }
 
-    public static List<PropertyDescriptor> getPropertyDescriptors(Class<?> type) {
-        return INSTANCE.getPropertyDescriptors0(type);
+    public static List<PropertyDescriptor> getAdapterPropertyDescriptors(Class<?> type) {
+        return INSTANCE.getAdapterPropertyDescriptors0(type);
     }
 
-    public BeanDelegateFactory() {
-        this.providers = new ArrayList<BeanDelegateProvider>();
+    public BeanAdapterFactory() {
+        this.providers = new ArrayList<BeanAdapterProvider>();
         classLoaders = new HashSet<ClassLoader>();
         serviceURLs = new HashSet<URL>();
-        vendedDelegates = new WeakHashMap<Object, List<VendedDelegate>>();
+        vendedAdapters = new WeakHashMap<Object, List<VendedAdapter>>();
     }
 
     private void loadProvidersIfNecessary() {
@@ -56,7 +56,7 @@ public final class BeanDelegateFactory {
     private void loadProviders(ClassLoader classLoader) {
         // PENDING: this needs to be rewriten in terms of ServiceLoader
         String serviceName = "META-INF/services/" + 
-                BeanDelegateProvider.class.getName();
+                BeanAdapterProvider.class.getName();
         try {
             Enumeration<URL> urls = classLoader.getResources(serviceName);
             while (urls.hasMoreElements()) {
@@ -79,7 +79,7 @@ public final class BeanDelegateFactory {
             String line;
             while ((line = reader.readLine()) != null) {
                 try {
-                    providers.add((BeanDelegateProvider)Class.forName(line).newInstance());
+                    providers.add((BeanAdapterProvider)Class.forName(line).newInstance());
                 } catch (IllegalAccessException ex) {
                 } catch (InstantiationException ex) {
                 } catch (ClassNotFoundException ex) {
@@ -96,40 +96,40 @@ public final class BeanDelegateFactory {
         }
     }
 
-    public Object getBeanDelegate0(Object source, String property) {
+    public Object getAdapter0(Object source, String property) {
         if (source == null || property == null) {
             throw new IllegalArgumentException();
         }
         loadProvidersIfNecessary();
         property = property.intern();
-        BeanDelegateProvider provider = getProvider(source, property);
+        BeanAdapterProvider provider = getProvider(source, property);
         if (provider != null) {
-            List<VendedDelegate> delegates = vendedDelegates.get(source);
-            if (delegates != null) {
-                for (int i = delegates.size() - 1; i >= 0; i--) {
-                    VendedDelegate vendedDelegate = delegates.get(i);
-                    Object delegate = vendedDelegate.getDelegate();
-                    if (delegate == null) {
-                        vendedDelegates.remove(i);
-                    } else if (vendedDelegate.getProvider() == provider && vendedDelegate.getProperty() == property) {
-                        return delegate;
+            List<VendedAdapter> adapters = vendedAdapters.get(source);
+            if (adapters != null) {
+                for (int i = adapters.size() - 1; i >= 0; i--) {
+                    VendedAdapter vendedAdapter = adapters.get(i);
+                    Object adapter = vendedAdapter.getAdapter();
+                    if (adapter == null) {
+                        vendedAdapters.remove(i);
+                    } else if (vendedAdapter.getProvider() == provider && vendedAdapter.getProperty() == property) {
+                        return adapter;
                     }
                 }
             } else {
-                delegates = new ArrayList<VendedDelegate>(1);
-                vendedDelegates.put(source, delegates);
+                adapters = new ArrayList<VendedAdapter>(1);
+                vendedAdapters.put(source, adapters);
             }
-            Object delegate = provider.createPropertyDelegate(source, property);
-            delegates.add(new VendedDelegate(property, provider, delegate));
-            return delegate;
+            Object adapter = provider.createAdapter(source, property);
+            adapters.add(new VendedAdapter(property, provider, adapter));
+            return adapter;
         }
         return null;
     }
     
-    private BeanDelegateProvider getProvider(Object source, String property) {
+    private BeanAdapterProvider getProvider(Object source, String property) {
         Class<?> type = source.getClass();
-        for (BeanDelegateProvider provider : providers) {
-            if (provider.providesDelegate(type, property)) {
+        for (BeanAdapterProvider provider : providers) {
+            if (provider.providesAdapter(type, property)) {
                 return provider;
             }
         }
@@ -159,53 +159,54 @@ public final class BeanDelegateFactory {
             return list;
         }
 
-    private List<PropertyDescriptor> getPropertyDescriptors0(Class<?> type) {
-        return null;
-        
+    private static BeanInfo getBeanInfo(Class<?> type) {
+        try {
+            return Introspector.getBeanInfo(type);
+        } catch (IntrospectionException ie) {
+            return null;
+        }
     }
 
-    private List<Class<?>> getBeanDelegateClasses0(Class<?> type) {
+    private List<PropertyDescriptor> getAdapterPropertyDescriptors0(Class<?> type) {
         if (type == null) {
-            throw new IllegalArgumentException(
-                    "Type must be non-null");
+            throw new IllegalArgumentException("Type must be non-null");
         }
-        loadProvidersIfNecessary();
-        List<Class<?>> pdTypes = null;
-        for (BeanDelegateProvider provider : providers) {
-            Class<?> pdType = provider.getPropertyDelegateClass(type);
+
+        ArrayList<PropertyDescriptor> des = new ArrayList<PropertyDescriptor>();
+
+        for (BeanAdapterProvider provider : providers) {
+            Class<?> pdType = provider.getAdapterClass(type);
             if (pdType != null) {
-                if (pdTypes == null) {
-                    pdTypes = new ArrayList<Class<?>>(1);
+                BeanInfo info = getBeanInfo(type);
+                if (info != null) {
+                    
                 }
-                pdTypes.add(pdType);
             }
         }
-        if (pdTypes == null) {
-            pdTypes = Collections.emptyList();
-        }
-        return pdTypes;
+        
+        return null;
     }
     
-    private static final class VendedDelegate {
-        private final BeanDelegateProvider provider;
+    private static final class VendedAdapter {
+        private final BeanAdapterProvider provider;
         private final String property;
-        private final WeakReference<Object> delegate;
+        private final WeakReference<Object> adapter;
 
-        public VendedDelegate(String property, BeanDelegateProvider provider, Object delegate) {
+        public VendedAdapter(String property, BeanAdapterProvider provider, Object adapter) {
             this.property = property;
-            this.delegate = new WeakReference<Object>(delegate);
+            this.adapter = new WeakReference<Object>(adapter);
             this.provider = provider;
         }
 
-        public Object getDelegate() {
-            return delegate.get();
+        public Object getAdapter() {
+            return adapter.get();
         }
 
         public String getProperty() {
             return property;
         }
         
-        public BeanDelegateProvider getProvider() {
+        public BeanAdapterProvider getProvider() {
             return provider;
         }
     }

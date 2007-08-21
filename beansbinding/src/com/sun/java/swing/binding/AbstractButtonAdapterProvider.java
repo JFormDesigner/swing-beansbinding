@@ -13,16 +13,16 @@ import java.beans.*;
 /**
  * @author Shannon Hickey
  */
-public final class AbstractButtonDelegateProvider implements BeanDelegateProvider {
+public final class AbstractButtonAdapterProvider implements BeanAdapterProvider {
 
     private static final String PROPERTY = "selected";
 
-    public static final class Delegate extends DelegateBase {
+    public static final class Adapter extends BeanAdapterBase {
         private AbstractButton button;
         private Handler handler;
         private boolean cachedSelected;
 
-        private Delegate(AbstractButton button) {
+        private Adapter(AbstractButton button) {
             super(PROPERTY);
             this.button = button;
         }
@@ -64,21 +64,21 @@ public final class AbstractButtonDelegateProvider implements BeanDelegateProvide
         }
     }
 
-    public boolean providesDelegate(Class<?> type, String property) {
+    public boolean providesAdapter(Class<?> type, String property) {
         return AbstractButton.class.isAssignableFrom(type) && property.intern() == PROPERTY;
     }
 
-    public Object createPropertyDelegate(Object source, String property) {
-        if (!providesDelegate(source.getClass(), property)) {
+    public Object createAdapter(Object source, String property) {
+        if (!providesAdapter(source.getClass(), property)) {
             throw new IllegalArgumentException();
         }
 
-        return new Delegate((AbstractButton)source);
+        return new Adapter((AbstractButton)source);
     }
 
-    public Class<?> getPropertyDelegateClass(Class<?> type) {
+    public Class<?> getAdapterClass(Class<?> type) {
         return AbstractButton.class.isAssignableFrom(type) ?
-            AbstractButtonDelegateProvider.Delegate.class :
+            AbstractButtonAdapterProvider.Adapter.class :
             null;
     }
 
