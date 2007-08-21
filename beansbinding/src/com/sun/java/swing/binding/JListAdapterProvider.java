@@ -10,19 +10,24 @@ import java.beans.*;
 import javax.swing.*;
 import sun.swing.binding.*;
 import javax.swing.event.*;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Shannon Hickey
  */
 public final class JListAdapterProvider implements BeanAdapterProvider {
 
-    private static final String PROPERTY_BASE = "selectedElement";
-    private static final String IGNORE_ADJUSTING = PROPERTY_BASE + "_IGNORE_ADJUSTING";
+    private static final String SELECTED_ELEMENT_P = "selectedElement";
+    private static final String SELECTED_ELEMENTS_P = "selectedElements";
+    private static final String SELECTED_ELEMENT_IA_P = SELECTED_ELEMENT_P + "_IGNORE_ADJUSTING";
+    private static final String SELECTED_ELEMENTS_IA_P = SELECTED_ELEMENTS_P + "_IGNORE_ADJUSTING";
 
     public final class Adapter extends BeanAdapterBase {
         private JList list;
         private Handler handler;
         private Object cachedElement;
+        private List<Object> cachedElements;
 
         private Adapter(JList list, String property) {
             super(property);
@@ -37,9 +42,18 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
             return getSelectedElement();
         }
 
+        public List<Object> getSelectedElements() {
+            return JListAdapterProvider.getSelectedElements(list);
+        }
+
+        public List<Object> getSelectedElements_IGNORE_ADJUSTING() {
+            return getSelectedElements();
+        }
+        
         protected void listeningStarted() {
             handler = new Handler();
             cachedElement = JListAdapterProvider.getSelectedElement(list);
+            cachedElements = JListAdapterProvider.getSelectedElements(list);
             list.addPropertyChangeListener("selectionModel", handler);
             list.getSelectionModel().addListSelectionListener(handler);
         }
@@ -48,18 +62,24 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
             list.getSelectionModel().removeListSelectionListener(handler);
             list.removePropertyChangeListener("selectionModel", handler);
             cachedElement = null;
+            cachedElements = null;
             handler = null;
         }
 
         private class Handler implements ListSelectionListener, PropertyChangeListener {
             private void listSelectionChanged() {
                 Object oldElement = cachedElement;
+                Object oldElements = cachedElements;
                 cachedElement = getSelectedElement();
+                cachedElements = getSelectedElements();
                 firePropertyChange(oldElement, cachedElement);
+                firePropertyChange(oldElements, cachedElements);
             }
 
             public void valueChanged(ListSelectionEvent e) {
-                if (property == IGNORE_ADJUSTING && e.getValueIsAdjusting()) {
+                if ((property == SELECTED_ELEMENT_IA_P || property == SELECTED_ELEMENTS_IA_P)
+                        && e.getValueIsAdjusting()) {
+
                     return;
                 }
 
@@ -72,6 +92,30 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
         }
     }
 
+    private static List<Object> getSelectedElements(JList list) {
+        assert list != null;
+
+        ListSelectionModel selectionModel = list.getSelectionModel();
+        int min = selectionModel.getMinSelectionIndex();
+        int max = selectionModel.getMaxSelectionIndex();
+
+        List<Object> newSelection;
+
+        if (min < 0 || max < 0) {
+            return new ArrayList<Object>(0);
+        }
+        
+        ArrayList<Object> elements = new ArrayList<Object>(max - min + 1);
+
+        for (int i = min; i <= max; i++) {
+            if (selectionModel.isSelectedIndex(i)) {
+                elements.add(getElement(list, i));
+            }
+        }
+
+        return elements;
+    }
+    
     private static Object getSelectedElement(JList list) {
         assert list != null;
 
@@ -83,6 +127,10 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
             return null;
         }
 
+        return getElement(list, index);
+    }
+
+    private static Object getElement(JList list, int index) {
         ListModel model = list.getModel();
         return model instanceof ListBindingManager ? ((ListBindingManager)model).getElement(index)
                                                    : model.getElementAt(index);
@@ -95,8 +143,10 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
             return false;
         }
 
-        return property == PROPERTY_BASE ||
-               property == IGNORE_ADJUSTING;
+        return property == SELECTED_ELEMENT_P ||
+               property == SELECTED_ELEMENT_IA_P ||
+               property == SELECTED_ELEMENTS_P ||
+               property == SELECTED_ELEMENTS_IA_P;
                  
     }
     
