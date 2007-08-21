@@ -6,85 +6,13 @@
 -->
 
 <html>
-  <head>
-    <title></title>
-  </head>
-  <body>
-<p>
-This package contains classes that are useful for binding to Swing components.
-<p>
-When binding to Swing components, it's often useful to disable the target
-component when the source property is unwriteable. This package contains
-a subclass of {@code Binding} called {@code SwingBinding} which has a
-{@code setDisableTargetOnUnwriteableSource} method to control this
-behavior. The default is {@code true}.
-<p>
-Many Swing components have properties that do not fire property change
-notification and therefore don't fit well with {@code Property} implementations
-that rely on this notification. This package provides special {@code Property}
-implementations for dealing with some of the important properties. Note that
-where the examples show creating these properties with a reference to a
-component, each of the properties may also be created with a reference to a
-{@code Property} that provides the component. ie.
-{@code JTextComponentTextProperty} has two constructors: one takes a
-{@code JTextComponent} and the other takes a
-{@code Property<? extends JTextComponent>}.
-<p>
-    In some cases, binding to certain Swing components is more complex than can
-    be represented by a simple connection between two properties. For these cases,
-    this package provides {@code Binding} subclasses to manage these connections.
-</p>
-The rest of this document details the custom binding support for various
-Swing components.
-<p>
-
-<h3>JToggleButton (includes JCheckBox and JRadioButton subclasses)</h3>
-
-The most useful thing to bind to on a {@code JToggleButton} is it's selected state.
-As {@code JToggleButton's selected} property is not a bound property, this package
-provides a special property for binding to, {@code JToggleButtonSelectedProperty}.
-The following example illustrates creating a binding targetting a {@code JCheckBox}:
-
-<pre>
-  Property source = new BeanProperty(person, "male");
-  Property target = new JToggleButtonSelectedProperty(maleCheckBox);
-  SwingBinding binding = new SwingBinding(source, target);
-</pre>
-
-<h3>JSlider</h3>
-
-The most useful thing to bind to on a {@code JSlider} is it's value.
-As {@code JSlider's value} property is not a bound property, this package
-provides a special property for binding to, {@code JSliderValueProperty}.
-The following example illustrates creating a binding targetting a {@code JSlider}:
-
-<pre>
-  Property source = new BeanProperty(employee, "raisePercentage");
-  Property target = new JSliderValueProperty(raiseSlider);
-  SwingBinding binding = new SwingBinding(source, target);
-</pre>
-
-<h3>JTextComponent</h3>
-
-The most useful thing to bind to on a {@code JTextComponent} is it's value.
-As {@code JTextComponent's value} property is not a bound property, this package
-provides a special property for binding to, {@code JTextComponentTextProperty}.
-The following example illustrates creating a binding targetting a {@code JTextComponent}:
-
-<pre>
-  Property source = new BeanProperty(employee, "nickname");
-  Property target = new JTextComponentTextProperty(nicknameTextField);
-  SwingBinding binding = new SwingBinding(source, target);
-</pre>
-
-By default, {@code JTextComponentTextProperty} is updated when enter is pressed
-or focus is lost from the component. This may be changed by calling the
-{@code setChangeStrategy} method on the property. For example:
-
-<pre>
-  JTextComponentTextProperty target = new JTextComponentTextProperty(nicknameTextField);
-  target.setChangeStrategy(ChangeStrategy.ON_TYPE);
-</pre>
-
-  </body>
+    <head>
+        <title></title>
+    </head>
+    <body>
+        <p>
+            This package contains classes that are useful for binding to Swing components.
+            More details to come.
+        </p>
+    </body>
 </html>
