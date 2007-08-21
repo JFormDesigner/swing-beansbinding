@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package org.jdesktop.beans.binding;
+package org.jdesktop.beansbinding;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

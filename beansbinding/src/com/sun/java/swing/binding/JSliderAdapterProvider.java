@@ -9,7 +9,7 @@ import javax.beans.binding.ext.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.beans.*;
-import org.jdesktop.beans.binding.ext.BeanAdapterProvider;
+import org.jdesktop.beansbinding.ext.BeanAdapterProvider;
 
 /**
  * @author Shannon Hickey

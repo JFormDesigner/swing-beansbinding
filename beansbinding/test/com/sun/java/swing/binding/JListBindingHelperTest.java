@@ -9,7 +9,7 @@ import javax.beans.binding.EventListenerRecorder;
 import javax.beans.binding.TestBean;
 import com.sun.java.util.BindingCollections;
 import java.awt.Component;
-import org.jdesktop.beans.binding.Binding;
+import org.jdesktop.beansbinding.Binding;
 import javax.swing.ListCellRenderer;
 import javax.swing.OLDBINDING.ParameterKeys;
 import javax.swing.event.ListDataEvent;

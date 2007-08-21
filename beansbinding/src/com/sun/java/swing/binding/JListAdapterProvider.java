@@ -8,7 +8,7 @@ package com.sun.java.swing.binding;
 import javax.beans.binding.ext.*;
 import java.beans.*;
 import javax.swing.*;
-import org.jdesktop.beans.binding.ext.BeanAdapterProvider;
+import org.jdesktop.beansbinding.ext.BeanAdapterProvider;
 import sun.swing.binding.*;
 import javax.swing.event.*;
 import java.util.List;

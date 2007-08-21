@@ -8,9 +8,9 @@ package javax.swing.binding;
 import java.util.*;
 import javax.swing.*;
 import javax.beans.binding.*;
-import org.jdesktop.beans.binding.AutoBinding;
-import org.jdesktop.beans.binding.ObjectProperty;
-import org.jdesktop.beans.binding.Property;
+import org.jdesktop.beansbinding.AutoBinding;
+import org.jdesktop.beansbinding.ObjectProperty;
+import org.jdesktop.beansbinding.Property;
 
 /**
  * @author Shannon Hickey

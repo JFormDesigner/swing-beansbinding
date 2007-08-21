@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package org.jdesktop.beans.binding;
+package org.jdesktop.beansbinding;
 
 import com.sun.el.ExpressionFactoryImpl;
 import javax.el.ELContext;
@@ -19,8 +19,8 @@ import java.util.*;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 import javax.beans.binding.ext.*;
-import static org.jdesktop.beans.binding.PropertyStateEvent.UNREADABLE;
-import org.jdesktop.beans.binding.ext.BeanAdapterFactory;
+import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
+import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 
 /**
  * @author Shannon Hickey

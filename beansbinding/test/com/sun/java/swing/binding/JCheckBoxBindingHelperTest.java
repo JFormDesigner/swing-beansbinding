@@ -9,7 +9,7 @@ import java.beans.FeatureDescriptor;
 import java.util.HashMap;
 import java.util.Map;
 import javax.beans.binding.TestBean;
-import org.jdesktop.beans.binding.Binding;
+import org.jdesktop.beansbinding.Binding;
 import javax.beans.binding.BindingContext;
 import javax.beans.binding.ext.PropertyDelegateProvider;
 import junit.framework.*;
