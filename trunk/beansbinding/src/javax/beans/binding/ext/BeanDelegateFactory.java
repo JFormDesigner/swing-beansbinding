@@ -21,51 +21,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.beans.*;
 
-/**
- * {@code BeanDelegateFactory} is a factory used to look up property
- * delegates. See {@code BeanDelegateProvider} for details.
- * 
- * 
- * 
- * @author sky
- * @see BeanDelegateProvider
- */
 public final class BeanDelegateFactory {
     private static final BeanDelegateFactory INSTANCE =  new BeanDelegateFactory();
     private final Map<Object, List<VendedDelegate>> vendedDelegates;
     private final List<BeanDelegateProvider> providers;
     private final Set<ClassLoader> classLoaders;
     private final Set<URL> serviceURLs;
-    
-    /**
-     * Returns the property delegate for the specified object and property.
-     *
-     * @param source the object to return the property delegate for
-     * @param property the property
-     * @return the property delegate for the specified object and property pair,
-     *         or {@code null} if a property delegate does not exist for the
-     *         specified pair
-     * @throws IllegalArgumentException if either argument is {@code null}
-     */
+
     public static Object getPropertyDelegate(Object source, String property) {
         return INSTANCE.getPropertyDelegate0(source, property);
     }
-    
-    /**
-     * Returns a {@code List} of the classes of the property delegates for
-     * the specified class. If no delegates exist, an empty {@code List} is
-     * returned.
-     *
-     * @param type the class to return the property delegate class of
-     * @return a list of types of property delegates for the specified class
-     *
-     * @throws IllegalArgumentException if {@code type} is {@code null}
-     */
-    public static List<Class<?>> getPropertyDelegateClass(Class<?> type) {
-        return INSTANCE.getPropertyDelegateClass0(type);
-    }
 
+    public static List<PropertyDescriptor> getPropertyDescriptors(Object source) {
+        return INSTANCE.getPropertyDescriptors0(source);
+    }
+    
     public BeanDelegateFactory() {
         this.providers = new ArrayList<BeanDelegateProvider>();
         classLoaders = new HashSet<ClassLoader>();
@@ -123,7 +95,7 @@ public final class BeanDelegateFactory {
             }
         }
     }
-    
+
     public Object getPropertyDelegate0(Object source, String property) {
         if (source == null || property == null) {
             throw new IllegalArgumentException();
@@ -163,8 +135,36 @@ public final class BeanDelegateFactory {
         }
         return null;
     }
+
+        private List<FeatureDescriptor> getDescriptors(Class<?> type) {
+            BeanInfo info = null;
+            try {
+                info = Introspector.getBeanInfo(type);
+            } catch (Exception ex) {
+            }
+            if (info == null) {
+                return Collections.emptyList();
+            }
+            ArrayList<FeatureDescriptor> list = new ArrayList<FeatureDescriptor>(
+                    info.getPropertyDescriptors().length);
+            for (PropertyDescriptor pd: info.getPropertyDescriptors()) {
+                // PENDING: The following properties come from EL, are they
+                // needed?
+                if (pd.getPropertyType() != null) {
+                    pd.setValue("type", pd.getPropertyType());
+                }
+                pd.setValue("resolvableAtDesignTime", Boolean.TRUE);
+                list.add(pd);
+            }
+            return list;
+        }
+
+    private List<PropertyDescriptor> getPropertyDescriptors0(Object source) {
+        return null;
+        
+    }
     
-    private List<Class<?>> getPropertyDelegateClass0(Class<?> type) {
+    private List<Class<?>> getPropertyDelegateClasses0(Class<?> type) {
         if (type == null) {
             throw new IllegalArgumentException(
                     "Type must be non-null");
@@ -185,8 +185,6 @@ public final class BeanDelegateFactory {
         }
         return pdTypes;
     }
-
-    
     
     private static final class VendedDelegate {
         private final BeanDelegateProvider provider;
