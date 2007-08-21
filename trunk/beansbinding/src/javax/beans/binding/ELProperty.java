@@ -224,7 +224,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    public ELProperty(String expression) {
+    private ELProperty(String expression) {
         this(null, expression);
     }
 
