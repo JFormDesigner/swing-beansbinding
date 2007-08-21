@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
+import javax.beans.binding.ext.*;
 import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 
 /**
@@ -191,7 +192,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         }
 
         public void propertyChange(PropertyChangeEvent e) {
-           sourceChanged(e.getSource(), e.getPropertyName());
+            sourceChanged(e.getSource(), e.getPropertyName());
         }
 
         public void mapKeyValueChanged(ObservableMap map, Object key, Object lastValue) {
@@ -585,18 +586,29 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         Object property = resolved.getProperty();
         if (source != null && property instanceof String) {
             String sProp = (String)property;
-            RegisteredListener rl = new RegisteredListener(source, sProp);
 
-            if (!entry.registeredListeners.contains(rl)) {
-                if (!entry.lastRegisteredListeners.remove(rl)) {
-                    if (source instanceof ObservableMap) {
-                       ((ObservableMap)source).addObservableMapListener(entry);
-                    } else {
+            if (source instanceof ObservableMap) {
+                RegisteredListener rl = new RegisteredListener(source, sProp);
+
+                if (!entry.registeredListeners.contains(rl)) {
+                    if (!entry.lastRegisteredListeners.remove(rl)) {
+                        ((ObservableMap)source).addObservableMapListener(entry);
+                    }
+                    
+                    entry.registeredListeners.add(rl);
+                }
+            } else if (!(source instanceof Map)) {
+                source = getAdapter(source, sProp);
+
+                RegisteredListener rl = new RegisteredListener(source, sProp);
+
+                if (!entry.registeredListeners.contains(rl)) {
+                    if (!entry.lastRegisteredListeners.remove(rl)) {
                         addPropertyChangeListener(source, entry);
                     }
+                    
+                    entry.registeredListeners.add(rl);
                 }
-
-                entry.registeredListeners.add(rl);
             }
         }
     }
@@ -605,7 +617,7 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         Object source = rl.getSource();
         if (source instanceof ObservableMap) {
             ((ObservableMap)source).removeObservableMapListener(entry);
-        } else {
+        } else if (!(source instanceof Map)) {
             removePropertyChangeListener(source, entry);
         }
     }
@@ -673,6 +685,12 @@ public final class ELProperty<S, V> extends AbstractProperty<S, V> {
         return false;
     }
 
+    private Object getAdapter(Object o, String property) {
+        Object adapter = null;
+        adapter = BeanAdapterFactory.getAdapter(o, property);
+        return adapter == null ? o : adapter;
+    }
+    
     private static final boolean LOG = false;
 
     private static void log(String method, String message) {
