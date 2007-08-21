@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.OLDBINDING;
+package javax.beans.binding;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
