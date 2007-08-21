@@ -29,31 +29,6 @@ public class ParameterKeys {
             new ParameterKey<Boolean>("DISABLE_ON_INCOMPLETE_PATH");
 
     /**
-     * Key used to specify whether or not the target component is editable.
-     * Currently used for {@code JTable} and {@code JTable} column bindings.
-     * If not specified, the component is editable.
-     */
-    public static final ParameterKey<Boolean> EDITABLE =
-            new ParameterKey<Boolean>("EDITABLE");
-
-    /**
-     * Key used to specify the column that a binding applies to.
-     * This is used on child bindings where the target is a {@code JTable}.
-     * If not specified, an {@code IllegalArgumentException} is thrown when
-     * the {@code Binding} is bound.
-     */
-    public static final ParameterKey<Integer> COLUMN =
-            new ParameterKey<Integer>("COLUMN");
-
-    /**
-     * Key used to specify the class of a column.
-     * This is used on child bindings where the target is a {@code JTable}.
-     * If not specified, the column class is treated as {@code Object.class}.
-     */
-    public static final ParameterKey<Class> COLUMN_CLASS =
-            new ParameterKey<Class>("COLUMN_CLASS");
-
-    /**
      * Key used to specify whether or not a node with no children
      * is treated as a leaf. This is used in bindings to {@code JTree}.
      * The default value is {@code false}.
@@ -86,12 +61,4 @@ public class ParameterKeys {
     public static final ParameterKey<String> COMBOBOX_SELECTED_OBJECT_PROPERTY =
             new ParameterKey<String>("COMBOBOX_SELECTED_OBJECT_PROPERTY");
 
-
-    // PENDING(shannonh) - consider adding these back
-
-    // public static final ParameterKey<Boolean> TABLE_RENDERER =
-    //         new ParameterKey<Boolean>("TABLE_RENDERER");
-    //
-    // public static final Key<Boolean> TABLE_EDITOR =
-    //         new Key<Boolean>("TABLE_EDITOR");
 }
