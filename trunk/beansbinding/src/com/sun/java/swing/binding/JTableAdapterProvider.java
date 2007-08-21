@@ -8,7 +8,7 @@ package com.sun.java.swing.binding;
 import java.beans.*;
 import javax.swing.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterProvider;
-import sun.swing.binding.*;
+import org.jdesktop.swingbinding.impl.ListBindingManager;
 import javax.swing.event.*;
 import javax.swing.table.*;
 import java.util.HashMap;
