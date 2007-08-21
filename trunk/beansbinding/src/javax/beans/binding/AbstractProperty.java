@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * @author Shannon Hickey
  */
-public abstract class AbstractProperty<S, V> implements Property<S, V> {
+public abstract class AbstractProperty<S, V> extends Property<S, V> {
 
     private final boolean ignoresSource;
     private Object listeners;

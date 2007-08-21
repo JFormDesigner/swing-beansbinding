@@ -12,7 +12,7 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
 /**
  * @author Shannon Hickey
  */
-public final class ObjectProperty<S> implements Property<S, S> {
+public final class ObjectProperty<S> extends Property<S, S> {
 
     public ObjectProperty() {
     }
