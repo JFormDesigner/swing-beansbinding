@@ -5,7 +5,7 @@
 
 package com.sun.java.swing.binding;
 
-import javax.beans.binding.Binding;
+import org.jdesktop.beans.binding.Binding;
 import javax.beans.binding.BindingContext;
 import javax.beans.binding.EventListenerRecorder;
 import javax.beans.binding.TestBean;

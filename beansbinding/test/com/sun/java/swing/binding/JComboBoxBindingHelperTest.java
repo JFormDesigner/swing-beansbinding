@@ -12,7 +12,7 @@ import javax.swing.OLDBINDING.ParameterKeys;
 import junit.framework.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.beans.binding.Binding;
+import org.jdesktop.beans.binding.Binding;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;

@@ -16,7 +16,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.beans.binding.ext.PropertyDelegateFactory;
 import junit.framework.*;
-import static javax.beans.binding.Binding.ValueState.*;
+import static org.jdesktop.beans.binding.Binding.ValueState.*;
+import org.jdesktop.beans.binding.Binding;
+import org.jdesktop.beans.binding.BindingListener;
 
 /**
  *

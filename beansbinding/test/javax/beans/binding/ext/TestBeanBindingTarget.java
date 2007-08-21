@@ -5,8 +5,8 @@
 
 package javax.beans.binding.ext;
 
-import javax.beans.binding.Binding;
-import javax.beans.binding.Binding.BindingController;
+import org.jdesktop.beans.binding.Binding;
+import org.jdesktop.beans.binding.Binding.BindingController;
 
 /**
  *

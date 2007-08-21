@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.beans.binding.*;
+import org.jdesktop.beans.binding.*;
 
 /**
  * @author sky

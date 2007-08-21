@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.binding.ext;
+package org.jdesktop.beans.binding.ext;
 
 /**
  * @author sky
