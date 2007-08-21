@@ -17,8 +17,7 @@ public class BindingGroup {
     private List<BindingListener> listeners;
     private Handler handler;
     private Map<String, Binding> namedBindings;
-    private Binding.AutoUpdateStrategy strategy;
-    private Set<Binding> changedTargets;
+    private Set<Binding> editedTargets;
     private PropertyChangeSupport changeSupport;
 
     public BindingGroup() {}
@@ -28,8 +27,8 @@ public class BindingGroup {
             throw new IllegalArgumentException("Binding must be non-null");
         }
 
-        if (binding.getBindingGroup() != null) {
-            throw new IllegalArgumentException("Binding already part of a BindingGroup");
+        if (bound.contains(binding) || unbound.contains(binding)) {
+            throw new IllegalArgumentException("Group already contains this binding");
         }
 
         String name = binding.getName();
@@ -41,9 +40,8 @@ public class BindingGroup {
             }
         }
 
-        binding.setBindingGroup(this);
         binding.addBindingListener(getHandler());
-        
+
         if (binding.isBound()) {
             bound.add(binding);
         } else {
@@ -70,17 +68,7 @@ public class BindingGroup {
             namedBindings.remove(name);
         }
 
-        binding.setBindingGroup(null);
-    }
-
-    void bindingBound(Binding binding) {
-        unbound.remove(binding);
-        bound.add(binding);
-    }
-
-    void bindingUnbound(Binding binding) {
-        bound.remove(binding);
-        unbound.add(binding);
+        binding.removeBindingListener(getHandler());
     }
 
     private void putNamed(String name, Binding binding) {
@@ -104,14 +92,6 @@ public class BindingGroup {
         list.addAll(unbound);
         return Collections.unmodifiableList(list);
     }
-    
-    public final void setAutoUpdateStrategy(Binding.AutoUpdateStrategy strategy) {
-        this.strategy = strategy;
-    }
-
-    public final Binding.AutoUpdateStrategy getAutoUpdateStrategy() {
-        return strategy;
-    }
 
     public void bind() {
         List<Binding> toBind = new ArrayList<Binding>(unbound);
@@ -127,24 +107,32 @@ public class BindingGroup {
         }
     }
 
-    public final boolean getHasChangedTargetBindings() {
-        return changedTargets != null && changedTargets.size() != 0;
+    public final boolean getHasEditedTargetBindings() {
+        return editedTargets != null && editedTargets.size() != 0;
     }
 
-    private void updateChangedTargets(Binding binding, boolean add) {
+    public Set<Binding> getChangedTargetBindings() {
+        if (editedTargets == null) {
+            return Collections.unmodifiableSet(new HashSet<Binding>());
+        }
+
+        return Collections.unmodifiableSet(editedTargets);
+    }
+
+    private void updateEditedTargets(Binding binding, boolean add) {
         if (add) {
-            if (changedTargets == null) {
-                changedTargets = new LinkedHashSet<Binding>();
+            if (editedTargets == null) {
+                editedTargets = new LinkedHashSet<Binding>();
             }
 
-            if (changedTargets.add(binding) && changedTargets.size() == 1 && changeSupport != null) {
-                changeSupport.firePropertyChange("hasChangedTargetBindings", false, true);
+            if (editedTargets.add(binding) && editedTargets.size() == 1 && changeSupport != null) {
+                changeSupport.firePropertyChange("hasEditedTargetBindings", false, true);
             }
         } else {
-            if (changedTargets == null) {
+            if (editedTargets == null) {
                 return;
-            } else if (changedTargets.remove(binding) && changedTargets.size() == 0 && changeSupport != null) {
-                changeSupport.firePropertyChange("hasChangedTargetBindings", true, false);
+            } else if (editedTargets.remove(binding) && editedTargets.size() == 0 && changeSupport != null) {
+                changeSupport.firePropertyChange("hasEditedTargetBindings", true, false);
             }
         }
     }
@@ -231,14 +219,6 @@ public class BindingGroup {
         return ret;
     }
 
-    public Set<Binding> getChangedTargetBindings() {
-        if (changedTargets == null) {
-            return Collections.unmodifiableSet(new HashSet<Binding>());
-        }
-
-        return Collections.unmodifiableSet(changedTargets);
-    }
-
     private final Handler getHandler() {
         if (handler == null) {
             handler = new Handler();
@@ -259,7 +239,7 @@ public class BindingGroup {
         }
 
         public void synced(Binding binding) {
-            updateChangedTargets(binding, false);
+            updateEditedTargets(binding, false);
 
             if (listeners == null) {
                 return;
@@ -270,26 +250,36 @@ public class BindingGroup {
             }
         }
 
-        public void sourceChanged(Binding binding) {
+        public void sourceEdited(Binding binding) {
             if (listeners == null) {
                 return;
             }
             
             for (BindingListener listener : listeners) {
-                listener.sourceChanged(binding);
+                listener.sourceEdited(binding);
             }
         }
 
-        public void targetChanged(Binding binding) {
-            updateChangedTargets(binding, true);
+        public void targetEdited(Binding binding) {
+            updateEditedTargets(binding, true);
 
             if (listeners == null) {
                 return;
             }
 
             for (BindingListener listener : listeners) {
-                listener.targetChanged(binding);
+                listener.targetEdited(binding);
             }
+        }
+
+        public void bindingBecameBound(Binding binding) {
+            unbound.remove(binding);
+            bound.add(binding);
+        }
+
+        public void bindingBecameUnbound(Binding binding) {
+            bound.remove(binding);
+            unbound.add(binding);
         }
     }
 }
