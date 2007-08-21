@@ -39,7 +39,7 @@ import javax.beans.binding.ext.*;
  * @author Shannon Hickey
  * @author Scott Violet
  */
-public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
+public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
 
     private Property<S, ?> baseProperty;
     private final PropertyPath path;
