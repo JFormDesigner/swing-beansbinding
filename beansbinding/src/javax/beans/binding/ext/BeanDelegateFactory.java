@@ -30,8 +30,8 @@ public final class BeanDelegateFactory {
     private final Set<ClassLoader> classLoaders;
     private final Set<URL> serviceURLs;
 
-    public static Object getPropertyDelegate(Object source, String property) {
-        return INSTANCE.getPropertyDelegate0(source, property);
+    public static Object getBeanDelegate(Object source, String property) {
+        return INSTANCE.getBeanDelegate0(source, property);
     }
 
     public static List<PropertyDescriptor> getPropertyDescriptors(Object source) {
@@ -96,7 +96,7 @@ public final class BeanDelegateFactory {
         }
     }
 
-    public Object getPropertyDelegate0(Object source, String property) {
+    public Object getBeanDelegate0(Object source, String property) {
         if (source == null || property == null) {
             throw new IllegalArgumentException();
         }
@@ -164,7 +164,7 @@ public final class BeanDelegateFactory {
         
     }
     
-    private List<Class<?>> getPropertyDelegateClasses0(Class<?> type) {
+    private List<Class<?>> getBeanDelegateClasses0(Class<?> type) {
         if (type == null) {
             throw new IllegalArgumentException(
                     "Type must be non-null");
