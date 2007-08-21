@@ -8,6 +8,11 @@ package javax.swing.binding;
 import javax.beans.binding.*;
 import java.util.*;
 import javax.swing.*;
+import org.jdesktop.beans.binding.Binding;
+import org.jdesktop.beans.binding.Property;
+import org.jdesktop.beans.binding.PropertyHelper;
+import org.jdesktop.beans.binding.PropertyStateEvent;
+import org.jdesktop.beans.binding.PropertyStateListener;
 
 /**
  * @author Shannon Hickey

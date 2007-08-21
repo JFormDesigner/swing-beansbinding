@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.binding;
+package org.jdesktop.beans.binding;
 
 /**
  * {@code Converter} is responsible for converting a value from one type

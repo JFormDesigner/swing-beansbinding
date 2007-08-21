@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.binding;
+package org.jdesktop.beans.binding;
 
 /**
  * {@code PropertyResolutionExceptions} can be thrown at various points in

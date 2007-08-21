@@ -3,11 +3,11 @@
  * subject to license terms.
  */
 
-package javax.beans.binding;
+package org.jdesktop.beans.binding;
 
 import java.util.List;
 import java.util.ArrayList;
-import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
+import static org.jdesktop.beans.binding.PropertyStateEvent.UNREADABLE;
 
 /**
  * @author Shannon Hickey

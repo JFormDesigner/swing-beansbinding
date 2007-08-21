@@ -5,6 +5,8 @@
 
 package javax.beans.binding;
 
+import org.jdesktop.beans.binding.Binding;
+
 class ValidatorImpl extends BindingValidator {
     private ValidationResult.Action type;
     

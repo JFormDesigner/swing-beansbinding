@@ -6,6 +6,7 @@
 package javax.beans.binding;
 
 import junit.framework.*;
+import org.jdesktop.beans.binding.PropertyPath;
 
 /**
  *

@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.beans.binding;
+package org.jdesktop.beans.binding;
 
 /**
  * {@code Validator} is responsible for validating the value from the target of
