@@ -17,7 +17,7 @@ public class Bindings {
     private Bindings() {}
 
     public static <SS, TS, TV> AutoBinding<SS, SS, TS, TV> createAutoBinding(AutoBinding.UpdateStrategy strategy, SS source, TS targetObject, Property<TS, TV> targetProperty) {
-        return new AutoBinding<SS, SS, TS, TV>(strategy, source, new ObjectProperty<SS>(), targetObject, targetProperty, null);
+        return new AutoBinding<SS, SS, TS, TV>(strategy, source, ObjectProperty.<SS>create(), targetObject, targetProperty, null);
     }
 
     public static <SS, SV, TS, TV> AutoBinding<SS, SV, TS, TV> createAutoBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty) {
@@ -25,7 +25,7 @@ public class Bindings {
     }
 
     public static <SS, TS, TV> AutoBinding<SS, SS, TS, TV> createAutoBinding(AutoBinding.UpdateStrategy strategy, SS source, TS targetObject, Property<TS, TV> targetProperty, String name) {
-        return new AutoBinding<SS, SS, TS, TV>(strategy, source, new ObjectProperty<SS>(), targetObject, targetProperty, name);
+        return new AutoBinding<SS, SS, TS, TV>(strategy, source, ObjectProperty.<SS>create(), targetObject, targetProperty, name);
     }
 
     public static <SS, SV, TS, TV> AutoBinding<SS, SV, TS, TV> createAutoBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty, String name) {

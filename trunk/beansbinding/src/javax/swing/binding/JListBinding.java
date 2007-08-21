@@ -46,7 +46,7 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
 
     public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty) {
         return detailProperty == null ?
-            setDetailBinding(new ObjectProperty<E>(), "AUTO_DETAIL") :
+            setDetailBinding(ObjectProperty.<E>create(), "AUTO_DETAIL") :
             setDetailBinding(detailProperty, null);
     }
 

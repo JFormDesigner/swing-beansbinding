@@ -14,8 +14,11 @@ import static javax.beans.binding.PropertyStateEvent.UNREADABLE;
  */
 public final class ObjectProperty<S> extends Property<S, S> {
 
-    public ObjectProperty() {
+    public static <S> ObjectProperty<S> create() {
+        return new ObjectProperty<S>();
     }
+
+    private ObjectProperty() {}
 
     public Class<? extends S> getWriteType(S source) {
         throw new IllegalStateException("Unwriteable");
