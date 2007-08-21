@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package com.sun.java.swing.binding;
+package org.jdesktrop.swingbinding.adapters;
 
 import com.sun.java.swing.binding.ListBindingManager.ColumnDescription;
 import java.awt.Component;
