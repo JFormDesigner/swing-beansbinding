@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package com.sun.java.util;
+package org.jdesktop.util;
 
 /**
  * Notification types from an {@code ObservableMap}.

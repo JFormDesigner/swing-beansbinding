@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package com.sun.java.util;
+package org.jdesktop.util;
 
 import java.util.Map;
 

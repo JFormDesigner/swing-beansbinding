@@ -16,8 +16,8 @@ import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import com.sun.java.util.ObservableMap;
-import com.sun.java.util.ObservableMapListener;
+import org.jdesktop.util.ObservableMap;
+import org.jdesktop.util.ObservableMapListener;
 import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 

@@ -5,7 +5,7 @@
 
 package javax.beans.binding;
 
-import com.sun.java.util.ObservableCollections;
+import org.jdesktop.util.ObservableCollections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

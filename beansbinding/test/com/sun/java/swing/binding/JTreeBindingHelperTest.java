@@ -9,7 +9,7 @@ import org.jdesktop.beansbinding.Binding;
 import javax.beans.binding.BindingContext;
 import javax.beans.binding.EventListenerRecorder;
 import javax.beans.binding.TestBean;
-import com.sun.java.util.ObservableCollections;
+import org.jdesktop.util.ObservableCollections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
