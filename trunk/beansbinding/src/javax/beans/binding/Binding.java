@@ -514,12 +514,10 @@ public abstract class Binding<SS, SV, TS, TV> {
 
         hasEditedSource = true;
 
-        if (listeners == null) {
-            return;
-        }
-
-        for (BindingListener listener : listeners) {
-            listener.sourceEdited(this);
+        if (listeners != null) {
+            for (BindingListener listener : listeners) {
+                listener.sourceEdited(this);
+            }
         }
 
         sourceChangedImpl(pse);
@@ -535,12 +533,10 @@ public abstract class Binding<SS, SV, TS, TV> {
 
         hasEditedTarget = true;
 
-        if (listeners == null) {
-            return;
-        }
-
-        for (BindingListener listener : listeners) {
-            listener.targetEdited(this);
+        if (listeners != null) {
+            for (BindingListener listener : listeners) {
+                listener.targetEdited(this);
+            }
         }
 
         targetChangedImpl(pse);
