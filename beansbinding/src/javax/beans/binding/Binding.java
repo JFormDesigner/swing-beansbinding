@@ -11,16 +11,13 @@ import java.util.ArrayList;
 /**
  * @author Shannon Hickey
  */
-public class Binding<SS, SV, TS, TV> {
+public abstract class Binding<SS, SV, TS, TV> {
 
     private String name;
     private SS sourceObject;
     private TS targetObject;
     private Property<SS, SV> sourceProperty;
     private Property<TS, TV> targetProperty;
-
-    private boolean bound;
-    private AutoUpdateStrategy strategy;
     private Validator<? super SV> validator;
     private Converter<SV, TV> converter;
     private TV sourceNullValue;
@@ -28,15 +25,10 @@ public class Binding<SS, SV, TS, TV> {
     private TV sourceUnreadableValue;
     private List<BindingListener> listeners;
     private PropertyStateListener psl;
+    private boolean hasEditedSource;
+    private boolean hasEditedTarget;
     private boolean ignoreChange;
-    private BindingGroup group;
-    private boolean hasChangedTarget;
-
-    public enum AutoUpdateStrategy {
-        READ,
-        READ_ONCE,
-        READ_WRITE
-    }
+    private boolean isBound;
 
     public enum SyncFailureType {
         TARGET_UNWRITEABLE,
@@ -188,21 +180,6 @@ public class Binding<SS, SV, TS, TV> {
         this.targetObject = targetObject;
     }
 
-    public final void setAutoUpdateStrategy(AutoUpdateStrategy strategy) {
-        throwIfBound();
-        this.strategy = strategy;
-    }
-
-    public final AutoUpdateStrategy getAutoUpdateStrategy() {
-        AutoUpdateStrategy retVal = strategy;
-
-        if (retVal == null && group != null) {
-            retVal = group.getAutoUpdateStrategy();
-        }
-
-        return retVal == null ? AutoUpdateStrategy.READ_WRITE : retVal;
-    }
-
     public final void setValidator(Validator<? super SV> validator) {
         throwIfBound();
         this.validator = validator;
@@ -330,105 +307,54 @@ public class Binding<SS, SV, TS, TV> {
         return new ValueResult<SV>((SV)value);
     }
 
-    private final void tryRefreshThenSave() {
-        SyncFailure refreshFailure = simpleRefresh();
-        if (refreshFailure == null) {
-            synced();
-        } else {
-            SyncFailure saveFailure = simpleSave();
-            if (saveFailure == null) {
-                synced();
-            } else {
-                syncFailed(refreshFailure, saveFailure);
-            }
-        }
-    }
-
-    private final void trySaveThenRefresh() {
-        SyncFailure saveFailure = simpleSave();
-        if (saveFailure == null) {
-            synced();
-        } else if (saveFailure.getType() == SyncFailureType.CONVERSION_FAILED || saveFailure.getType() == SyncFailureType.VALIDATION_FAILED) {
-            syncFailed(saveFailure);
-        } else {
-            SyncFailure refreshFailure = simpleRefresh();
-            if (refreshFailure == null) {
-                synced();
-            } else {
-                syncFailed(saveFailure, refreshFailure);
-            }
-        }
-    }
-
     public final void bind() {
         throwIfBound();
-        
-        if (sourceProperty == targetProperty && sourceObject == targetObject) {
-            throw new IllegalStateException("can't bind the same property on the same objects");
-        }
-        
-        bound = true;
-        bindImpl();
-        if (group != null) {
-            group.bindingBound(this);
+
+        if (bindImpl()) {
+            isBound = true;
+            psl = new PSL();
+            sourceProperty.addPropertyStateListener(sourceObject, psl);
+            targetProperty.addPropertyStateListener(targetObject, psl);
+            for (BindingListener listener : listeners) {
+                listener.bindingBecameBound(this);
+            }
         }
     }
 
-    protected void bindImpl() {
-        AutoUpdateStrategy strat = getAutoUpdateStrategy();
-        
-        if (strat == AutoUpdateStrategy.READ_ONCE) {
-            refresh();
-            psl = new PSL();
-            sourceProperty.addPropertyStateListener(sourceObject, psl);
-            targetProperty.addPropertyStateListener(targetObject, psl);
-        } else if (strat == AutoUpdateStrategy.READ) {
-            refresh();
-            psl = new PSL();
-            sourceProperty.addPropertyStateListener(sourceObject, psl);
-            targetProperty.addPropertyStateListener(targetObject, psl);
-        } else {
-            tryRefreshThenSave();
-            psl = new PSL();
-            sourceProperty.addPropertyStateListener(sourceObject, psl);
-            targetProperty.addPropertyStateListener(targetObject, psl);
-        }
-    }
+    protected abstract boolean bindImpl();
 
     public final void unbind() {
         throwIfUnbound();
-        bound = false;
-        unbindImpl();
-        if (group != null) {
-            group.bindingUnbound(this);
+
+        if (unbindImpl()) {
+            isBound = false;
+            sourceProperty.removePropertyStateListener(sourceObject, psl);
+            targetProperty.removePropertyStateListener(targetObject, psl);
+            psl = null;
+            for (BindingListener listener : listeners) {
+                listener.bindingBecameUnbound(this);
+            }
         }
     }
-
-    protected void unbindImpl() {
-        sourceProperty.removePropertyStateListener(sourceObject, psl);
-        targetProperty.removePropertyStateListener(targetObject, psl);
-        psl = null;
-    }
+    
+    protected abstract boolean unbindImpl();
 
     public final boolean isBound() {
-        return bound;
+        return isBound;
     }
 
-    public final boolean getHasChangedTarget() {
-        return hasChangedTarget;
-    }
-    
-    void setBindingGroup(BindingGroup group) {
-        this.group = group;
+    public final boolean getHasEditedSource() {
+        return hasEditedSource;
     }
 
-    public final BindingGroup getBindingGroup() {
-        return group;
+    public final boolean getHasEditedTarget() {
+        return hasEditedTarget;
     }
 
-    private final void synced() {
-        hasChangedTarget = false;
+    protected void addingToBindingGroup(BindingGroup group) {
+    }
 
+    protected final void notifySynced() {
         if (listeners == null) {
             return;
         }
@@ -438,7 +364,7 @@ public class Binding<SS, SV, TS, TV> {
         }
     }
 
-    private final void syncFailed(SyncFailure... failures) {
+    protected final void notifySyncFailed(SyncFailure... failures) {
         if (listeners == null) {
             return;
         }
@@ -448,49 +374,25 @@ public class Binding<SS, SV, TS, TV> {
         }
     }
 
-    private final void sourceChanged() {
-        if (listeners == null) {
-            return;
-        }
-
-        for (BindingListener listener : listeners) {
-            listener.sourceChanged(this);
-        }
-    }
-
-    private final void targetChanged() {
-        hasChangedTarget = true;
-
-        if (listeners == null) {
-            return;
-        }
-
-        for (BindingListener listener : listeners) {
-            listener.targetChanged(this);
-        }
-    }
-
     private final SyncFailure notifyAndReturn(SyncFailure failure) {
         if (failure == null) {
-            synced();
+            notifySynced();
         } else {
-            syncFailed(failure);
+            notifySyncFailed(failure);
         }
 
         return failure;
     }
 
+    public final SyncFailure refreshAndNotify() {
+        return notifyAndReturn(refresh());
+    }
+
+    public final SyncFailure saveAndNotify() {
+        return notifyAndReturn(save());
+    }
+
     public final SyncFailure refresh() {
-        return notifyAndReturn(simpleRefresh());
-    }
-
-    public final SyncFailure save() {
-        return notifyAndReturn(simpleSave());
-    }
-
-    protected final SyncFailure simpleRefresh() {
-        throwIfUnbound();
-
         ValueResult<TV> vr = getSourceValueForTarget();
         if (vr.failed()) {
             return vr.getFailure();
@@ -503,12 +405,12 @@ public class Binding<SS, SV, TS, TV> {
             ignoreChange = false;
         }
 
+        hasEditedSource = false;
+        hasEditedTarget = false;
         return null;
     }
-    
-    protected final SyncFailure simpleSave() {
-        throwIfUnbound();
 
+    public final SyncFailure save() {
         ValueResult<SV> vr = getTargetValueForSource();
         if (vr.failed()) {
             return vr.getFailure();
@@ -521,6 +423,8 @@ public class Binding<SS, SV, TS, TV> {
             ignoreChange = false;
         }
 
+        hasEditedSource = false;
+        hasEditedTarget = false;
         return null;
     }
 
@@ -588,13 +492,56 @@ public class Binding<SS, SV, TS, TV> {
                ", sourceProperty=" + sourceProperty +
                ", targetObject=" + targetObject +
                ", targetProperty" + targetProperty +
-               ", autoUpdateStrategy=" + getAutoUpdateStrategy() +
                ", validator=" + validator +
                ", converter=" + converter +
                ", sourceNullValue=" + sourceNullValue +
                ", targetNullValue=" + targetNullValue +
                ", sourceUnreadableValue=" + sourceUnreadableValue +
+               ", hasChangedSource=" + hasEditedSource +
+               ", hasChangedTarget=" + hasEditedTarget +
                ", bound=" + isBound();
+    }
+
+    private void sourceChanged(PropertyStateEvent pse) {
+        if (!pse.getValueChanged()) {
+            return;
+        }
+
+        hasEditedSource = true;
+
+        if (listeners == null) {
+            return;
+        }
+
+        for (BindingListener listener : listeners) {
+            listener.sourceEdited(this);
+        }
+
+        sourceChangedImpl(pse);
+    }
+
+    protected void sourceChangedImpl(PropertyStateEvent pse) {
+    }
+
+    private void targetChanged(PropertyStateEvent pse) {
+        if (!pse.getValueChanged()) {
+            return;
+        }
+
+        hasEditedTarget = true;
+
+        if (listeners == null) {
+            return;
+        }
+
+        for (BindingListener listener : listeners) {
+            listener.targetEdited(this);
+        }
+
+        targetChangedImpl(pse);
+    }
+
+    protected void targetChangedImpl(PropertyStateEvent pse) {
     }
 
     private class PSL implements PropertyStateListener {
@@ -603,46 +550,10 @@ public class Binding<SS, SV, TS, TV> {
                 return;
             }
 
-            AutoUpdateStrategy strat = getAutoUpdateStrategy();
-
             if (pse.getSourceProperty() == sourceProperty && pse.getSourceObject() == sourceObject) {
-                if (strat == AutoUpdateStrategy.READ_ONCE) {
-                    if (pse.getValueChanged()) {
-                        sourceChanged();
-                    }
-                } else if (strat == AutoUpdateStrategy.READ) {
-                    if (pse.getValueChanged()) {
-                        refresh();
-                    }
-                } else if (strat == AutoUpdateStrategy.READ_WRITE) {
-                    if (pse.getValueChanged()) {
-                        tryRefreshThenSave();
-                    } else if (pse.getWriteableChanged() && pse.isWriteable()) {
-                        save();
-                    }
-                }
+                sourceChanged(pse);
             } else {
-                if (strat == AutoUpdateStrategy.READ_ONCE) {
-                    if (pse.getValueChanged()) {
-                        targetChanged();
-                    }
-                } else if (strat == AutoUpdateStrategy.READ) {
-                    if (pse.getWriteableChanged() && pse.isWriteable()) {
-                        if (refresh() == null) {
-                            return;
-                        }
-                    }
-
-                    if (pse.getValueChanged()) {
-                        targetChanged();
-                    }
-                } else if (strat == AutoUpdateStrategy.READ_WRITE) {
-                    if (pse.getWriteableChanged() && pse.isWriteable()) {
-                        tryRefreshThenSave();
-                    } else {
-                        trySaveThenRefresh();
-                    }
-                }
+                targetChanged(pse);
             }
         }
     }
