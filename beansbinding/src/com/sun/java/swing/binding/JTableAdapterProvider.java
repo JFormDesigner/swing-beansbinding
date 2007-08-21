@@ -14,6 +14,7 @@ import javax.swing.table.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * @author Shannon Hickey
@@ -24,6 +25,9 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
     private static final String SELECTED_ELEMENTS_P = "selectedElements";
     private static final String SELECTED_ELEMENT_IA_P = SELECTED_ELEMENT_P + "_IGNORE_ADJUSTING";
     private static final String SELECTED_ELEMENTS_IA_P = SELECTED_ELEMENTS_P + "_IGNORE_ADJUSTING";
+
+    private static boolean IS_JAVA_15 =
+        System.getProperty("java.version").startsWith("1.5");
 
     public final class Adapter extends BeanAdapterBase {
         private JTable table;
@@ -98,6 +102,52 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
         }
     }
 
+    private static int viewToModel(JTable table, int index) {
+        // deal with sorting & filtering in 6.0 and up
+        if (!IS_JAVA_15) {
+            try {
+                java.lang.reflect.Method m = table.getClass().getMethod("convertRowIndexToModel", int.class);
+                index = (Integer)m.invoke(table, index);
+            } catch (NoSuchMethodException nsme) {
+                throw new AssertionError(nsme);
+            } catch (IllegalAccessException iae) {
+                throw new AssertionError(iae);
+            } catch (InvocationTargetException ite) {
+                Throwable cause = ite.getCause();
+                if (cause instanceof Error) {
+                    throw (Error)cause;
+                } else {
+                    throw new RuntimeException(cause);
+                }
+            }
+        }
+
+        return index;
+    }
+
+    private static int modelToView(JTable table, int index) {
+        // deal with sorting & filtering in 6.0 and up
+        if (!IS_JAVA_15) {
+            try {
+                java.lang.reflect.Method m = table.getClass().getMethod("convertRowIndexToView", int.class);
+                index = (Integer)m.invoke(table, index);
+            } catch (NoSuchMethodException nsme) {
+                throw new AssertionError(nsme);
+            } catch (IllegalAccessException iae) {
+                throw new AssertionError(iae);
+            } catch (InvocationTargetException ite) {
+                Throwable cause = ite.getCause();
+                if (cause instanceof Error) {
+                    throw (Error)cause;
+                } else {
+                    throw new RuntimeException(cause);
+                }
+            }
+        }
+
+        return index;
+    }
+    
     private static List<Object> getSelectedElements(JTable table) {
         assert table != null;
 
@@ -137,6 +187,8 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
     }
 
     private static Object getElement(JTable table, int index) {
+        index = viewToModel(table, index);
+        
         TableModel model = table.getModel();
         if (model instanceof ListBindingManager) {
             return ((ListBindingManager)model).getElement(index);
