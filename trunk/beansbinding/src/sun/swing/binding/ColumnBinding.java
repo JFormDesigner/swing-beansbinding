@@ -5,7 +5,7 @@
 
 package sun.swing.binding;
 
-import org.jdesktop.beans.binding.*;
+import org.jdesktop.beansbinding.*;
 
 /**
  * @author Shannon Hickey

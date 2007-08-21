@@ -33,7 +33,6 @@ import java.util.*;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
 import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
-import javax.beans.binding.ext.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 
 /**

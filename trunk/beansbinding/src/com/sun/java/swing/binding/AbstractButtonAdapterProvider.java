@@ -5,7 +5,6 @@
 
 package com.sun.java.swing.binding;
 
-import javax.beans.binding.ext.*;
 import javax.swing.*;
 import java.awt.event.*;
 import java.beans.*;

@@ -5,7 +5,6 @@
 
 package com.sun.java.swing.binding;
 
-import javax.beans.binding.ext.*;
 import java.beans.*;
 import javax.swing.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterProvider;
