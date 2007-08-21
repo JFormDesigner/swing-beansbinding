@@ -5,8 +5,8 @@
 
 package org.jdesktop.swingbinding.impl;
 
-import com.sun.java.util.ObservableList;
-import com.sun.java.util.ObservableListListener;
+import org.jdesktop.util.ObservableList;
+import org.jdesktop.util.ObservableListListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;

@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.beans.binding.ext.TestBeanBindingTarget;
 import javax.beans.binding.ext.TestBeanPropertyDelegate;
-import com.sun.java.util.ObservableCollections;
+import org.jdesktop.util.ObservableCollections;
 import javax.beans.binding.ext.TestBeanPropertyDelegateProvider;
 import java.util.Arrays;
 import java.util.HashMap;

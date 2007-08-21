@@ -5,9 +5,9 @@
 
 package com.sun.java.binding;
 
-import com.sun.java.util.ObservableCollections;
-import com.sun.java.util.ObservableMap;
-import com.sun.java.util.ObservableMapListener;
+import org.jdesktop.util.ObservableCollections;
+import org.jdesktop.util.ObservableMap;
+import org.jdesktop.util.ObservableMapListener;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
