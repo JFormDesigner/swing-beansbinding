@@ -108,8 +108,8 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
 
             for (int i = 0; i < cache.length; i++) {
                 if (cache[i] != null) {
-                    Object delegate = getDelegate(cache[i], path.get(i));
-                    if (delegate == object) {
+                    Object adapter = getAdapter(cache[i], path.get(i));
+                    if (adapter == object) {
                         return i;
                     }
                 }
@@ -618,7 +618,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return object;
         }
 
-        object = getDelegate(object, string);
+        object = getAdapter(object, string);
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         Method readMethod = null;
@@ -636,7 +636,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return ((Map)reader).get(string);
         }
 
-        object = getDelegate(object, string);
+        object = getAdapter(object, string);
         
         return invokeMethod((Method)reader, object);
     }
@@ -669,7 +669,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return Object.class;
         }
 
-        object = getDelegate(object, string);
+        object = getAdapter(object, string);
         
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         if (pd == null || pd.getWriteMethod() == null) {
@@ -687,7 +687,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return object;
         }
 
-        object = getDelegate(object, string);
+        object = getAdapter(object, string);
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
         Method writeMethod = null;
@@ -706,7 +706,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             return;
         }
 
-        object = getDelegate(object, string);
+        object = getAdapter(object, string);
         
         invokeMethod((Method)writer, object, value);
     }
@@ -740,7 +740,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).addObservableMapListener(entry);
             } else if (!(object instanceof Map)) {
-                object = getDelegate(object, property);
+                object = getAdapter(object, property);
                 addPropertyChangeListener(object, entry);
             }
         }
@@ -754,7 +754,7 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
             if (object instanceof ObservableMap) {
                 ((ObservableMap)object).removeObservableMapListener(entry);
             } else if (!(object instanceof Map)) {
-                object = getDelegate(object, property);
+                object = getAdapter(object, property);
                 removePropertyChangeListener(object, entry);
             }
         }
@@ -823,10 +823,10 @@ public final class BeanProperty<S, V> extends AbstractProperty<S, V> {
         return false;
     }
 
-    private Object getDelegate(Object o, String property) {
-        Object delegate = null;
-        delegate = BeanAdapterFactory.getAdapter(o, property);
-        return delegate == null ? o : delegate;
+    private Object getAdapter(Object o, String property) {
+        Object adapter = null;
+        adapter = BeanAdapterFactory.getAdapter(o, property);
+        return adapter == null ? o : adapter;
     }
     
     private static final boolean LOG = false;
