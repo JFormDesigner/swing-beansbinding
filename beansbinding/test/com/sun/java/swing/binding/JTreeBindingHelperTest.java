@@ -9,7 +9,7 @@ import org.jdesktop.beansbinding.Binding;
 import javax.beans.binding.BindingContext;
 import javax.beans.binding.EventListenerRecorder;
 import javax.beans.binding.TestBean;
-import com.sun.java.util.BindingCollections;
+import com.sun.java.util.ObservableCollections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -98,7 +98,7 @@ public class JTreeBindingHelperTest extends TestCase {
         context.bind();
  
         List<TestBean> rootChildren = new ArrayList<TestBean>(1);
-        rootChildren = BindingCollections.observableList(rootChildren);
+        rootChildren = ObservableCollections.observableList(rootChildren);
         rootChildren.add(new TestBean());
         rootChildren.add(new TestBean());
         root.setValue(rootChildren);
@@ -143,7 +143,7 @@ public class JTreeBindingHelperTest extends TestCase {
         assertEquals(0, tm.getChildCount(tm.getRoot()));
         
         List<TestBean> rootChildren = new ArrayList<TestBean>(1);
-        rootChildren = BindingCollections.observableList(rootChildren);
+        rootChildren = ObservableCollections.observableList(rootChildren);
         root.setValue(rootChildren);
         assertRecordEquals("treeStructureChanged", new TreePath(root));
 
@@ -156,7 +156,7 @@ public class JTreeBindingHelperTest extends TestCase {
         assertEquals(0, tm.getChildCount(rootChildren.get(0)));
 
         List<TestBean> subChildren = new ArrayList<TestBean>(1);
-        subChildren = BindingCollections.observableList(subChildren);
+        subChildren = ObservableCollections.observableList(subChildren);
         rootChildren.get(0).setValue(subChildren);
         assertRecordEquals("treeStructureChanged",
                 new TreePath(root).pathByAddingChild(rootChildren.get(0)));
@@ -183,7 +183,7 @@ public class JTreeBindingHelperTest extends TestCase {
         assertEquals(0, tm.getChildCount(tm.getRoot()));
         
         List<TestBean> rootChildren = new ArrayList<TestBean>(1);
-        rootChildren = BindingCollections.observableList(rootChildren);
+        rootChildren = ObservableCollections.observableList(rootChildren);
         root.setValue(rootChildren);
         rootChildren.add(new TestBean());
         assertEquals(1, tm.getChildCount(tm.getRoot()));
@@ -191,7 +191,7 @@ public class JTreeBindingHelperTest extends TestCase {
         assertFalse(tm.isLeaf(rootChildren.get(0)));
 
         List<TestBean> subChildren = new ArrayList<TestBean>(1);
-        subChildren = BindingCollections.observableList(subChildren);
+        subChildren = ObservableCollections.observableList(subChildren);
         rootChildren.get(0).setValue(subChildren);
         subChildren.add(new TestBean());
         assertEquals(1, tm.getChildCount(rootChildren.get(0)));

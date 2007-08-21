@@ -5,7 +5,7 @@
 
 package com.sun.java.swing.binding;
 
-import com.sun.java.util.BindingCollections;
+import com.sun.java.util.ObservableCollections;
 import java.util.ArrayList;
 import javax.beans.binding.TestBean;
 import javax.swing.OLDBINDING.ParameterKeys;
@@ -34,7 +34,7 @@ public class JComboBoxBindingHelperTest extends TestCase {
     }
 
     protected void setUp() throws Exception {
-        elements = BindingCollections.observableList(new ArrayList<TestBean>(3));
+        elements = ObservableCollections.observableList(new ArrayList<TestBean>(3));
         elements.add(new TestBean());
         elements.add(new TestBean());
         elements.add(new TestBean());

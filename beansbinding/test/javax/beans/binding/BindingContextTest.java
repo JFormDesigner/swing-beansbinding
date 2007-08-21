@@ -17,7 +17,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import junit.framework.*;
-import com.sun.java.util.BindingCollections;
+import com.sun.java.util.ObservableCollections;
 import com.sun.java.util.ObservableMap;
 import java.util.HashMap;
 import java.util.HashSet;

@@ -5,7 +5,7 @@
 
 package javax.beans.binding;
 
-import com.sun.java.util.BindingCollections;
+import com.sun.java.util.ObservableCollections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -102,7 +102,7 @@ public class ELPropertyResolverTest extends TestCase {
     
     public void testObservableMap() {
         Map<Object,Object> map = new HashMap<Object, Object>();
-        map = BindingCollections.observableMap(map);
+        map = ObservableCollections.observableMap(map);
         resolver = createResolver(map, "${source.value}");
         resolver.setDelegate(delegate);
         resolver.bind();
