@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.swing.binding;
+package org.jdesktop.swingbinding;
 
 import java.util.*;
 import javax.swing.*;
