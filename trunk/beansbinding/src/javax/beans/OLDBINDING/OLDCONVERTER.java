@@ -36,8 +36,8 @@ import java.math.BigInteger;
  * @author Shannon Hickey
  * @author Jan Stola
  */
-public abstract class BindingConverter {
-
+public abstract class OLDCONVERTER {
+/*
     static final BindingConverter BYTE_TO_STRING_CONVERTER = new ByteToStringConverter();
     static final BindingConverter STRING_TO_BYTE_CONVERTER = new ReversedConverter(BYTE_TO_STRING_CONVERTER);
 
@@ -71,33 +71,7 @@ public abstract class BindingConverter {
     static final BindingConverter BIGDECIMAL_TO_STRING_CONVERTER = new BigDecimalToStringConverter();
     static final BindingConverter STRING_TO_BIGDECIMAL_CONVERTER = new ReversedConverter(BIGDECIMAL_TO_STRING_CONVERTER);
 
-    /**
-     * Converts a value from the source to the target.
-     *
-     * @param value the value to convert
-     * @return the converted value
-     *
-     * @throws ClassCastException if {@code value} is not of a type appropriate
-     *         for this converter
-     * @throws IllegalArgumentException if {@code value} can not be converted
-     */
     public abstract Object sourceToTarget(Object value);
-    
-    /**
-     * Converts a value from the target to source. This implementation
-     * returns the supplied value, without any conversion.
-     * <p>
-     * The default implementation throws {@code IllegalArgumentException}
-     * indicating that the converter cannot convert from target back to
-     * the source.
-     *
-     * @param value the value to convert
-     * @return the converted value
-     *
-     * @throws ClassCastException if {@code value} is not of a type appropriate
-     *         for this converter
-     * @throws IllegalArgumentException if {@code value} can not be converted
-     */
     public Object targetToSource(Object value) {
         throw new IllegalArgumentException("One-way converter.");
     }
@@ -334,4 +308,5 @@ public abstract class BindingConverter {
 
         return null;
     }
+*/
 }
