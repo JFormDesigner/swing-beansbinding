@@ -5,7 +5,6 @@
 
 package javax.swing.binding;
 
-import javax.beans.binding.*;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;

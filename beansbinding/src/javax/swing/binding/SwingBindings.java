@@ -7,7 +7,6 @@ package javax.swing.binding;
 
 import java.util.*;
 import javax.swing.*;
-import javax.beans.binding.*;
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.ObjectProperty;
 import org.jdesktop.beansbinding.Property;

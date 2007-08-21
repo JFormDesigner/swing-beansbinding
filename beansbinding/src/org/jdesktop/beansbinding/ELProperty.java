@@ -18,7 +18,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import com.sun.java.util.ObservableMap;
 import com.sun.java.util.ObservableMapListener;
-import javax.beans.binding.ext.*;
 import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 

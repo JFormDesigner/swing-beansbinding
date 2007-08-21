@@ -7,7 +7,6 @@ package org.jdesktop.beansbinding;
 
 import java.util.*;
 import javax.swing.*;
-import javax.beans.binding.*;
 
 /**
  * @author Shannon Hickey

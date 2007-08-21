@@ -5,7 +5,6 @@
 
 package javax.swing.binding;
 
-import javax.beans.binding.*;
 import java.util.*;
 import javax.swing.*;
 import org.jdesktop.beansbinding.Binding;
