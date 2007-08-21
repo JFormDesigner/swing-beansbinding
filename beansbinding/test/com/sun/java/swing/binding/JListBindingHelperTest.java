@@ -7,7 +7,7 @@ package com.sun.java.swing.binding;
 
 import javax.beans.binding.EventListenerRecorder;
 import javax.beans.binding.TestBean;
-import org.jdesktop.util.ObservableCollections;
+import org.jdesktop.observablecollections.ObservableCollections;
 import java.awt.Component;
 import org.jdesktop.beansbinding.Binding;
 import javax.swing.ListCellRenderer;
