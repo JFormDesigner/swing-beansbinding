@@ -1,8 +1,0 @@
-# Copyright (C) 2007 Sun Microsystems, Inc. All rights reserved. Use is
-# subject to license terms.
-
-com.sun.java.swing.binding.AbstractButtonAdapterProvider
-com.sun.java.swing.binding.JTextComponentAdapterProvider
-com.sun.java.swing.binding.JListAdapterProvider
-com.sun.java.swing.binding.JTableAdapterProvider
-com.sun.java.swing.binding.JSliderAdapterProvider
