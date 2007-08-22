@@ -20,17 +20,17 @@ import org.jdesktop.el.VariableMapper;
 import org.jdesktop.el.impl.MethodExpressionImpl;
 import org.jdesktop.el.impl.MethodExpressionLiteral;
 import org.jdesktop.el.impl.ValueExpressionImpl;
-import com.sun.el.parser.AstCompositeExpression;
-import com.sun.el.parser.AstDeferredExpression;
-import com.sun.el.parser.AstDynamicExpression;
-import com.sun.el.parser.AstFunction;
-import com.sun.el.parser.AstIdentifier;
-import com.sun.el.parser.AstLiteralExpression;
-import com.sun.el.parser.AstValue;
-import com.sun.el.parser.ELParser;
-import com.sun.el.parser.Node;
-import com.sun.el.parser.NodeVisitor;
-import com.sun.el.parser.ParseException;
+import org.jdesktop.el.impl.parser.AstCompositeExpression;
+import org.jdesktop.el.impl.parser.AstDeferredExpression;
+import org.jdesktop.el.impl.parser.AstDynamicExpression;
+import org.jdesktop.el.impl.parser.AstFunction;
+import org.jdesktop.el.impl.parser.AstIdentifier;
+import org.jdesktop.el.impl.parser.AstLiteralExpression;
+import org.jdesktop.el.impl.parser.AstValue;
+import org.jdesktop.el.impl.parser.ELParser;
+import org.jdesktop.el.impl.parser.Node;
+import org.jdesktop.el.impl.parser.NodeVisitor;
+import org.jdesktop.el.impl.parser.ParseException;
 import com.sun.el.util.MessageFactory;
 
 /**

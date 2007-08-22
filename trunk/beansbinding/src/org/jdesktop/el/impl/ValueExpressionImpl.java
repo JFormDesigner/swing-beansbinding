@@ -26,8 +26,8 @@ import org.jdesktop.el.VariableMapper;
 import org.jdesktop.el.impl.lang.ELSupport;
 import org.jdesktop.el.impl.lang.EvaluationContext;
 import org.jdesktop.el.impl.lang.ExpressionBuilder;
-import com.sun.el.parser.AstLiteralExpression;
-import com.sun.el.parser.Node;
+import org.jdesktop.el.impl.parser.AstLiteralExpression;
+import org.jdesktop.el.impl.parser.Node;
 import com.sun.el.util.ReflectionUtil;
 
 /**
