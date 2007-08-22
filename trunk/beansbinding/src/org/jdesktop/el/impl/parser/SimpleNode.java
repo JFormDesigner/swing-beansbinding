@@ -12,7 +12,7 @@ import org.jdesktop.el.PropertyNotWritableException;
 
 import org.jdesktop.el.impl.lang.ELSupport;
 import org.jdesktop.el.impl.lang.EvaluationContext;
-import com.sun.el.util.MessageFactory;
+import org.jdesktop.el.impl.util.MessageFactory;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]

@@ -28,7 +28,7 @@ import org.jdesktop.el.impl.lang.EvaluationContext;
 import org.jdesktop.el.impl.lang.ExpressionBuilder;
 import org.jdesktop.el.impl.parser.AstLiteralExpression;
 import org.jdesktop.el.impl.parser.Node;
-import com.sun.el.util.ReflectionUtil;
+import org.jdesktop.el.impl.util.ReflectionUtil;
 
 /**
  * An <code>Expression</code> that can get or set a value.

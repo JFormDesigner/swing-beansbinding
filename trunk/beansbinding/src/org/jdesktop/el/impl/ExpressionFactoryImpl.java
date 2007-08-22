@@ -12,7 +12,7 @@ import org.jdesktop.el.ValueExpression;
 
 import org.jdesktop.el.impl.lang.ExpressionBuilder;
 import org.jdesktop.el.impl.lang.ELSupport;
-import com.sun.el.util.MessageFactory;
+import org.jdesktop.el.impl.util.MessageFactory;
 
 /**
  * @see javax.el.ExpressionFactory

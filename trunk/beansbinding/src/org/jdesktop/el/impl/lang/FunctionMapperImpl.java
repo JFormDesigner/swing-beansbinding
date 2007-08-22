@@ -15,7 +15,7 @@ import java.util.Map;
 
 import org.jdesktop.el.FunctionMapper;
 
-import com.sun.el.util.ReflectionUtil;
+import org.jdesktop.el.impl.util.ReflectionUtil;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]
