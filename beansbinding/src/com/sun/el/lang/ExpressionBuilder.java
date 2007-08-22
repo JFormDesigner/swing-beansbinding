@@ -17,9 +17,9 @@ import org.jdesktop.el.MethodExpression;
 import org.jdesktop.el.ValueExpression;
 import org.jdesktop.el.VariableMapper;
 
-import com.sun.el.MethodExpressionImpl;
-import com.sun.el.MethodExpressionLiteral;
-import com.sun.el.ValueExpressionImpl;
+import org.jdesktop.el.impl.MethodExpressionImpl;
+import org.jdesktop.el.impl.MethodExpressionLiteral;
+import org.jdesktop.el.impl.ValueExpressionImpl;
 import com.sun.el.parser.AstCompositeExpression;
 import com.sun.el.parser.AstDeferredExpression;
 import com.sun.el.parser.AstDynamicExpression;

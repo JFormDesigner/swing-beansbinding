@@ -5,7 +5,7 @@
 
 package org.jdesktop.beansbinding;
 
-import com.sun.el.ExpressionFactoryImpl;
+import org.jdesktop.el.impl.ExpressionFactoryImpl;
 import org.jdesktop.el.ELContext;
 import org.jdesktop.el.ELException;
 import org.jdesktop.el.Expression;
