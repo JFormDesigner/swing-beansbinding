@@ -19,6 +19,9 @@ import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.PropertyStateListener;
 import org.jdesktop.swingbinding.impl.ColumnBinding;
 import org.jdesktop.swingbinding.impl.ListBindingManager;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
 
 /**
  * @author Shannon Hickey
@@ -146,7 +149,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public Object getValue(Object source) {
-            if (binding.editingObjectSet) {
+            if (binding.isBound()) {
                 return binding.editingObject;
             }
 
@@ -158,7 +161,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public boolean isReadable(Object source) {
-            return binding.editingObjectSet;
+            return binding.isBound();
         }
 
         public boolean isWriteable(Object source) {
@@ -182,7 +185,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         private boolean editableSet;
         private String columnName;
         private Object editingObject;
-        private boolean editingObjectSet;
+        private boolean useEditedValue;
 
         public TableColumnBinding(int column, Property<E, ?> columnProperty, String name) {
             super(column, columnProperty, new TableColumnProperty(), name);
@@ -191,12 +194,10 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
 
         private void setEditingObject(Object editingObject) {
             this.editingObject = editingObject;
-            editingObjectSet = true;
         }
         
         private void clearEditingObject() {
             editingObject = null;
-            editingObjectSet = false;
         }
 
         private void adjustColumn(int newCol) {
@@ -272,6 +273,17 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
                 setManaged(true);
             }
         }
+
+        public void reshowEditor(boolean useEditedValue) {
+            System.out.println("setting to true");
+            this.useEditedValue = useEditedValue;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    table.editCellAt(0, 0, null);
+                    compositeRequestFocus(table.getEditorComponent());
+                }
+            });
+        }
     }
 
     private class Handler implements PropertyStateListener {
@@ -312,6 +324,16 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public Object getValueAt(int rowIndex, int columnIndex) {
+            TableColumnBinding tcb = JTableBinding.this.getColumnBinding(columnIndex);
+            if (tcb.useEditedValue) {
+                System.out.println("setting to false");
+                tcb.useEditedValue = false;
+                Object retVal = tcb.editingObject;
+                tcb.editingObject = null;
+                System.out.println("ERE");
+                return retVal;
+            }
+
             return valueAt(rowIndex, columnIndex);
         }
 
@@ -323,7 +345,6 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             SyncFailure failure = tcb.saveInternal();
             tcb.unbindInternal();
             tcb.setSourceObjectInternal(null);
-            tcb.clearEditingObject();
             if (failure != null) {
                 BindingListener[] listeners = JTableBinding.this.getBindingListeners();
                 for (BindingListener listener : listeners) {
@@ -392,5 +413,34 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         public int getColumnCount() {
             return columnCount();
         }
+    }
+
+    private static Component compositeRequestFocus(Component component) {
+        if (component instanceof Container) {
+            Container container = (Container)component;
+            if (container.isFocusCycleRoot()) {
+                FocusTraversalPolicy policy = container.getFocusTraversalPolicy();
+                Component comp = policy.getDefaultComponent(container);
+                if (comp!=null) {
+                    comp.requestFocus();
+                    return comp;
+                }
+            }
+            Container rootAncestor = container.getFocusCycleRootAncestor();
+            if (rootAncestor!=null) {
+                FocusTraversalPolicy policy = rootAncestor.getFocusTraversalPolicy();
+                Component comp = policy.getComponentAfter(rootAncestor, container);
+                
+                if (comp!=null && SwingUtilities.isDescendingFrom(comp, container)) {
+                    comp.requestFocus();
+                    return comp;
+                }
+            }
+        }
+        if (component.isFocusable()) {
+            component.requestFocus();
+            return component;
+        }
+        return null;
     }
 }
