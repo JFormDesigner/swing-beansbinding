@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package com.sun.el;
+package org.jdesktop.el.impl;
 
 import java.io.Externalizable;
 import java.io.IOException;
