@@ -35,18 +35,18 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         ep = (ElementsProperty<TS, JTable>)getTargetProperty();
     }
 
-    protected boolean bindImpl() {
+    protected void bindImpl() {
         model = new BindingTableModel();
         ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
-        return super.bindImpl();
+        super.bindImpl();
     }
 
-    protected boolean unbindImpl() {
+    protected void unbindImpl() {
         ep.uninstallBinding();
         ep.removePropertyStateListener(null, handler);
         model = null;
-        return super.unbindImpl();
+        super.unbindImpl();
     }
     
     public void setEditable(boolean editable) {
@@ -218,6 +218,24 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
 
         public boolean isEditableSet() {
             return editableSet;
+        }
+
+        private void bindInternal() {
+            setManaged(false);
+            try {
+                bind();
+            } finally {
+                setManaged(true);
+            }
+        }
+        
+        private void unbindInternal() {
+            setManaged(false);
+            try {
+                unbind();
+            } finally {
+                setManaged(true);
+            }
         }
     }
 
