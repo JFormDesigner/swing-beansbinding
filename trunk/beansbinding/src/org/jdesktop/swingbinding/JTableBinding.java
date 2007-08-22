@@ -52,7 +52,6 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
     }
     
     public void setEditable(boolean editable) {
-        throwIfBound();
         this.editable = editable;
         this.editableSet = true;
     }
@@ -206,9 +205,8 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         public String getColumnName() {
             return columnName == null ? getSourceProperty().toString() : columnName;
         }
-        
+
         public TableColumnBinding setEditable(boolean editable) {
-            JTableBinding.this.throwIfBound();
             this.editable = editable;
             this.editableSet = true;
             return this;
@@ -316,7 +314,16 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return false;
+            if (JTableBinding.this.isEditableSet() && !JTableBinding.this.isEditable()) {
+                return false;
+            }
+
+            TableColumnBinding binding = JTableBinding.this.getColumnBinding(columnIndex);
+            if (binding.isEditableSet() && !binding.isEditable()) {
+                return false;
+            }
+
+            return binding.getSourceProperty().isWriteable(getElement(rowIndex));
         }
 
         public void addTableModelListener(TableModelListener l) {
