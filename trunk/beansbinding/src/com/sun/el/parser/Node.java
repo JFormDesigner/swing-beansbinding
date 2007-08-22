@@ -9,7 +9,7 @@ package com.sun.el.parser;
 import org.jdesktop.el.ELException;
 import org.jdesktop.el.MethodInfo;
 
-import com.sun.el.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.EvaluationContext;
 
 /* All AST nodes must implement this interface.  It provides basic
    machinery for constructing the parent and child relationships

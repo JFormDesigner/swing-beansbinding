@@ -10,8 +10,8 @@ import org.jdesktop.el.ExpressionFactory;
 import org.jdesktop.el.MethodExpression;
 import org.jdesktop.el.ValueExpression;
 
-import com.sun.el.lang.ExpressionBuilder;
-import com.sun.el.lang.ELSupport;
+import org.jdesktop.el.impl.lang.ExpressionBuilder;
+import org.jdesktop.el.impl.lang.ELSupport;
 import com.sun.el.util.MessageFactory;
 
 /**

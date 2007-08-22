@@ -17,7 +17,7 @@ import org.jdesktop.el.ELException;
 import org.jdesktop.el.MethodNotFoundException;
 import org.jdesktop.el.PropertyNotFoundException;
 
-import com.sun.el.lang.ELSupport;
+import org.jdesktop.el.impl.lang.ELSupport;
 
 /**
  * Utilities for Managing Serialization and Reflection

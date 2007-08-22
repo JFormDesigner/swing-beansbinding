@@ -6,8 +6,8 @@
 package el;
 
 import org.jdesktop.el.impl.ExpressionFactoryImpl;
-import com.sun.el.lang.EvaluationContext;
-import com.sun.el.lang.VariableMapperImpl;
+import org.jdesktop.el.impl.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.VariableMapperImpl;
 import java.lang.reflect.Method;
 import java.text.NumberFormat;
 import java.util.ArrayList;

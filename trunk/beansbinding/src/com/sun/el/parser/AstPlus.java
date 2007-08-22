@@ -9,8 +9,8 @@ package com.sun.el.parser;
 import org.jdesktop.el.ELContext;
 import org.jdesktop.el.ELException;
 
-import com.sun.el.lang.ELArithmetic;
-import com.sun.el.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.ELArithmetic;
+import org.jdesktop.el.impl.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]

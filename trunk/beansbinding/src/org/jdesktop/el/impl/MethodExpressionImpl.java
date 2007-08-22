@@ -22,9 +22,9 @@ import org.jdesktop.el.MethodNotFoundException;
 import org.jdesktop.el.PropertyNotFoundException;
 import org.jdesktop.el.VariableMapper;
 
-import com.sun.el.lang.ELSupport;
-import com.sun.el.lang.EvaluationContext;
-import com.sun.el.lang.ExpressionBuilder;
+import org.jdesktop.el.impl.lang.ELSupport;
+import org.jdesktop.el.impl.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.ExpressionBuilder;
 import com.sun.el.parser.Node;
 import com.sun.el.util.ReflectionUtil;
 

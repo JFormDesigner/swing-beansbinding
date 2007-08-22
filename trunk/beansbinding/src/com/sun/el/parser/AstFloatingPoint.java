@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 
 import org.jdesktop.el.ELException;
 
-import com.sun.el.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]

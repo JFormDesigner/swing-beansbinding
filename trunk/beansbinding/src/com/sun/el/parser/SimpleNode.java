@@ -10,8 +10,8 @@ import org.jdesktop.el.ELException;
 import org.jdesktop.el.MethodInfo;
 import org.jdesktop.el.PropertyNotWritableException;
 
-import com.sun.el.lang.ELSupport;
-import com.sun.el.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.ELSupport;
+import org.jdesktop.el.impl.lang.EvaluationContext;
 import com.sun.el.util.MessageFactory;
 
 /**
