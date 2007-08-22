@@ -101,7 +101,7 @@ public abstract class ListBindingManager implements ObservableListListener {
             reusableBinding.setBaseAndSource(cb, elements.get(row));
             return reusableBinding.getSourceValueForTarget().getValue();
         } finally {
-            reusableBinding.setSourceObject(null);
+            reusableBinding.clearSourceObject();
         }
     }
 
@@ -241,9 +241,23 @@ public abstract class ListBindingManager implements ObservableListListener {
         }
 
         public void setBaseAndSource(ColumnBinding base, Object source) {
-            this.setSourceProperty(base.getSourceProperty());
-            this.setTargetProperty(base.getTargetProperty());
-            this.setSourceObject(source);
+            try {
+                setManaged(false);
+                this.setSourceProperty(base.getSourceProperty());
+                this.setTargetProperty(base.getTargetProperty());
+                this.setSourceObject(source);
+            } finally {
+                setManaged(true);
+            }
+        }
+        
+        private void clearSourceObject() {
+            try {
+                setManaged(false);
+                setSourceObject(null);
+            } finally {
+                setManaged(true);
+            }
         }
     }
 

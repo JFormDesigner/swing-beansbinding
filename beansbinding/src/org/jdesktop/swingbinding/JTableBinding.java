@@ -10,6 +10,8 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.Binding.*;
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.Property;
 import org.jdesktop.beansbinding.PropertyStateEvent;
@@ -143,6 +145,10 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public Object getValue(Object source) {
+            if (binding.editingObjectSet) {
+                return binding.editingObject;
+            }
+
             throw new UnsupportedOperationException();
         }
 
@@ -151,7 +157,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public boolean isReadable(Object source) {
-            throw new UnsupportedOperationException();
+            return binding.editingObjectSet;
         }
 
         public boolean isWriteable(Object source) {
@@ -159,15 +165,13 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public void addPropertyStateListener(Object source, PropertyStateListener listener) {
-            throw new UnsupportedOperationException();
         }
 
         public void removePropertyStateListener(Object source, PropertyStateListener listener) {
-            throw new UnsupportedOperationException();
         }
 
         public PropertyStateListener[] getPropertyStateListeners(Object source) {
-            throw new UnsupportedOperationException();
+            return new PropertyStateListener[0];
         }
     }
 
@@ -176,10 +180,22 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         private boolean editable;
         private boolean editableSet;
         private String columnName;
+        private Object editingObject;
+        private boolean editingObjectSet;
 
         public TableColumnBinding(int column, Property<E, ?> columnProperty, String name) {
             super(column, columnProperty, new TableColumnProperty(), name);
             ((TableColumnProperty)getTargetProperty()).binding = this;
+        }
+
+        private void setEditingObject(Object editingObject) {
+            this.editingObject = editingObject;
+            editingObjectSet = true;
+        }
+        
+        private void clearEditingObject() {
+            editingObject = null;
+            editingObjectSet = false;
         }
 
         private void adjustColumn(int newCol) {
@@ -237,6 +253,33 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
                 setManaged(true);
             }
         }
+
+        private void saveInternal() {
+            setManaged(false);
+            try {
+                save();
+            } finally {
+                setManaged(true);
+            }
+        }
+        
+        private void refreshInternal() {
+            setManaged(false);
+            try {
+                refresh();
+            } finally {
+                setManaged(true);
+            }
+        }
+
+        private void setSourceObjectInternal(Object object) {
+            setManaged(false);
+            try {
+                setSourceObject(object);
+            } finally {
+                setManaged(true);
+            }
+        }
     }
 
     private class Handler implements PropertyStateListener {
@@ -281,6 +324,14 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
+            TableColumnBinding tcb = JTableBinding.this.getColumnBinding(columnIndex);
+            tcb.setSourceObjectInternal(this.getElement(rowIndex));
+            tcb.setEditingObject(value);
+            tcb.bindInternal();
+            tcb.saveInternal();
+            tcb.unbindInternal();
+            tcb.setSourceObjectInternal(null);
+            tcb.clearEditingObject();
         }
 
         public Class<?> getColumnClass(int columnIndex) {

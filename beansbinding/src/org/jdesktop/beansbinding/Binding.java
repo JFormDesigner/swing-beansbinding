@@ -152,6 +152,7 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     protected final void setSourceProperty(Property<SS, SV> sourceProperty) {
         throwIfBound();
+        throwIfManaged();
         if (sourceProperty == null) {
             throw new IllegalArgumentException("source property can't be null");
         }
@@ -160,6 +161,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     
     protected final void setTargetProperty(Property<TS, TV> targetProperty) {
         throwIfBound();
+        throwIfManaged();
         if (targetProperty == null) {
             throw new IllegalArgumentException("source property can't be null");
         }
@@ -188,11 +190,13 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     public final void setSourceObject(SS sourceObject) {
         throwIfBound();
+        throwIfManaged();
         this.sourceObject = sourceObject;
     }
 
     public final void setTargetObject(TS targetObject) {
         throwIfBound();
+        throwIfManaged();
         this.targetObject = targetObject;
     }
 
@@ -325,10 +329,7 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     public final void bind() {
         throwIfBound();
-
-        if (isManaged) {
-            throw new IllegalStateException("can't bind a managed binding");
-        }
+        throwIfManaged();
 
         hasEditedSource = false;
         hasEditedTarget = false;
@@ -351,10 +352,7 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     public final void unbind() {
         throwIfUnbound();
-
-        if (isManaged) {
-            throw new IllegalStateException("can't unbind a managed binding");
-        }
+        throwIfManaged();
 
         unbindImpl();
 
@@ -435,6 +433,7 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     public final SyncFailure refresh() {
         throwIfUnbound();
+        throwIfManaged();
 
         ValueResult<TV> vr = getSourceValueForTarget();
         if (vr.failed()) {
@@ -455,6 +454,7 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     public final SyncFailure save() {
         throwIfUnbound();
+        throwIfManaged();
 
         ValueResult<SV> vr = getTargetValueForSource();
         if (vr.failed()) {
@@ -515,6 +515,12 @@ public abstract class Binding<SS, SV, TS, TV> {
         return converter.convertReverse(value);
     }
 
+    protected final void throwIfManaged() {
+        if (isManaged()) {
+            throw new IllegalStateException("Can not call this method on a managed binding");
+        }
+    }
+    
     protected final void throwIfBound() {
         if (isBound()) {
             throw new IllegalStateException("Can not call this method on a bound binding");
