@@ -151,6 +151,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         this.name = name;
     }
 
+    protected final void setSourceProperty(Property<SS, SV> sourceProperty) {
+        throwIfBound();
+        this.sourceProperty = sourceProperty;
+    }
+    
+    protected final void setTargetProperty(Property<TS, TV> targetProperty) {
+        throwIfBound();
+        this.targetProperty = targetProperty;
+    }
+    
     public final String getName() {
         return name;
     }
