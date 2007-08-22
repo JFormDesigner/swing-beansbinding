@@ -11,6 +11,7 @@ import javax.swing.event.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.BindingListener;
 import org.jdesktop.beansbinding.Binding.*;
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.Property;
@@ -254,24 +255,15 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             }
         }
 
-        private void saveInternal() {
+        private SyncFailure saveInternal() {
             setManaged(false);
             try {
-                save();
+                return save();
             } finally {
                 setManaged(true);
             }
         }
         
-        private void refreshInternal() {
-            setManaged(false);
-            try {
-                refresh();
-            } finally {
-                setManaged(true);
-            }
-        }
-
         private void setSourceObjectInternal(Object object) {
             setManaged(false);
             try {
@@ -328,10 +320,16 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             tcb.setSourceObjectInternal(this.getElement(rowIndex));
             tcb.setEditingObject(value);
             tcb.bindInternal();
-            tcb.saveInternal();
+            SyncFailure failure = tcb.saveInternal();
             tcb.unbindInternal();
             tcb.setSourceObjectInternal(null);
             tcb.clearEditingObject();
+            if (failure != null) {
+                BindingListener[] listeners = JTableBinding.this.getBindingListeners();
+                for (BindingListener listener : listeners) {
+                    listener.syncFailed(tcb, failure);
+                }
+            }
         }
 
         public Class<?> getColumnClass(int columnIndex) {
