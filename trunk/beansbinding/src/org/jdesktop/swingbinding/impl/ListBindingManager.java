@@ -19,11 +19,11 @@ import org.jdesktop.beansbinding.*;
  */
 public abstract class ListBindingManager implements ObservableListListener {
     private ColumnBinding[] bindings;
+    private ReusableColumnBinding reusableBinding;
     private List<?> elements;
     private List<ColumnDescriptionManager> managers;
 
-    private List<ColumnDescriptionManager> createManagers() {
-        bindings = getColBindings();
+    private List<ColumnDescriptionManager> createManagers(ColumnBinding[] bindings) {
         List<ColumnDescriptionManager> managers = new ArrayList<ColumnDescriptionManager>(bindings.length);
 
         for (ColumnBinding binding : bindings) {
@@ -34,19 +34,22 @@ public abstract class ListBindingManager implements ObservableListListener {
     }
 
     protected abstract ColumnBinding[] getColBindings();
-    
+
     public final void setElements(List<?> elements) {
         if (this.elements != null) {
             if (this.elements instanceof ObservableList) {
                 ((ObservableList)this.elements).removeObservableListListener(this);
             }
 
-            for (ColumnDescriptionManager manager : managers) {
-                manager.stopListening();
+            if (managers != null) {
+                for (ColumnDescriptionManager manager : managers) {
+                    manager.stopListening();
+                }
             }
         }
 
         managers = null;
+        reusableBinding = null;
         this.elements = (elements == null) ? Collections.emptyList() : elements;
 
         boolean addListeners = false;
@@ -58,8 +61,13 @@ public abstract class ListBindingManager implements ObservableListListener {
             addListeners = true;
         }
 
+        bindings = getColBindings();
+        if (bindings.length != 0) {
+            reusableBinding = new ReusableColumnBinding(bindings[0]);
+        }
+
         if (addListeners) {
-            managers = createManagers();
+            managers = createManagers(getColBindings());
             for (ColumnDescriptionManager manager : managers) {
                 manager.startListening();
             }
@@ -89,8 +97,12 @@ public abstract class ListBindingManager implements ObservableListListener {
         }
 
         ColumnBinding cb = bindings[column];
-        cb.setSourceObject(elements.get(row));
-        return cb.getSourceValueForTarget().getValue();
+        try {
+            reusableBinding.setBaseAndSource(cb, elements.get(row));
+            return reusableBinding.getSourceValueForTarget().getValue();
+        } finally {
+            reusableBinding.setSourceObject(null);
+        }
     }
 
     public final int columnCount() {
@@ -222,4 +234,17 @@ public abstract class ListBindingManager implements ObservableListListener {
             }
         }
     }
+
+    private final class ReusableColumnBinding extends ColumnBinding {
+        public ReusableColumnBinding(ColumnBinding base) {
+            super(0, base.getSourceProperty(), base.getTargetProperty(), null);
+        }
+
+        public void setBaseAndSource(ColumnBinding base, Object source) {
+            this.setSourceProperty(base.getSourceProperty());
+            this.setTargetProperty(base.getTargetProperty());
+            this.setSourceObject(source);
+        }
+    }
+
 }
