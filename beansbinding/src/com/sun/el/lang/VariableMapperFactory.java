@@ -5,8 +5,8 @@
 
 package com.sun.el.lang;
 
-import javax.el.ValueExpression;
-import javax.el.VariableMapper;
+import org.jdesktop.el.ValueExpression;
+import org.jdesktop.el.VariableMapper;
 
 public class VariableMapperFactory extends VariableMapper {
 

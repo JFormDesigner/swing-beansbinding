@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.el;
+package org.jdesktop.el;
 
 import java.util.ArrayList;
 import java.util.Iterator;

@@ -6,12 +6,12 @@
 package org.jdesktop.beansbinding;
 
 import com.sun.el.ExpressionFactoryImpl;
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.Expression;
-import javax.el.Expression.ResolvedProperty;
-import javax.el.Expression.Result;
-import javax.el.ValueExpression;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.Expression;
+import org.jdesktop.el.Expression.ResolvedProperty;
+import org.jdesktop.el.Expression.Result;
+import org.jdesktop.el.ValueExpression;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -7,13 +7,13 @@ package com.sun.el;
 
 import java.io.Externalizable;
 import java.io.IOException;
-import javax.el.ELContext;
-import javax.el.PropertyNotWritableException;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.PropertyNotWritableException;
 
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import javax.el.ValueExpression;
+import org.jdesktop.el.ValueExpression;
 
 import com.sun.el.lang.ELSupport;
 import com.sun.el.util.MessageFactory;

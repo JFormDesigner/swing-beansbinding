@@ -8,7 +8,7 @@ package com.sun.el.parser;
 
 import java.math.BigDecimal;
 
-import javax.el.ELException;
+import org.jdesktop.el.ELException;
 
 import com.sun.el.lang.EvaluationContext;
 

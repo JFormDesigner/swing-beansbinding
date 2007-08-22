@@ -10,17 +10,17 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.ELResolver;
-import javax.el.Expression;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
-import javax.el.MethodExpression;
-import javax.el.MethodInfo;
-import javax.el.MethodNotFoundException;
-import javax.el.PropertyNotFoundException;
-import javax.el.VariableMapper;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.ELResolver;
+import org.jdesktop.el.Expression;
+import org.jdesktop.el.ExpressionFactory;
+import org.jdesktop.el.FunctionMapper;
+import org.jdesktop.el.MethodExpression;
+import org.jdesktop.el.MethodInfo;
+import org.jdesktop.el.MethodNotFoundException;
+import org.jdesktop.el.PropertyNotFoundException;
+import org.jdesktop.el.VariableMapper;
 
 import com.sun.el.lang.ELSupport;
 import com.sun.el.lang.EvaluationContext;

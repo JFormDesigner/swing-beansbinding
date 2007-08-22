@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.el;
+package org.jdesktop.el;
 
 /**
  * An <code>Expression</code> that refers to a method on an object.

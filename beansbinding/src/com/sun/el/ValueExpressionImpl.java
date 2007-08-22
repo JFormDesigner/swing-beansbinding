@@ -12,16 +12,16 @@ import java.io.ObjectOutput;
 import java.util.List;
 import java.util.Collections;
 
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.ELResolver;
-import javax.el.Expression;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
-import javax.el.PropertyNotFoundException;
-import javax.el.PropertyNotWritableException;
-import javax.el.ValueExpression;
-import javax.el.VariableMapper;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.ELResolver;
+import org.jdesktop.el.Expression;
+import org.jdesktop.el.ExpressionFactory;
+import org.jdesktop.el.FunctionMapper;
+import org.jdesktop.el.PropertyNotFoundException;
+import org.jdesktop.el.PropertyNotWritableException;
+import org.jdesktop.el.ValueExpression;
+import org.jdesktop.el.VariableMapper;
 
 import com.sun.el.lang.ELSupport;
 import com.sun.el.lang.EvaluationContext;

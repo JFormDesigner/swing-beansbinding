@@ -13,14 +13,14 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.el.BeanELResolver;
-import javax.el.CompositeELResolver;
-import javax.el.ELContext;
-import javax.el.ELResolver;
-import javax.el.Expression;
-import javax.el.FunctionMapper;
-import javax.el.ValueExpression;
-import javax.el.VariableMapper;
+import org.jdesktop.el.BeanELResolver;
+import org.jdesktop.el.CompositeELResolver;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELResolver;
+import org.jdesktop.el.Expression;
+import org.jdesktop.el.FunctionMapper;
+import org.jdesktop.el.ValueExpression;
+import org.jdesktop.el.VariableMapper;
 import junit.framework.*;
 
 /**

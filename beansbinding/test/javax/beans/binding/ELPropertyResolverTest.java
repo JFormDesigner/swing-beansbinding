@@ -15,10 +15,10 @@ import java.util.Map;
 import javax.beans.binding.ext.PropertyDelegateFactory;
 import javax.beans.binding.ext.TestBeanPropertyDelegate;
 import javax.beans.binding.ext.TestBeanPropertyDelegateProvider;
-import javax.el.ELContext;
-import javax.el.ELResolver;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELResolver;
 import junit.framework.*;
-import static javax.el.Expression.Result.Type.*;
+import static org.jdesktop.el.Expression.Result.Type.*;
 
 /**
  *

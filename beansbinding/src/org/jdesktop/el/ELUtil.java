@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.el;
+package org.jdesktop.el;
 
 import java.text.MessageFormat;
 import java.util.HashMap;

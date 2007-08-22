@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.el;
+package org.jdesktop.el;
 
 /**
  * Thrown when a method could not be found while evaluating a

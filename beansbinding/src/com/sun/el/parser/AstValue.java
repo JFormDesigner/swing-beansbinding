@@ -9,11 +9,11 @@ package com.sun.el.parser;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.ELResolver;
-import javax.el.MethodInfo;
-import javax.el.PropertyNotFoundException;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.ELResolver;
+import org.jdesktop.el.MethodInfo;
+import org.jdesktop.el.PropertyNotFoundException;
 
 import com.sun.el.lang.EvaluationContext;
 import com.sun.el.util.MessageFactory;

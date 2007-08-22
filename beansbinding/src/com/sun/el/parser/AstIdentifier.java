@@ -6,14 +6,14 @@
 
 package com.sun.el.parser;
 
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.Expression;
-import javax.el.MethodExpression;
-import javax.el.MethodInfo;
-import javax.el.MethodNotFoundException;
-import javax.el.ValueExpression;
-import javax.el.VariableMapper;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.Expression;
+import org.jdesktop.el.MethodExpression;
+import org.jdesktop.el.MethodInfo;
+import org.jdesktop.el.MethodNotFoundException;
+import org.jdesktop.el.ValueExpression;
+import org.jdesktop.el.VariableMapper;
 
 import com.sun.el.lang.EvaluationContext;
 
