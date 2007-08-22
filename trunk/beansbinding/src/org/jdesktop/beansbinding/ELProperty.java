@@ -215,7 +215,7 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
     }
 
     public static final <S, V> ELProperty<S, V> create(String expression) {
-        return new ELProperty<S, V>(expression);
+        return new ELProperty<S, V>(null, expression);
     }
 
     public static final <S, V> ELProperty<S, V> create(Property<S, ?> baseProperty, String expression) {
@@ -225,14 +225,7 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
     /**
      * @throws IllegalArgumentException for empty or {@code null} path.
      */
-    private ELProperty(String expression) {
-        this(null, expression);
-    }
-
-    /**
-     * @throws IllegalArgumentException for empty or {@code null} path.
-     */
-    public ELProperty(Property<S, ?> baseProperty, String expression) {
+    private ELProperty(Property<S, ?> baseProperty, String expression) {
         if (expression == null || expression.length() == 0) {
             throw new IllegalArgumentException("expression must be non-null and non-empty");
         }
