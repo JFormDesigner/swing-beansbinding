@@ -65,7 +65,7 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
         }
     }
 
-    protected boolean bindImpl() {
+    protected void bindImpl() {
         UpdateStrategy strat = getUpdateStrategy();
 
         if (strat == UpdateStrategy.READ_ONCE) {
@@ -75,13 +75,9 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
         } else {
             tryRefreshThenSave();
         }
-
-        return true;
     }
 
-    protected boolean unbindImpl() {
-        return true;
-    }
+    protected void unbindImpl() {}
 
     public String toString() {
         return getClass().getName() + " [" + paramString() + "]";
