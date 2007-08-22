@@ -479,10 +479,6 @@ class JTableBindingHelper extends AbstractListTableBindingSupport {
             return value;
         }
         
-        private Object getInitialValue() {
-            return iValue;
-        }
-
         public void editingStopped(ChangeEvent e) {
             // Force a property change
             isEditing = false;
