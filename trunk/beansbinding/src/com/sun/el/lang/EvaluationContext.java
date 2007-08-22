@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import javax.el.ELContext;
-import javax.el.ELResolver;
-import javax.el.Expression;
-import javax.el.FunctionMapper;
-import javax.el.VariableMapper;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELResolver;
+import org.jdesktop.el.Expression;
+import org.jdesktop.el.FunctionMapper;
+import org.jdesktop.el.VariableMapper;
 
 public final class EvaluationContext extends ELContext {
 

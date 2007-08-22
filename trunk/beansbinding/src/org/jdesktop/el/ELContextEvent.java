@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package javax.el;
+package org.jdesktop.el;
 
 /**
  * An event which indicates that an {@link ELContext} has been created.

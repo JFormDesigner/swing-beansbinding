@@ -7,7 +7,7 @@ package com.sun.el.lang;
 
 import java.lang.reflect.Method;
 
-import javax.el.FunctionMapper;
+import org.jdesktop.el.FunctionMapper;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]

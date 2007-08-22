@@ -9,9 +9,9 @@ package com.sun.el.parser;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.FunctionMapper;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.FunctionMapper;
 
 import com.sun.el.lang.EvaluationContext;
 import com.sun.el.util.MessageFactory;

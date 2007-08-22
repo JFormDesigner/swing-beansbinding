@@ -8,9 +8,9 @@ package com.sun.el.parser;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import javax.el.ELContext;
+import org.jdesktop.el.ELContext;
 
-import javax.el.ELException;
+import org.jdesktop.el.ELException;
 
 import com.sun.el.lang.EvaluationContext;
 

@@ -10,8 +10,8 @@ import java.beans.PropertyEditorManager;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import javax.el.ELException;
-import javax.el.PropertyNotFoundException;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.PropertyNotFoundException;
 
 import com.sun.el.util.MessageFactory;
 

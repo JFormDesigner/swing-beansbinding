@@ -5,10 +5,10 @@
 
 package com.sun.el;
 
-import javax.el.ELContext;
-import javax.el.ExpressionFactory;
-import javax.el.MethodExpression;
-import javax.el.ValueExpression;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ExpressionFactory;
+import org.jdesktop.el.MethodExpression;
+import org.jdesktop.el.ValueExpression;
 
 import com.sun.el.lang.ExpressionBuilder;
 import com.sun.el.lang.ELSupport;

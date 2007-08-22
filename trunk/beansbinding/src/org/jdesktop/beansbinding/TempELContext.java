@@ -1,10 +1,16 @@
 package org.jdesktop.beansbinding;
 
-import javax.el.*;
 import com.sun.el.lang.*;
 import java.util.*;
 import java.beans.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
+import org.jdesktop.el.BeanELResolver;
+import org.jdesktop.el.CompositeELResolver;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELResolver;
+import org.jdesktop.el.FunctionMapper;
+import org.jdesktop.el.MapELResolver;
+import org.jdesktop.el.VariableMapper;
 
 /**
  * This class is temporary. Moving forward, we'll instead have a factory for

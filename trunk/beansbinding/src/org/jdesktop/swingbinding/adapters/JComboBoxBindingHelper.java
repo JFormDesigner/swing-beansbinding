@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.beans.OLDBINDING.Binding;
 import javax.beans.OLDBINDING.ELPropertyResolver;
 import javax.beans.OLDBINDING.ext.PropertyDelegateProvider;
-import javax.el.Expression;
+import org.jdesktop.el.Expression;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;

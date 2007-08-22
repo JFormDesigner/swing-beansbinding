@@ -10,12 +10,12 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.FunctionMapper;
-import javax.el.MethodExpression;
-import javax.el.ValueExpression;
-import javax.el.VariableMapper;
+import org.jdesktop.el.ELContext;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.FunctionMapper;
+import org.jdesktop.el.MethodExpression;
+import org.jdesktop.el.ValueExpression;
+import org.jdesktop.el.VariableMapper;
 
 import com.sun.el.MethodExpressionImpl;
 import com.sun.el.MethodExpressionLiteral;

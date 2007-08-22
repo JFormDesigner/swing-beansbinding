@@ -6,9 +6,9 @@
 
 package com.sun.el.parser;
 
-import javax.el.ELException;
-import javax.el.MethodInfo;
-import javax.el.PropertyNotWritableException;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.MethodInfo;
+import org.jdesktop.el.PropertyNotWritableException;
 
 import com.sun.el.lang.ELSupport;
 import com.sun.el.lang.EvaluationContext;

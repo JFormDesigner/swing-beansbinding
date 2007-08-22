@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.el.FunctionMapper;
+import org.jdesktop.el.FunctionMapper;
 
 import com.sun.el.util.ReflectionUtil;
 

@@ -5,7 +5,7 @@
 
 package com.sun.el.parser;
 
-import javax.el.ELException;
+import org.jdesktop.el.ELException;
 
 import com.sun.el.lang.EvaluationContext;
 

@@ -13,9 +13,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
-import javax.el.ELException;
-import javax.el.MethodNotFoundException;
-import javax.el.PropertyNotFoundException;
+import org.jdesktop.el.ELException;
+import org.jdesktop.el.MethodNotFoundException;
+import org.jdesktop.el.PropertyNotFoundException;
 
 import com.sun.el.lang.ELSupport;
 
