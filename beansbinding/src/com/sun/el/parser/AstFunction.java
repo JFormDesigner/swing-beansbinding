@@ -13,7 +13,7 @@ import org.jdesktop.el.ELContext;
 import org.jdesktop.el.ELException;
 import org.jdesktop.el.FunctionMapper;
 
-import com.sun.el.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.EvaluationContext;
 import com.sun.el.util.MessageFactory;
 
 /**

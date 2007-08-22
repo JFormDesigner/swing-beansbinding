@@ -15,7 +15,7 @@ import org.jdesktop.el.MethodNotFoundException;
 import org.jdesktop.el.ValueExpression;
 import org.jdesktop.el.VariableMapper;
 
-import com.sun.el.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.EvaluationContext;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]

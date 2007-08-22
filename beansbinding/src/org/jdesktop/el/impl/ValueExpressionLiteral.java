@@ -15,7 +15,7 @@ import java.io.ObjectOutput;
 
 import org.jdesktop.el.ValueExpression;
 
-import com.sun.el.lang.ELSupport;
+import org.jdesktop.el.impl.lang.ELSupport;
 import com.sun.el.util.MessageFactory;
 import com.sun.el.util.ReflectionUtil;
 

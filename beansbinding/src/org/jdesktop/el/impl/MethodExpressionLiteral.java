@@ -15,7 +15,7 @@ import org.jdesktop.el.ELException;
 import org.jdesktop.el.MethodExpression;
 import org.jdesktop.el.MethodInfo;
 
-import com.sun.el.lang.ELSupport;
+import org.jdesktop.el.impl.lang.ELSupport;
 import com.sun.el.util.ReflectionUtil;
 
 public class MethodExpressionLiteral extends MethodExpression implements Externalizable {

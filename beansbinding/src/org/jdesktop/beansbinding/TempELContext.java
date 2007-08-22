@@ -1,6 +1,5 @@
 package org.jdesktop.beansbinding;
 
-import com.sun.el.lang.*;
 import java.util.*;
 import java.beans.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
@@ -11,6 +10,8 @@ import org.jdesktop.el.ELResolver;
 import org.jdesktop.el.FunctionMapper;
 import org.jdesktop.el.MapELResolver;
 import org.jdesktop.el.VariableMapper;
+import org.jdesktop.el.impl.lang.FunctionMapperImpl;
+import org.jdesktop.el.impl.lang.VariableMapperImpl;
 
 /**
  * This class is temporary. Moving forward, we'll instead have a factory for

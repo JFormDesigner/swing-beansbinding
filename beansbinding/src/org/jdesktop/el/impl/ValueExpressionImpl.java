@@ -23,9 +23,9 @@ import org.jdesktop.el.PropertyNotWritableException;
 import org.jdesktop.el.ValueExpression;
 import org.jdesktop.el.VariableMapper;
 
-import com.sun.el.lang.ELSupport;
-import com.sun.el.lang.EvaluationContext;
-import com.sun.el.lang.ExpressionBuilder;
+import org.jdesktop.el.impl.lang.ELSupport;
+import org.jdesktop.el.impl.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.ExpressionBuilder;
 import com.sun.el.parser.AstLiteralExpression;
 import com.sun.el.parser.Node;
 import com.sun.el.util.ReflectionUtil;

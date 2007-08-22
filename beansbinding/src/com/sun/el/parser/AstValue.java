@@ -15,7 +15,7 @@ import org.jdesktop.el.ELResolver;
 import org.jdesktop.el.MethodInfo;
 import org.jdesktop.el.PropertyNotFoundException;
 
-import com.sun.el.lang.EvaluationContext;
+import org.jdesktop.el.impl.lang.EvaluationContext;
 import com.sun.el.util.MessageFactory;
 import com.sun.el.util.ReflectionUtil;
 
