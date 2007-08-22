@@ -140,9 +140,8 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     protected Binding(SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty, String name) {
-        if (sourceProperty == null || targetProperty == null) {
-            throw new IllegalArgumentException("source and target properties must be non-null");
-        }
+        setSourceProperty(sourceProperty);
+        setTargetProperty(targetProperty);
 
         this.sourceObject = sourceObject;
         this.sourceProperty = sourceProperty;
@@ -153,11 +152,17 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     protected final void setSourceProperty(Property<SS, SV> sourceProperty) {
         throwIfBound();
+        if (sourceProperty == null) {
+            throw new IllegalArgumentException("source property can't be null");
+        }
         this.sourceProperty = sourceProperty;
     }
     
     protected final void setTargetProperty(Property<TS, TV> targetProperty) {
         throwIfBound();
+        if (targetProperty == null) {
+            throw new IllegalArgumentException("source property can't be null");
+        }
         this.targetProperty = targetProperty;
     }
     

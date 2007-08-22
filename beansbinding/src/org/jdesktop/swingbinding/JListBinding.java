@@ -36,14 +36,16 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
 
     protected void bindImpl() {
         model = new BindingListModel();
+        // order is important for the next two lines
         ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
         super.bindImpl();
     }
 
     protected void unbindImpl() {
-        ep.removePropertyStateListener(null, handler);
+        // order is important for the next two lines
         ep.uninstallBinding();
+        ep.removePropertyStateListener(null, handler);
         model = null;
         super.unbindImpl();
     }
