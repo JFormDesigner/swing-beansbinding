@@ -28,6 +28,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     private boolean hasEditedSource;
     private boolean hasEditedTarget;
     private boolean ignoreChange;
+    private boolean isManaged;
     private boolean isBound;
 
     public enum SyncFailureType {
@@ -310,53 +311,73 @@ public abstract class Binding<SS, SV, TS, TV> {
     public final void bind() {
         throwIfBound();
 
-        if (bindImpl()) {
-            isBound = true;
-            psl = new PSL();
-            sourceProperty.addPropertyStateListener(sourceObject, psl);
-            targetProperty.addPropertyStateListener(targetObject, psl);
-            if (listeners != null) {
-                for (BindingListener listener : listeners) {
-                    listener.bindingBecameBound(this);
-                }
+        if (isManaged) {
+            throw new IllegalStateException("can't bind a managed binding");
+        }
+
+        hasEditedSource = false;
+        hasEditedTarget = false;
+        isBound = true;
+
+        psl = new PSL();
+        sourceProperty.addPropertyStateListener(sourceObject, psl);
+        targetProperty.addPropertyStateListener(targetObject, psl);
+
+        bindImpl();
+
+        if (listeners != null) {
+            for (BindingListener listener : listeners) {
+                listener.bindingBecameBound(this);
             }
         }
     }
 
-    protected abstract boolean bindImpl();
+    protected abstract void bindImpl();
 
     public final void unbind() {
         throwIfUnbound();
 
-        if (unbindImpl()) {
-            isBound = false;
-            sourceProperty.removePropertyStateListener(sourceObject, psl);
-            targetProperty.removePropertyStateListener(targetObject, psl);
-            psl = null;
-            if (listeners != null) {
-                for (BindingListener listener : listeners) {
-                    listener.bindingBecameUnbound(this);
-                }
+        if (isManaged) {
+            throw new IllegalStateException("can't unbind a managed binding");
+        }
+
+        unbindImpl();
+
+        sourceProperty.removePropertyStateListener(sourceObject, psl);
+        targetProperty.removePropertyStateListener(targetObject, psl);
+        psl = null;
+
+        isBound = false;
+
+        if (listeners != null) {
+            for (BindingListener listener : listeners) {
+                listener.bindingBecameUnbound(this);
             }
         }
     }
     
-    protected abstract boolean unbindImpl();
+    protected abstract void unbindImpl();
 
     public final boolean isBound() {
         return isBound;
     }
 
     public final boolean getHasEditedSource() {
+        throwIfUnbound();
         return hasEditedSource;
     }
 
     public final boolean getHasEditedTarget() {
+        throwIfUnbound();
         return hasEditedTarget;
     }
 
-    protected boolean isManaged() {
-        return false;
+    protected final void setManaged(boolean isManaged) {
+        this.isManaged = isManaged;
+    }
+
+    protected final boolean isManaged() {
+        return isManaged;
     }
 
     protected final void notifySynced() {
@@ -398,6 +419,8 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     public final SyncFailure refresh() {
+        throwIfUnbound();
+
         ValueResult<TV> vr = getSourceValueForTarget();
         if (vr.failed()) {
             return vr.getFailure();
@@ -416,6 +439,8 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     public final SyncFailure save() {
+        throwIfUnbound();
+
         ValueResult<SV> vr = getTargetValueForSource();
         if (vr.failed()) {
             return vr.getFailure();
