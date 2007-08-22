@@ -34,18 +34,18 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
         setDetailBinding(null);
     }
 
-    protected boolean bindImpl() {
+    protected void bindImpl() {
         model = new BindingListModel();
         ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
-        return super.bindImpl();
+        super.bindImpl();
     }
 
-    protected boolean unbindImpl() {
+    protected void unbindImpl() {
         ep.removePropertyStateListener(null, handler);
         ep.uninstallBinding();
         model = null;
-        return super.unbindImpl();
+        super.unbindImpl();
     }
 
     public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty) {
