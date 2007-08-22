@@ -48,6 +48,9 @@ public class BindingGroup {
 
         if (binding.isBound()) {
             bound.add(binding);
+            if (binding.getHasEditedTarget()) {
+                updateEditedTargets(binding, true);
+            }
         } else {
             unbound.add(binding);
         }
@@ -60,6 +63,7 @@ public class BindingGroup {
             if (!bound.remove(binding)) {
                 throw new IllegalArgumentException("Unknown Binding");
             }
+            updateEditedTargets(binding, false);
         } else {
             if (!unbound.remove(binding)) {
                 throw new IllegalArgumentException("Unknown Binding");
@@ -281,11 +285,15 @@ public class BindingGroup {
         public void bindingBecameBound(Binding binding) {
             unbound.remove(binding);
             bound.add(binding);
+            if (binding.getHasEditedTarget()) {
+                updateEditedTargets(binding, true);
+            }
         }
 
         public void bindingBecameUnbound(Binding binding) {
             bound.remove(binding);
             unbound.add(binding);
+            updateEditedTargets(binding, false);
         }
     }
 }
