@@ -16,8 +16,8 @@ import org.jdesktop.el.MethodInfo;
 import org.jdesktop.el.PropertyNotFoundException;
 
 import org.jdesktop.el.impl.lang.EvaluationContext;
-import com.sun.el.util.MessageFactory;
-import com.sun.el.util.ReflectionUtil;
+import org.jdesktop.el.impl.util.MessageFactory;
+import org.jdesktop.el.impl.util.ReflectionUtil;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]

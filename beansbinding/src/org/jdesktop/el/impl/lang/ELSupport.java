@@ -13,7 +13,7 @@ import java.math.BigInteger;
 import org.jdesktop.el.ELException;
 import org.jdesktop.el.PropertyNotFoundException;
 
-import com.sun.el.util.MessageFactory;
+import org.jdesktop.el.impl.util.MessageFactory;
 
 /**
  * A helper class that implements the EL Specification

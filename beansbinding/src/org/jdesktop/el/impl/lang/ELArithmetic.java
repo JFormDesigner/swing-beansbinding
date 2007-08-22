@@ -8,7 +8,7 @@ package org.jdesktop.el.impl.lang;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.sun.el.util.MessageFactory;
+import org.jdesktop.el.impl.util.MessageFactory;
 
 /**
  * A helper class of Arithmetic defined by the EL Specification

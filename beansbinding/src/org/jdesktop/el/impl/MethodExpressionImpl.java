@@ -26,7 +26,7 @@ import org.jdesktop.el.impl.lang.ELSupport;
 import org.jdesktop.el.impl.lang.EvaluationContext;
 import org.jdesktop.el.impl.lang.ExpressionBuilder;
 import org.jdesktop.el.impl.parser.Node;
-import com.sun.el.util.ReflectionUtil;
+import org.jdesktop.el.impl.util.ReflectionUtil;
 
 /**
  * An <code>Expression</code> that refers to a method on an object.

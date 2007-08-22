@@ -31,7 +31,7 @@ import org.jdesktop.el.impl.parser.ELParser;
 import org.jdesktop.el.impl.parser.Node;
 import org.jdesktop.el.impl.parser.NodeVisitor;
 import org.jdesktop.el.impl.parser.ParseException;
-import com.sun.el.util.MessageFactory;
+import org.jdesktop.el.impl.util.MessageFactory;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]

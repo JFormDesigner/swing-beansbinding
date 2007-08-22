@@ -14,7 +14,7 @@ import org.jdesktop.el.ELException;
 import org.jdesktop.el.FunctionMapper;
 
 import org.jdesktop.el.impl.lang.EvaluationContext;
-import com.sun.el.util.MessageFactory;
+import org.jdesktop.el.impl.util.MessageFactory;
 
 /**
  * @author Jacob Hookom [jacob@hookom.net]

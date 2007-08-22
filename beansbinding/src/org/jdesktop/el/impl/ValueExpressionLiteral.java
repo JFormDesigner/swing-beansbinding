@@ -16,8 +16,8 @@ import java.io.ObjectOutput;
 import org.jdesktop.el.ValueExpression;
 
 import org.jdesktop.el.impl.lang.ELSupport;
-import com.sun.el.util.MessageFactory;
-import com.sun.el.util.ReflectionUtil;
+import org.jdesktop.el.impl.util.MessageFactory;
+import org.jdesktop.el.impl.util.ReflectionUtil;
 
 public final class ValueExpressionLiteral extends ValueExpression implements
         Externalizable {

@@ -3,7 +3,7 @@
  * subject to license terms.
  */
 
-package com.sun.el.util;
+package org.jdesktop.el.impl.util;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
