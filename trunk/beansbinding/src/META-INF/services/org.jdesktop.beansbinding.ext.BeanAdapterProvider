@@ -6,3 +6,4 @@ org.jdesktop.swingbinding.adapters.JTextComponentAdapterProvider
 org.jdesktop.swingbinding.adapters.JListAdapterProvider
 org.jdesktop.swingbinding.adapters.JTableAdapterProvider
 org.jdesktop.swingbinding.adapters.JSliderAdapterProvider
+org.jdesktop.swingbinding.adapters.JComboBoxAdapterProvider
