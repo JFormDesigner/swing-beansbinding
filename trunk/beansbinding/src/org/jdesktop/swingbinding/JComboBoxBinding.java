@@ -143,7 +143,9 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
 
         public void setElements(List<?> elements) {
             super.setElements(elements);
-            selectedObject = getElementAt(0);
+            if (size() > 0) {
+                selectedObject = getElementAt(0);
+            }
         }
         
         protected ColumnBinding[] getColBindings() {
@@ -176,9 +178,15 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             for (ListDataListener listener : listeners) {
                 listener.intervalAdded(e);
             }
+
+            if (size() == length && selectedObject == null && getElementAt(0) != null) {
+                setSelectedItem(getElementAt(0));
+            }
         }
 
         protected void removed(int index, int length) {
+            // PENDING(shannonh) - need to deal with this
+            // also remember when comparing to use match()
             ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_REMOVED, index, index + length - 1);
             for (ListDataListener listener : listeners) {
                 listener.intervalRemoved(e);
