@@ -22,20 +22,20 @@ import org.jdesktop.swingbinding.impl.ListBindingManager;
  */
 public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, List> {
 
-    private ElementsProperty<TS, JList> ep;
+    private ElementsProperty<TS, JComboBox> ep;
     private Handler handler = new Handler();
-    private BindingListModel model;
-    private JList list;
+    private BindingComboBoxModel model;
+    private JComboBox combo;
     private ListDetailBinding detailBinding;
 
-    protected JComboBoxBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
-        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
-        ep = (ElementsProperty<TS, JList>)getTargetProperty();
+    protected JComboBoxBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty, String name) {
+        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JComboBox>(targetJComboBoxProperty), name);
+        ep = (ElementsProperty<TS, JComboBox>)getTargetProperty();
         setDetailBinding(null);
     }
 
     protected void bindImpl() {
-        model = new BindingListModel();
+        model = new BindingComboBoxModel();
         // order is important for the next two lines
         ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
@@ -122,21 +122,21 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             Object newValue = pse.getNewValue();
 
             if (newValue == PropertyStateEvent.UNREADABLE) {
-                list.setModel(new DefaultListModel());
-                list = null;
+                combo.setModel(new DefaultComboBoxModel());
+                combo = null;
                 model.setElements(null);
             } else {
-                list = ep.getComponent();
+                combo = ep.getComponent();
                 model.setElements((List<E>)newValue);
-                list.setModel(model);
+                combo.setModel(model);
             }
         }
     }
 
-    private final class BindingListModel extends ListBindingManager implements ListModel  {
+    private final class BindingComboBoxModel extends ListBindingManager implements ComboBoxModel  {
         private final List<ListDataListener> listeners;
 
-        public BindingListModel() {
+        public BindingComboBoxModel() {
             listeners = new CopyOnWriteArrayList<ListDataListener>();
         }
 
