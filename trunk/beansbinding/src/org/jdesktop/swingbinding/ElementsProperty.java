@@ -95,6 +95,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
         }
 
         this.binding = binding;
+        tableTargetProperty.addPropertyStateListener(binding.getTargetObject(), this);
 
         if (this.isListening(null)) {
             // someone outside the binding has installed listeners
@@ -103,8 +104,6 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
                 PropertyStateEvent pse = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
             }
         }
-
-        tableTargetProperty.addPropertyStateListener(binding.getTargetObject(), this);
     }
 
     void uninstallBinding() {
@@ -115,6 +114,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
         boolean wasReadable = isReadable(null);
         List oldValue = getValue(null);
 
+        tableTargetProperty.removePropertyStateListener(binding.getTargetObject(), this);
         this.binding = null;
 
         if (this.isListening(null)) {
@@ -124,8 +124,6 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
                 PropertyStateEvent pse = new PropertyStateEvent(this, null, true, oldValue, PropertyStateEvent.UNREADABLE, true, false);
             }
         }
-
-        tableTargetProperty.removePropertyStateListener(binding.getTargetObject(), this);
     }
 
     public void propertyStateChanged(PropertyStateEvent pse) {
