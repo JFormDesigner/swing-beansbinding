@@ -141,6 +141,11 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             listeners = new CopyOnWriteArrayList<ListDataListener>();
         }
 
+        public void setElements(List<?> elements) {
+            super.setElements(elements);
+            selectedObject = getElementAt(0);
+        }
+        
         protected ColumnBinding[] getColBindings() {
             return new ColumnBinding[] {getDetailBinding()};
         }
