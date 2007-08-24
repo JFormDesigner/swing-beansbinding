@@ -14,7 +14,7 @@ import org.jdesktop.beansbinding.ObjectProperty;
 import org.jdesktop.beansbinding.Property;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.PropertyStateListener;
-import org.jdesktop.swingbinding.impl.ColumnBinding;
+import org.jdesktop.swingbinding.impl.AbstractColumnBinding;
 import org.jdesktop.swingbinding.impl.ListBindingManager;
 
 /**
@@ -26,7 +26,7 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
     private Handler handler = new Handler();
     private BindingListModel model;
     private JList list;
-    private ListDetailBinding detailBinding;
+    private DetailBinding detailBinding;
 
     protected JListBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
         super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
@@ -50,24 +50,23 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
         super.unbindImpl();
     }
 
-    public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty) {
-        return detailProperty == null ?
-            setDetailBinding(ObjectProperty.<E>create(), "AUTO_DETAIL") :
-            setDetailBinding(detailProperty, null);
+    public DetailBinding setDetailBinding(Property<E, ?> detailProperty) {
+        return setDetailBinding(detailProperty, null);
     }
 
-    public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty, String name) {
+    public DetailBinding setDetailBinding(Property<E, ?> detailProperty, String name) {
         throwIfBound();
 
-        if (detailProperty == null) {
-            throw new IllegalArgumentException("can't have null detail property");
+        if (name == null && JListBinding.this.getName() != null) {
+            name = JListBinding.this.getName() + ".DETAIL_BINDING";
         }
 
-        detailBinding = new ListDetailBinding(detailProperty, name);
-        return detailBinding;
+        return detailProperty == null ?
+            new DetailBinding(ObjectProperty.<E>create(), name) :
+            new DetailBinding(detailProperty, name);
     }
 
-    public ListDetailBinding getDetailBinding() {
+    public DetailBinding getDetailBinding() {
         return detailBinding;
     }
 
@@ -105,9 +104,9 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
         }
     };
 
-    public final class ListDetailBinding extends ColumnBinding {
+    public final class DetailBinding extends AbstractColumnBinding {
 
-        public ListDetailBinding(Property<E, ?> detailProperty, String name) {
+        private DetailBinding(Property<E, ?> detailProperty, String name) {
             super(0, detailProperty, DETAIL_PROPERTY, name);
         }
 
@@ -140,8 +139,8 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
             listeners = new CopyOnWriteArrayList<ListDataListener>();
         }
 
-        protected ColumnBinding[] getColBindings() {
-            return new ColumnBinding[] {getDetailBinding()};
+        protected AbstractColumnBinding[] getColBindings() {
+            return new AbstractColumnBinding[] {getDetailBinding()};
         }
 
         protected void allChanged() {
