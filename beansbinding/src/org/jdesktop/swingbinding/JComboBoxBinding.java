@@ -214,19 +214,17 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
                 detailBinding.setSourceObjectInternal(null);
             }
 
-            if (removedSelected) {
-                if (size() == 0) {
-                    System.out.println("selecting null");
-                    setSelectedItem(null);
-                } else {
-                    System.out.println("selecting element " + getElementAt(index));
-                    setSelectedItem(getElementAt(index));
-                }
-            }
-
             ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_REMOVED, index, index + length - 1);
             for (ListDataListener listener : listeners) {
                 listener.intervalRemoved(e);
+            }
+
+            if (removedSelected) {
+                if (size() == 0) {
+                    setSelectedItem(null);
+                } else {
+                    setSelectedItem(getElementAt(Math.max(index - 1, 0)));
+                }
             }
         }
 
