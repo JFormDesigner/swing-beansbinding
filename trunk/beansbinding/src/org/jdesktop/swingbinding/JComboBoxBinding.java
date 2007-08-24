@@ -111,6 +111,14 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             super(0, detailProperty, DETAIL_PROPERTY, name);
         }
 
+        private void setSourceObjectInternal(Object object) {
+            setManaged(false);
+            try {
+                setSourceObject(object);
+            } finally {
+                setManaged(true);
+            }
+        }
     }
 
     private class Handler implements PropertyStateListener {
@@ -133,6 +141,11 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
         }
     }
 
+    private static final boolean areObjectsEqual(Object o1, Object o2) {
+        return ((o1 != null && o1.equals(o2)) ||
+                (o1 == null && o2 == null));
+    }
+    
     private final class BindingComboBoxModel extends ListBindingManager implements ComboBoxModel  {
         private final List<ListDataListener> listeners;
         private Object selectedObject;
@@ -158,7 +171,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
 
         public void setSelectedItem(Object anObject) {
             // This is what DefaultComboBoxModel does (yes, yuck!)
-            if ((selectedObject != null && !selectedObject.equals( anObject )) ||
+            if ((selectedObject != null && !selectedObject.equals(anObject)) ||
                     selectedObject == null && anObject != null) {
                 selectedObject = anObject;
                 contentsChanged(-1, -1);
@@ -184,9 +197,33 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             }
         }
 
-        protected void removed(int index, int length) {
-            // PENDING(shannonh) - need to deal with this
-            // also remember when comparing to use match()
+        protected void removed(int index, List<Object> elements) {
+            boolean removedSelected = false;
+            int length = elements.size();
+
+            try {
+                for (Object element : elements) {
+                    detailBinding.setSourceObjectInternal(element);
+                    Object detail = detailBinding.getSourceValueForTarget().getValue();
+                    if (areObjectsEqual(detail, selectedObject)) {
+                        removedSelected = true;
+                        break;
+                    }
+                }
+            } finally {
+                detailBinding.setSourceObjectInternal(null);
+            }
+
+            if (removedSelected) {
+                if (size() == 0) {
+                    System.out.println("selecting null");
+                    setSelectedItem(null);
+                } else {
+                    System.out.println("selecting element " + getElementAt(index));
+                    setSelectedItem(getElementAt(index));
+                }
+            }
+
             ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_REMOVED, index, index + length - 1);
             for (ListDataListener listener : listeners) {
                 listener.intervalRemoved(e);
