@@ -10,11 +10,11 @@ import org.jdesktop.beansbinding.*;
 /**
  * @author Shannon Hickey
  */
-public class ColumnBinding extends Binding {
+public abstract class AbstractColumnBinding extends Binding {
 
     private int column;
 
-    public ColumnBinding(int column, Property columnSource, Property columnTarget, String name) {
+    public AbstractColumnBinding(int column, Property columnSource, Property columnTarget, String name) {
         super(null, columnSource, null, columnTarget, name);
         this.column = column;
         setManaged(true);
