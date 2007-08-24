@@ -9,6 +9,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.beans.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterProvider;
+import org.jdesktop.swingbinding.impl.BindingComboBoxModel;
 
 /**
  * @author Shannon Hickey
@@ -19,9 +20,9 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
     private static final String SELECTED_ELEMENT_ID_P = "selectedElementID";
 
     public static final class Adapter extends BeanAdapterBase {
-        private AbstractButton button;
+        private JComboBox combo;
         private Handler handler;
-        private boolean cachedSelected;
+        private Object cachedValue;
 
         private Adapter(AbstractButton button, String property) {
             super(property);
