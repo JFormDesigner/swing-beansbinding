@@ -18,22 +18,22 @@ import org.jdesktop.beansbinding.*;
  * @author Shannon Hickey
  */
 public abstract class ListBindingManager implements ObservableListListener {
-    private ColumnBinding[] bindings;
+    private AbstractColumnBinding[] bindings;
     private ReusableColumnBinding reusableBinding;
     private List<?> elements;
     private List<ColumnDescriptionManager> managers;
 
-    private List<ColumnDescriptionManager> createManagers(ColumnBinding[] bindings) {
+    private List<ColumnDescriptionManager> createManagers(AbstractColumnBinding[] bindings) {
         List<ColumnDescriptionManager> managers = new ArrayList<ColumnDescriptionManager>(bindings.length);
 
-        for (ColumnBinding binding : bindings) {
+        for (AbstractColumnBinding binding : bindings) {
             managers.add(new ColumnDescriptionManager(binding));
         }
 
         return managers;
     }
 
-    protected abstract ColumnBinding[] getColBindings();
+    protected abstract AbstractColumnBinding[] getColBindings();
 
     public void setElements(List<?> elements) {
         if (this.elements != null) {
@@ -96,7 +96,7 @@ public abstract class ListBindingManager implements ObservableListListener {
             }
         }
 
-        ColumnBinding cb = bindings[column];
+        AbstractColumnBinding cb = bindings[column];
         try {
             reusableBinding.setBaseAndSource(cb, elements.get(row));
             return reusableBinding.getSourceValueForTarget().getValue();
@@ -154,10 +154,10 @@ public abstract class ListBindingManager implements ObservableListListener {
     protected abstract void changed(int row);
 
     private final class ColumnDescriptionManager {
-        private final ColumnBinding columnBinding;
+        private final AbstractColumnBinding columnBinding;
         private List<EntryWrapper> wrappers;
 
-        ColumnDescriptionManager(ColumnBinding columnBinding) {
+        ColumnDescriptionManager(AbstractColumnBinding columnBinding) {
             this.columnBinding = columnBinding;
         }
 
@@ -235,12 +235,12 @@ public abstract class ListBindingManager implements ObservableListListener {
         }
     }
 
-    private final class ReusableColumnBinding extends ColumnBinding {
-        public ReusableColumnBinding(ColumnBinding base) {
+    private final class ReusableColumnBinding extends AbstractColumnBinding {
+        public ReusableColumnBinding(AbstractColumnBinding base) {
             super(0, base.getSourceProperty(), base.getTargetProperty(), null);
         }
 
-        public void setBaseAndSource(ColumnBinding base, Object source) {
+        public void setBaseAndSource(AbstractColumnBinding base, Object source) {
             try {
                 setManaged(false);
                 this.setSourceProperty(base.getSourceProperty());
