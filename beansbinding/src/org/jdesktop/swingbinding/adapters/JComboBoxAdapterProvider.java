@@ -23,8 +23,8 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
         private Handler handler;
         private boolean cachedSelected;
 
-        private Adapter(AbstractButton button) {
-            super(PROPERTY);
+        private Adapter(AbstractButton button, String property) {
+            super(property);
             this.button = button;
         }
 
@@ -79,7 +79,7 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
             throw new IllegalArgumentException();
         }
 
-        return new Adapter((AbstractButton)source);
+        return new Adapter((AbstractButton)source, property);
     }
 
     public Class<?> getAdapterClass(Class<?> type) {
