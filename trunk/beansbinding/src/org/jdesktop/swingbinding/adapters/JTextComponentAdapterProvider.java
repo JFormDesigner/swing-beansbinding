@@ -63,7 +63,7 @@ public final class JTextComponentAdapterProvider implements BeanAdapterProvider 
         protected void listeningStarted() {
             cachedText = component.getText();
             handler = new Handler();
-            component.addPropertyChangeListener(handler);
+            component.addPropertyChangeListener("document", handler);
 
             if (property != PROPERTY_BASE) {
                 component.addFocusListener(handler);
@@ -80,7 +80,7 @@ public final class JTextComponentAdapterProvider implements BeanAdapterProvider 
         
         protected void listeningStopped() {
             cachedText = null;
-            component.removePropertyChangeListener(handler);
+            component.removePropertyChangeListener("document", handler);
             
             if (property != PROPERTY_BASE) {
                 component.removeFocusListener(handler);
@@ -150,14 +150,10 @@ public final class JTextComponentAdapterProvider implements BeanAdapterProvider 
             }
             
             public void propertyChange(PropertyChangeEvent pce) {
-                String name = pce.getPropertyName();
-                
-                if (name == "document") {
-                    uninstallDocumentListener();
-                    document = component.getDocument();
-                    installDocumentListener();
-                    updateText();
-                }
+                uninstallDocumentListener();
+                document = component.getDocument();
+                installDocumentListener();
+                updateText();
             }
             
             public void actionPerformed(ActionEvent e) {
