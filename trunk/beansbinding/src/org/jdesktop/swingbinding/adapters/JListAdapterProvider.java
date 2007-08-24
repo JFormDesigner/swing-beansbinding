@@ -54,12 +54,14 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
             handler = new Handler();
             cachedElement = JListAdapterProvider.getSelectedElement(list);
             cachedElements = JListAdapterProvider.getSelectedElements(list);
+            list.addPropertyChangeListener("model", handler);
             list.addPropertyChangeListener("selectionModel", handler);
             list.getSelectionModel().addListSelectionListener(handler);
         }
         
         protected void listeningStopped() {
             list.getSelectionModel().removeListSelectionListener(handler);
+            list.removePropertyChangeListener("model", handler);
             list.removePropertyChangeListener("selectionModel", handler);
             cachedElement = null;
             cachedElements = null;
@@ -87,9 +89,13 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
             }
             
             public void propertyChange(PropertyChangeEvent pce) {
-                if (pce.getPropertyName() == "selectionModel") {
+                String propertyName = pce.getPropertyName();
+
+                if (propertyName == "selectionModel") {
                     ((ListSelectionModel)pce.getOldValue()).removeListSelectionListener(handler);
                     ((ListSelectionModel)pce.getOldValue()).addListSelectionListener(handler);
+                    listSelectionChanged();
+                } else if (propertyName == "model") {
                     listSelectionChanged();
                 }
             }
