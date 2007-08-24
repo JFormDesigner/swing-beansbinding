@@ -247,6 +247,10 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
 
         protected void changed(int row) {
             contentsChanged(row, row);
+            if (row == selectedModelIndex) {
+                selectedObject = getElementAt(row);
+                contentsChanged(-1, -1);
+            }
         }
 
         private void contentsChanged(int row0, int row1) {
