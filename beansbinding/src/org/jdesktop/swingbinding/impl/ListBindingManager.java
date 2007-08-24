@@ -126,7 +126,7 @@ public abstract class ListBindingManager implements ObservableListListener {
             }
         }
 
-        removed(index, elements);
+        removed(index, elements.size());
     }
     
     public final void listElementReplaced(ObservableList list, int index, Object oldElement) {
@@ -149,7 +149,7 @@ public abstract class ListBindingManager implements ObservableListListener {
 
     protected abstract void added(int index, int length);
 
-    protected abstract void removed(int index, List<Object> elements);
+    protected abstract void removed(int index, int length);
 
     protected abstract void changed(int row);
 
