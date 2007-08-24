@@ -149,6 +149,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     private final class BindingComboBoxModel extends ListBindingManager implements ComboBoxModel  {
         private final List<ListDataListener> listeners;
         private Object selectedObject;
+        private int selectedModelIndex;
 
         public BindingComboBoxModel() {
             listeners = new CopyOnWriteArrayList<ListDataListener>();
@@ -156,8 +157,9 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
 
         public void setElements(List<?> elements) {
             super.setElements(elements);
-            if (size() > 0) {
+            if (size() > 0 && selectedObject == null) {
                 selectedObject = getElementAt(0);
+                selectedModelIndex = 0;
             }
         }
         
@@ -175,6 +177,17 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
                     selectedObject == null && anObject != null) {
                 selectedObject = anObject;
                 contentsChanged(-1, -1);
+
+                selectedModelIndex = -1;
+                if (anObject != null) {
+                    int size = size();
+                    for (int i = 0; i < size; i++) {
+                        if (anObject.equals(getElementAt(i))) {
+                            selectedModelIndex = i;
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -184,6 +197,10 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
 
         protected void valueChanged(int row, int column) {
             contentsChanged(row, row);
+            if (row == selectedModelIndex) {
+                selectedObject = getElementAt(row);
+                contentsChanged(-1, -1);
+            }
         }
 
         protected void added(int index, int length) {
