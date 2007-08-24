@@ -61,9 +61,10 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
             name = JListBinding.this.getName() + ".DETAIL_BINDING";
         }
 
-        return detailProperty == null ?
-            new DetailBinding(ObjectProperty.<E>create(), name) :
-            new DetailBinding(detailProperty, name);
+        detailBinding = detailProperty == null ?
+                        new DetailBinding(ObjectProperty.<E>create(), name) :
+                        new DetailBinding(detailProperty, name);
+        return detailBinding;
     }
 
     public DetailBinding getDetailBinding() {
