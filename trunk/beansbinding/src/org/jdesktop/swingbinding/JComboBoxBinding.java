@@ -9,12 +9,13 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.ObjectProperty;
 import org.jdesktop.beansbinding.Property;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.PropertyStateListener;
-import org.jdesktop.swingbinding.impl.ColumnBinding;
+import org.jdesktop.swingbinding.impl.AbstractColumnBinding;
 import org.jdesktop.swingbinding.impl.ListBindingManager;
 
 /**
@@ -26,7 +27,8 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     private Handler handler = new Handler();
     private BindingComboBoxModel model;
     private JComboBox combo;
-    private ListDetailBinding detailBinding;
+    private DetailBinding detailBinding;
+    private IDBinding IDBinding;
 
     protected JComboBoxBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty, String name) {
         super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JComboBox>(targetJComboBoxProperty), name);
@@ -50,27 +52,48 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
         super.unbindImpl();
     }
 
-    public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty) {
-        return detailProperty == null ?
-            setDetailBinding(ObjectProperty.<E>create(), "AUTO_DETAIL") :
-            setDetailBinding(detailProperty, null);
+    public DetailBinding setDetailBinding(Property<E, ?> detailProperty) {
+        return setDetailBinding(detailProperty, null);
     }
 
-    public ListDetailBinding setDetailBinding(Property<E, ?> detailProperty, String name) {
+    public DetailBinding setDetailBinding(Property<E, ?> detailProperty, String name) {
         throwIfBound();
 
-        if (detailProperty == null) {
-            throw new IllegalArgumentException("can't have null detail property");
+        if (name == null && JComboBoxBinding.this.getName() != null) {
+            name = JComboBoxBinding.this.getName() + ".DETAIL_BINDING";
         }
 
-        detailBinding = new ListDetailBinding(detailProperty, name);
+        detailBinding = detailProperty == null ?
+                        new DetailBinding(ObjectProperty.<E>create(), name) :
+                        new DetailBinding(detailProperty, name);
         return detailBinding;
     }
 
-    public ListDetailBinding getDetailBinding() {
+    public IDBinding setIDBinding(Property<E, ?> IDProperty) {
+        return setIDBinding(IDProperty, null);
+    }
+
+    public IDBinding setIDBinding(Property<E, ?> IDProperty, String name) {
+        throwIfBound();
+
+        if (name == null && JComboBoxBinding.this.getName() != null) {
+            name = JComboBoxBinding.this.getName() + ".ID_BINDING";
+        }
+
+        IDBinding = IDProperty == null ?
+                    new IDBinding(ObjectProperty.<E>create(), name) :
+                    new IDBinding(IDProperty, name);
+        return IDBinding;
+    }
+    
+    public DetailBinding getDetailBinding() {
         return detailBinding;
     }
 
+    public IDBinding getIDBinding() {
+        return IDBinding;
+    }
+    
     private final Property DETAIL_PROPERTY = new Property() {
         public Class<Object> getWriteType(Object source) {
             return Object.class;
@@ -105,9 +128,25 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
         }
     };
 
-    public final class ListDetailBinding extends ColumnBinding {
+    public final class IDBinding extends AbstractColumnBinding {
 
-        public ListDetailBinding(Property<E, ?> detailProperty, String name) {
+        public IDBinding(Property<E, ?> IDProperty, String name) {
+            super(0, IDProperty, DETAIL_PROPERTY, name);
+        }
+
+        private void setSourceObjectInternal(Object object) {
+            setManaged(false);
+            try {
+                setSourceObject(object);
+            } finally {
+                setManaged(true);
+            }
+        }
+    }
+    
+    public final class DetailBinding extends AbstractColumnBinding {
+
+        public DetailBinding(Property<E, ?> detailProperty, String name) {
             super(0, detailProperty, DETAIL_PROPERTY, name);
         }
 
@@ -163,8 +202,8 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             }
         }
         
-        protected ColumnBinding[] getColBindings() {
-            return new ColumnBinding[] {getDetailBinding()};
+        protected AbstractColumnBinding[] getColBindings() {
+            return new AbstractColumnBinding[] {getDetailBinding()};
         }
 
         public Object getSelectedItem() {

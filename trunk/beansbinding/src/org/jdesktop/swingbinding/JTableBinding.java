@@ -101,6 +101,10 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             throw new IllegalArgumentException("can't have null column property");
         }
 
+        if (name == null && JTableBinding.this.getName() != null) {
+            name = JTableBinding.this.getName() + ".COLUMN_BINDING";
+        }
+        
         ColumnBinding binding = new ColumnBinding(index, columnProperty, name);
         columnBindings.add(index, binding);
         adjustIndices(index + 1, true);
