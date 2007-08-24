@@ -159,7 +159,8 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
             }
         }
 
-        protected void removed(int index, int length) {
+        protected void removed(int index, List removedElements) {
+            int length = removedElements.size();
             ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_REMOVED, index, index + length - 1);
             for (ListDataListener listener : listeners) {
                 listener.intervalRemoved(e);

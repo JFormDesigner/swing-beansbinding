@@ -197,12 +197,12 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             }
         }
 
-        protected void removed(int index, List<Object> elements) {
+        protected void removed(int index, List removedElements) {
             boolean removedSelected = false;
-            int length = elements.size();
+            int length = removedElements.size();
 
             try {
-                for (Object element : elements) {
+                for (Object element : removedElements) {
                     detailBinding.setSourceObjectInternal(element);
                     Object detail = detailBinding.getSourceValueForTarget().getValue();
                     if (areObjectsEqual(detail, selectedObject)) {
