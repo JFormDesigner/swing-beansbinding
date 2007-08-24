@@ -17,6 +17,7 @@ import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.PropertyStateListener;
 import org.jdesktop.swingbinding.impl.AbstractColumnBinding;
 import org.jdesktop.swingbinding.impl.ListBindingManager;
+import org.jdesktop.swingbinding.impl.*;
 
 /**
  * @author Shannon Hickey
@@ -28,7 +29,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     private BindingComboBoxModel model;
     private JComboBox combo;
     private DetailBinding detailBinding;
-    private IDBinding IDBinding;
+    private IDBinding idBinding;
 
     protected JComboBoxBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty, String name) {
         super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JComboBox>(targetJComboBoxProperty), name);
@@ -37,7 +38,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     }
 
     protected void bindImpl() {
-        model = new BindingComboBoxModel();
+        model = new BindingComboBoxModel(detailBinding, idBinding);
         // order is important for the next two lines
         ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
@@ -80,10 +81,10 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             name = JComboBoxBinding.this.getName() + ".ID_BINDING";
         }
 
-        IDBinding = IDProperty == null ?
+        idBinding = IDProperty == null ?
                     new IDBinding(ObjectProperty.<E>create(), name) :
                     new IDBinding(IDProperty, name);
-        return IDBinding;
+        return idBinding;
     }
     
     public DetailBinding getDetailBinding() {
@@ -91,7 +92,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     }
 
     public IDBinding getIDBinding() {
-        return IDBinding;
+        return idBinding;
     }
     
     private final Property DETAIL_PROPERTY = new Property() {
@@ -129,34 +130,14 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     };
 
     public final class IDBinding extends AbstractColumnBinding {
-
         public IDBinding(Property<E, ?> IDProperty, String name) {
             super(0, IDProperty, DETAIL_PROPERTY, name);
-        }
-
-        private void setSourceObjectInternal(Object object) {
-            setManaged(false);
-            try {
-                setSourceObject(object);
-            } finally {
-                setManaged(true);
-            }
         }
     }
     
     public final class DetailBinding extends AbstractColumnBinding {
-
         public DetailBinding(Property<E, ?> detailProperty, String name) {
             super(0, detailProperty, DETAIL_PROPERTY, name);
-        }
-
-        private void setSourceObjectInternal(Object object) {
-            setManaged(false);
-            try {
-                setSourceObject(object);
-            } finally {
-                setManaged(true);
-            }
         }
     }
 
@@ -180,139 +161,4 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
         }
     }
 
-    private static final boolean areObjectsEqual(Object o1, Object o2) {
-        return ((o1 != null && o1.equals(o2)) ||
-                (o1 == null && o2 == null));
-    }
-    
-    private final class BindingComboBoxModel extends ListBindingManager implements ComboBoxModel  {
-        private final List<ListDataListener> listeners;
-        private Object selectedObject;
-        private int selectedModelIndex;
-
-        public BindingComboBoxModel() {
-            listeners = new CopyOnWriteArrayList<ListDataListener>();
-        }
-
-        public void setElements(List<?> elements) {
-            super.setElements(elements);
-            if (size() > 0 && selectedObject == null) {
-                selectedObject = getElementAt(0);
-                selectedModelIndex = 0;
-            }
-        }
-        
-        protected AbstractColumnBinding[] getColBindings() {
-            return new AbstractColumnBinding[] {getDetailBinding()};
-        }
-
-        public Object getSelectedItem() {
-            return selectedObject;
-        }
-
-        public void setSelectedItem(Object anObject) {
-            // This is what DefaultComboBoxModel does (yes, yuck!)
-            if ((selectedObject != null && !selectedObject.equals(anObject)) ||
-                    selectedObject == null && anObject != null) {
-                selectedObject = anObject;
-                contentsChanged(-1, -1);
-
-                selectedModelIndex = -1;
-                if (anObject != null) {
-                    int size = size();
-                    for (int i = 0; i < size; i++) {
-                        if (anObject.equals(getElementAt(i))) {
-                            selectedModelIndex = i;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        protected void allChanged() {
-            contentsChanged(0, size());
-        }
-
-        protected void valueChanged(int row, int column) {
-            contentsChanged(row, row);
-            if (row == selectedModelIndex) {
-                selectedObject = getElementAt(row);
-                contentsChanged(-1, -1);
-            }
-        }
-
-        protected void added(int index, int length) {
-            ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_ADDED, index, index + length - 1);
-            for (ListDataListener listener : listeners) {
-                listener.intervalAdded(e);
-            }
-
-            if (size() == length && selectedObject == null && getElementAt(0) != null) {
-                setSelectedItem(getElementAt(0));
-            }
-        }
-
-        protected void removed(int index, List removedElements) {
-            boolean removedSelected = false;
-            int length = removedElements.size();
-
-            try {
-                for (Object element : removedElements) {
-                    detailBinding.setSourceObjectInternal(element);
-                    Object detail = detailBinding.getSourceValueForTarget().getValue();
-                    if (areObjectsEqual(detail, selectedObject)) {
-                        removedSelected = true;
-                        break;
-                    }
-                }
-            } finally {
-                detailBinding.setSourceObjectInternal(null);
-            }
-
-            ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_REMOVED, index, index + length - 1);
-            for (ListDataListener listener : listeners) {
-                listener.intervalRemoved(e);
-            }
-
-            if (removedSelected) {
-                if (size() == 0) {
-                    setSelectedItem(null);
-                } else {
-                    setSelectedItem(getElementAt(Math.max(index - 1, 0)));
-                }
-            }
-        }
-
-        protected void changed(int row) {
-            contentsChanged(row, row);
-            if (row == selectedModelIndex) {
-                selectedObject = getElementAt(row);
-                contentsChanged(-1, -1);
-            }
-        }
-
-        private void contentsChanged(int row0, int row1) {
-            ListDataEvent e = new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, row0, row1);
-            for (ListDataListener listener : listeners) {
-                listener.contentsChanged(e);
-            }
-        }
-
-        public Object getElementAt(int index) {
-            return valueAt(index, 0);
-        }
-
-        public void addListDataListener(ListDataListener l) {
-            listeners.add(l);
-        }
-
-        public void removeListDataListener(ListDataListener l) {
-            listeners.remove(l);
-        }
-
-        public int getSize() {
-            return size();
-        }
-    }
 }
