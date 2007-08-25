@@ -218,7 +218,9 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
         }
         
         public void propertyStateChanged(PropertyStateEvent pse) {
-            System.out.println("changed");
+            if (changeSupport != null) {
+                changeSupport.firePropertyChange("selectedElementID", null, null);
+            }
         }
     }
 }
