@@ -91,6 +91,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
         // This is what DefaultComboBoxModel does (yes, yuck!)
         if ((selectedObject != null && !selectedObject.equals(anObject)) ||
                 selectedObject == null && anObject != null) {
+            handler.removeFrom();
             selectedObject = anObject;
             contentsChanged(-1, -1);
             
@@ -100,6 +101,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
                 for (int i = 0; i < size; i++) {
                     if (anObject.equals(getElementAt(i))) {
                         selectedModelIndex = i;
+                        handler.addTo(getElement(selectedModelIndex));
                         break;
                     }
                 }
@@ -156,10 +158,13 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
         }
         
         if (removedSelected) {
+            handler.removeFrom();
             if (size() == 0) {
                 setSelectedItem(null);
             } else {
-                setSelectedItem(getElementAt(Math.max(index - 1, 0)));
+                int newIndex = Math.max(index - 1, 0);
+                setSelectedItem(getElementAt(newIndex));
+                //handler.addTo(getElement(newIndex));
             }
         }
     }
@@ -168,6 +173,8 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
         contentsChanged(row, row);
         if (row == selectedModelIndex) {
             selectedObject = getElementAt(row);
+            handler.removeFrom();
+            handler.addTo(getElement(row));
             contentsChanged(-1, -1);
             if (changeSupport != null) {
                 changeSupport.firePropertyChange("selectedElement", null, null);
