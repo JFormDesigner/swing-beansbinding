@@ -488,7 +488,9 @@ public abstract class Binding<SS, SV, TS, TV> {
             return klass;
         }
 
-        if (klass == Short.TYPE) {
+        if (klass == Byte.TYPE) {
+            return Byte.class;
+        } else if (klass == Short.TYPE) {
             return Short.class;
         } else if (klass == Integer.TYPE) {
             return Integer.class;
@@ -510,7 +512,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     private final TV convertForward(SV value) {
         if (converter == null) {
             Class<?> targetType = noPrimitiveType(targetProperty.getWriteType(targetObject));
-            return (TV)targetType.cast(value);
+            return (TV)targetType.cast(Converter.defaultConvert(value, targetType));
         }
 
         return converter.convertForward(value);
@@ -519,7 +521,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     private final SV convertReverse(TV value) {
         if (converter == null) {
             Class<?> sourceType = noPrimitiveType(sourceProperty.getWriteType(sourceObject));
-            return (SV)sourceType.cast(value);
+            return (SV)sourceType.cast(Converter.defaultConvert(value, sourceType));
         }
 
         return converter.convertReverse(value);
