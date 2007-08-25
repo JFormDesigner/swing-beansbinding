@@ -24,48 +24,81 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
         private Handler handler;
         private Object cachedValue;
 
-        private Adapter(AbstractButton button, String property) {
+        private Adapter(JComboBox combo, String property) {
             super(property);
-            this.button = button;
+            this.combo = combo;
         }
 
-        public boolean isSelected() {
-            return button.isSelected();
+        public Object getSelectedElement() {
+            return JComboBoxAdapterProvider.getSelectedElement(combo);
         }
 
-        public void setSelected(boolean selected) {
-            button.setSelected(selected);
+        public Object getSelectedElementID() {
+            return JComboBoxAdapterProvider.getSelectedElementID(combo);
         }
 
         protected void listeningStarted() {
             handler = new Handler();
-            button.addItemListener(handler);
-            button.addPropertyChangeListener("model", handler);
+            combo.addActionListener(handler);
+            ComboBoxModel model = combo.getModel();
+            if (model instanceof BindingComboBoxModel) {
+                ((BindingComboBoxModel)model).addPropertyChangeListener("selectedElement", handler);
+            }
+            combo.addPropertyChangeListener("model", handler);
         }
 
         protected void listeningStopped() {
-            button.removeItemListener(handler);
-            button.removePropertyChangeListener("model", handler);
+            combo.removeActionListener(handler);
+            combo.removePropertyChangeListener("model", handler);
             handler = null;
         }
         
-        private class Handler implements ItemListener, PropertyChangeListener {
-            private void buttonSelectedChanged() {
-                boolean oldSelected = cachedSelected;
-                cachedSelected = isSelected();
-                firePropertyChange(oldSelected, cachedSelected);
-            }
-            
-            public void itemStateChanged(ItemEvent ie) {
-                buttonSelectedChanged();
+        private class Handler implements ActionListener, PropertyChangeListener {
+            private void comboSelectionChanged() {
+                Object oldValue = cachedValue;
+                cachedValue = JComboBoxAdapterProvider.getSelectedElement(combo);
+                firePropertyChange(oldValue, cachedValue);
             }
 
-            public void propertyChange(PropertyChangeEvent pe) {
-                buttonSelectedChanged();
+            public void actionPerformed(ActionEvent ae) {
+                comboSelectionChanged();
+            }
+
+            public void propertyChange(PropertyChangeEvent pce) {
+                String propertyName = pce.getPropertyName();
+
+                if (propertyName == "model") {
+                    ComboBoxModel model = (ComboBoxModel)pce.getOldValue();
+                    if (model instanceof BindingComboBoxModel) {
+                        ((BindingComboBoxModel)model).removePropertyChangeListener("selectedElement", this);
+                    }
+                    model = (ComboBoxModel)pce.getNewValue();
+                    if (model instanceof BindingComboBoxModel) {
+                        ((BindingComboBoxModel)model).addPropertyChangeListener("selectedElement", this);
+                    }
+                }
+
+                comboSelectionChanged();
             }
         }
     }
 
+    private static Object getSelectedElement(JComboBox combo) {
+        ComboBoxModel model = combo.getModel();
+
+        return model instanceof BindingComboBoxModel ?
+            ((BindingComboBoxModel)model).getSelectedElement() :
+            model.getSelectedItem();
+    }
+    
+    private static Object getSelectedElementID(JComboBox combo) {
+        ComboBoxModel model = combo.getModel();
+
+        return model instanceof BindingComboBoxModel ?
+            ((BindingComboBoxModel)model).getSelectedElementID() :
+            model.getSelectedItem();
+    }
+    
     public boolean providesAdapter(Class<?> type, String property) {
         if (!JComboBox.class.isAssignableFrom(type)) {
             return false;
@@ -80,12 +113,12 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
             throw new IllegalArgumentException();
         }
 
-        return new Adapter((AbstractButton)source, property);
+        return new Adapter((JComboBox)source, property);
     }
 
     public Class<?> getAdapterClass(Class<?> type) {
-        return AbstractButton.class.isAssignableFrom(type) ?
-            AbstractButtonAdapterProvider.Adapter.class :
+        return JComboBox.class.isAssignableFrom(type) ?
+            JComboBoxAdapterProvider.Adapter.class :
             null;
     }
 
