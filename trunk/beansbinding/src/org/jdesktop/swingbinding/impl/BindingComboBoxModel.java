@@ -74,7 +74,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
         super.setElements(elements);
         if (size() > 0 && selectedObject == null) {
             selectedObject = getElementAt(0);
-            handler.addTo(elements.get(0));
+            handler.addTo(getElement(0));
             selectedModelIndex = 0;
         }
     }
@@ -205,13 +205,15 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
     }
 
     private class Handler implements PropertyStateListener {
+        private Object addedTo;
+        
         public void addTo(Object object) {
-            System.out.println("adding to " + idBinding.getSourceProperty());
-            idBinding.getSourceProperty().addPropertyStateListener(object, this);
+            addedTo = object;
+            idBinding.getSourceProperty().addPropertyStateListener(addedTo, this);
         }
         
-        public void removeFrom(Object object) {
-            idBinding.getSourceProperty().removePropertyStateListener(object, this);
+        public void removeFrom() {
+            idBinding.getSourceProperty().removePropertyStateListener(addedTo, this);
         }
         
         public void propertyStateChanged(PropertyStateEvent pse) {
