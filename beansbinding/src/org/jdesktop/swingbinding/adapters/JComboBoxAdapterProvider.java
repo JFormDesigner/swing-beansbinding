@@ -22,13 +22,17 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
     public static final class Adapter extends BeanAdapterBase {
         private JComboBox combo;
         private Handler handler;
-        private Object cachedValue;
+        private Object cachedElementOrID;
 
         private Adapter(JComboBox combo, String property) {
             super(property);
             this.combo = combo;
         }
 
+        private boolean isID() {
+            return property == SELECTED_ELEMENT_ID_P;
+        }
+        
         public Object getSelectedElement() {
             return JComboBoxAdapterProvider.getSelectedElement(combo);
         }
@@ -39,25 +43,33 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
 
         protected void listeningStarted() {
             handler = new Handler();
+            cachedElementOrID = isID() ? getSelectedElementID() : getSelectedElement();
             combo.addActionListener(handler);
             ComboBoxModel model = combo.getModel();
             if (model instanceof BindingComboBoxModel) {
-                ((BindingComboBoxModel)model).addPropertyChangeListener("selectedElement", handler);
+                ((BindingComboBoxModel)model).addPropertyChangeListener(property, handler);
             }
             combo.addPropertyChangeListener("model", handler);
         }
 
         protected void listeningStopped() {
             combo.removeActionListener(handler);
+            ComboBoxModel model = combo.getModel();
+            if (model instanceof BindingComboBoxModel) {
+                ((BindingComboBoxModel)model).removePropertyChangeListener(property, handler);
+            }
             combo.removePropertyChangeListener("model", handler);
             handler = null;
+            cachedElementOrID = null;
         }
-        
+
         private class Handler implements ActionListener, PropertyChangeListener {
             private void comboSelectionChanged() {
-                Object oldValue = cachedValue;
-                cachedValue = JComboBoxAdapterProvider.getSelectedElement(combo);
-                firePropertyChange(oldValue, cachedValue);
+                Object oldValue = cachedElementOrID;
+                cachedElementOrID = isID() ?
+                    JComboBoxAdapterProvider.getSelectedElementID(combo) :
+                    JComboBoxAdapterProvider.getSelectedElement(combo);
+                firePropertyChange(oldValue, cachedElementOrID);
             }
 
             public void actionPerformed(ActionEvent ae) {
@@ -70,11 +82,11 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
                 if (propertyName == "model") {
                     ComboBoxModel model = (ComboBoxModel)pce.getOldValue();
                     if (model instanceof BindingComboBoxModel) {
-                        ((BindingComboBoxModel)model).removePropertyChangeListener("selectedElement", this);
+                        ((BindingComboBoxModel)model).removePropertyChangeListener(property, this);
                     }
                     model = (ComboBoxModel)pce.getNewValue();
                     if (model instanceof BindingComboBoxModel) {
-                        ((BindingComboBoxModel)model).addPropertyChangeListener("selectedElement", this);
+                        ((BindingComboBoxModel)model).addPropertyChangeListener(property, this);
                     }
                 }
 

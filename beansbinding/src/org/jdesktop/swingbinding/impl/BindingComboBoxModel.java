@@ -5,6 +5,7 @@
 
 package org.jdesktop.swingbinding.impl;
 
+import org.jdesktop.beansbinding.*;
 import org.jdesktop.swingbinding.*;
 import org.jdesktop.swingbinding.JComboBoxBinding.DetailBinding;
 import org.jdesktop.swingbinding.JComboBoxBinding.IDBinding;
@@ -24,6 +25,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
     private AbstractColumnBinding detailBinding;
     private AbstractColumnBinding idBinding;
     private PropertyChangeSupport changeSupport;
+    private Handler handler = new Handler();
 
     public BindingComboBoxModel(DetailBinding detailBinding, IDBinding idBinding) {
         this.detailBinding = detailBinding;
@@ -72,6 +74,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
         super.setElements(elements);
         if (size() > 0 && selectedObject == null) {
             selectedObject = getElementAt(0);
+            handler.addTo(elements.get(0));
             selectedModelIndex = 0;
         }
     }
@@ -107,7 +110,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
     protected void allChanged() {
         contentsChanged(0, size());
     }
-    
+
     protected void valueChanged(int row, int column) {
         contentsChanged(row, row);
         if (row == selectedModelIndex) {
@@ -168,6 +171,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
             contentsChanged(-1, -1);
             if (changeSupport != null) {
                 changeSupport.firePropertyChange("selectedElement", null, null);
+                changeSupport.firePropertyChange("selectedElementID", null, null);
             }
         }
     }
@@ -190,7 +194,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
     public void removeListDataListener(ListDataListener l) {
         listeners.remove(l);
     }
-    
+
     public int getSize() {
         return size();
     }
@@ -198,5 +202,20 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
     private static final boolean areObjectsEqual(Object o1, Object o2) {
         return ((o1 != null && o1.equals(o2)) ||
                 (o1 == null && o2 == null));
+    }
+
+    private class Handler implements PropertyStateListener {
+        public void addTo(Object object) {
+            System.out.println("adding to " + idBinding.getSourceProperty());
+            idBinding.getSourceProperty().addPropertyStateListener(object, this);
+        }
+        
+        public void removeFrom(Object object) {
+            idBinding.getSourceProperty().removePropertyStateListener(object, this);
+        }
+        
+        public void propertyStateChanged(PropertyStateEvent pse) {
+            System.out.println("changed");
+        }
     }
 }
