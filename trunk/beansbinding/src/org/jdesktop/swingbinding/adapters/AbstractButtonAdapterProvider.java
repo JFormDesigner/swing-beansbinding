@@ -15,7 +15,7 @@ import org.jdesktop.beansbinding.ext.BeanAdapterProvider;
  */
 public final class AbstractButtonAdapterProvider implements BeanAdapterProvider {
 
-    private static final String PROPERTY = "selected";
+    private static final String SELECTED_P = "selected";
 
     public static final class Adapter extends BeanAdapterBase {
         private AbstractButton button;
@@ -23,7 +23,7 @@ public final class AbstractButtonAdapterProvider implements BeanAdapterProvider 
         private boolean cachedSelected;
 
         private Adapter(AbstractButton button) {
-            super(PROPERTY);
+            super(SELECTED_P);
             this.button = button;
         }
 
@@ -65,7 +65,7 @@ public final class AbstractButtonAdapterProvider implements BeanAdapterProvider 
     }
 
     public boolean providesAdapter(Class<?> type, String property) {
-        return AbstractButton.class.isAssignableFrom(type) && property.intern() == PROPERTY;
+        return AbstractButton.class.isAssignableFrom(type) && property.intern() == SELECTED_P;
     }
 
     public Object createAdapter(Object source, String property) {

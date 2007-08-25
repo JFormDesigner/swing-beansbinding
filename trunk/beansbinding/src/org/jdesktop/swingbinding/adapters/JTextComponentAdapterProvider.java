@@ -201,11 +201,11 @@ public final class JTextComponentAdapterProvider implements BeanAdapterProvider 
     }
     
     public boolean providesAdapter(Class<?> type, String property) {
-        property = property.intern();
-
         if (!JTextComponent.class.isAssignableFrom(type)) {
             return false;
         }
+
+        property = property.intern();
 
         return property == PROPERTY_BASE ||
                property == ON_ACTION_OR_FOCUS_LOST ||

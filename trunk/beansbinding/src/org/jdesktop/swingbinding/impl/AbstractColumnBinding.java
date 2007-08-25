@@ -32,13 +32,4 @@ public abstract class AbstractColumnBinding extends Binding {
 
     public void unbindImpl() {}
 
-    void setSourceObjectInternal(Object object) {
-        setManaged(false);
-        try {
-            setSourceObject(object);
-        } finally {
-            setManaged(true);
-        }
-    }
-
 }
