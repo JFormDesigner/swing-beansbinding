@@ -32,14 +32,17 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
     public final class Adapter extends BeanAdapterBase {
         private JTable table;
         private Handler handler;
-        private Object cachedElement;
-        private List<Object> cachedElements;
+        private Object cachedElementOrElements;
 
         private Adapter(JTable table, String property) {
             super(property);
             this.table = table;
         }
 
+        private boolean isPlural() {
+            return property == SELECTED_ELEMENTS_P || property == SELECTED_ELEMENTS_IA_P;
+        }
+        
         public Object getSelectedElement() {
             return JTableAdapterProvider.getSelectedElement(table);
         }
@@ -58,8 +61,8 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
 
         protected void listeningStarted() {
             handler = new Handler();
-            cachedElement = JTableAdapterProvider.getSelectedElement(table);
-            cachedElements = JTableAdapterProvider.getSelectedElements(table);
+            cachedElementOrElements = isPlural() ?
+                getSelectedElements() : JTableAdapterProvider.getSelectedElement(table);
             table.addPropertyChangeListener("model", handler);
             table.addPropertyChangeListener("selectionModel", handler);
             table.getSelectionModel().addListSelectionListener(handler);
@@ -69,19 +72,15 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
             table.getSelectionModel().removeListSelectionListener(handler);
             table.removePropertyChangeListener("model", handler);
             table.removePropertyChangeListener("selectionModel", handler);
-            cachedElement = null;
-            cachedElements = null;
+            cachedElementOrElements = null;
             handler = null;
         }
 
         private class Handler implements ListSelectionListener, PropertyChangeListener {
             private void tableSelectionChanged() {
-                Object oldElement = cachedElement;
-                Object oldElements = cachedElements;
-                cachedElement = getSelectedElement();
-                cachedElements = getSelectedElements();
-                firePropertyChange(oldElement, cachedElement);
-                firePropertyChange(oldElements, cachedElements);
+                Object oldElementOrElements = cachedElementOrElements;
+                cachedElementOrElements = getSelectedElements();
+                firePropertyChange(oldElementOrElements, cachedElementOrElements);
             }
 
             public void valueChanged(ListSelectionEvent e) {
