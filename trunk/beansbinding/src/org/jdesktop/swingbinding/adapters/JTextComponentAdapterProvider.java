@@ -132,7 +132,7 @@ public final class JTextComponentAdapterProvider implements BeanAdapterProvider 
 
             private void updateText() {
                 Object oldText = cachedText;
-                cachedText = component.getText();
+                cachedText = getText();
                 firePropertyChange(oldText, cachedText);
             }
 

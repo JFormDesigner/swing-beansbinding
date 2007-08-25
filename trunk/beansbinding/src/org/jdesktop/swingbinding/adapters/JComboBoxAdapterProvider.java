@@ -52,7 +52,7 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
         private class Handler implements ActionListener, PropertyChangeListener {
             private void comboSelectionChanged() {
                 Object oldValue = cachedItem;
-                cachedItem = combo.getSelectedItem();
+                cachedItem = getSelectedItem();
                 firePropertyChange(oldValue, cachedItem);
             }
 
