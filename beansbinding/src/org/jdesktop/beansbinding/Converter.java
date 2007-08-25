@@ -143,9 +143,6 @@ public abstract class Converter<S, T> {
     };
 
     static final Object defaultConvert(Object source, Class<?> targetType) {
-        if (true) {
-            return source;
-        }
         Class sourceType = source.getClass();
 
         if (sourceType == targetType) {
