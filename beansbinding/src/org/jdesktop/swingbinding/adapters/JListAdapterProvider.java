@@ -147,11 +147,11 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
     }
     
     public boolean providesAdapter(Class<?> type, String property) {
-        property = property.intern();
-
         if (!JList.class.isAssignableFrom(type)) {
             return false;
         }
+
+        property = property.intern();
 
         return property == SELECTED_ELEMENT_P ||
                property == SELECTED_ELEMENT_IA_P ||

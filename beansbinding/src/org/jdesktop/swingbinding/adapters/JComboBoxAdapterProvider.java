@@ -9,67 +9,51 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.beans.*;
 import org.jdesktop.beansbinding.ext.BeanAdapterProvider;
-import org.jdesktop.swingbinding.impl.BindingComboBoxModel;
 
 /**
  * @author Shannon Hickey
  */
 public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
 
-    private static final String SELECTED_ELEMENT_P = "selectedElement";
-    private static final String SELECTED_ELEMENT_ID_P = "selectedElementID";
+    private static final String SELECTED_ITEM_P = "selectedItem";
 
     public static final class Adapter extends BeanAdapterBase {
         private JComboBox combo;
         private Handler handler;
-        private Object cachedElementOrID;
+        private Object cachedItem;
 
-        private Adapter(JComboBox combo, String property) {
-            super(property);
+        private Adapter(JComboBox combo) {
+            super(SELECTED_ITEM_P);
             this.combo = combo;
         }
 
-        private boolean isID() {
-            return property == SELECTED_ELEMENT_ID_P;
+        public Object getSelectedItem() {
+            return combo.getSelectedItem();
+        }
+
+        public void setSelectedItem(Object item) {
+            combo.setSelectedItem(item);
         }
         
-        public Object getSelectedElement() {
-            return JComboBoxAdapterProvider.getSelectedElement(combo);
-        }
-
-        public Object getSelectedElementID() {
-            return JComboBoxAdapterProvider.getSelectedElementID(combo);
-        }
-
         protected void listeningStarted() {
             handler = new Handler();
-            cachedElementOrID = isID() ? getSelectedElementID() : getSelectedElement();
+            cachedItem = combo.getSelectedItem();
             combo.addActionListener(handler);
-            ComboBoxModel model = combo.getModel();
-            if (model instanceof BindingComboBoxModel) {
-                ((BindingComboBoxModel)model).addPropertyChangeListener(property, handler);
-            }
             combo.addPropertyChangeListener("model", handler);
         }
 
         protected void listeningStopped() {
             combo.removeActionListener(handler);
-            ComboBoxModel model = combo.getModel();
-            if (model instanceof BindingComboBoxModel) {
-                ((BindingComboBoxModel)model).removePropertyChangeListener(property, handler);
-            }
             combo.removePropertyChangeListener("model", handler);
             handler = null;
-            cachedElementOrID = null;
+            cachedItem = null;
         }
 
         private class Handler implements ActionListener, PropertyChangeListener {
             private void comboSelectionChanged() {
-                Object oldValue = cachedElementOrID;
-                cachedElementOrID = isID() ?
-                    JComboBoxAdapterProvider.getSelectedElementID(combo) :
-                    JComboBoxAdapterProvider.getSelectedElement(combo);
-                firePropertyChange(oldValue, cachedElementOrID);
+                Object oldValue = cachedItem;
+                cachedItem = combo.getSelectedItem();
+                firePropertyChange(oldValue, cachedItem);
             }
 
             public void actionPerformed(ActionEvent ae) {
@@ -77,47 +61,13 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
             }
 
             public void propertyChange(PropertyChangeEvent pce) {
-                String propertyName = pce.getPropertyName();
-
-                if (propertyName == "model") {
-                    ComboBoxModel model = (ComboBoxModel)pce.getOldValue();
-                    if (model instanceof BindingComboBoxModel) {
-                        ((BindingComboBoxModel)model).removePropertyChangeListener(property, this);
-                    }
-                    model = (ComboBoxModel)pce.getNewValue();
-                    if (model instanceof BindingComboBoxModel) {
-                        ((BindingComboBoxModel)model).addPropertyChangeListener(property, this);
-                    }
-                }
-
                 comboSelectionChanged();
             }
         }
     }
 
-    private static Object getSelectedElement(JComboBox combo) {
-        ComboBoxModel model = combo.getModel();
-
-        return model instanceof BindingComboBoxModel ?
-            ((BindingComboBoxModel)model).getSelectedElement() :
-            model.getSelectedItem();
-    }
-    
-    private static Object getSelectedElementID(JComboBox combo) {
-        ComboBoxModel model = combo.getModel();
-
-        return model instanceof BindingComboBoxModel ?
-            ((BindingComboBoxModel)model).getSelectedElementID() :
-            model.getSelectedItem();
-    }
-    
     public boolean providesAdapter(Class<?> type, String property) {
-        if (!JComboBox.class.isAssignableFrom(type)) {
-            return false;
-        }
-
-        return property == SELECTED_ELEMENT_P ||
-               property == SELECTED_ELEMENT_ID_P;
+        return JComboBox.class.isAssignableFrom(type) && property.intern() == SELECTED_ITEM_P;
     }
 
     public Object createAdapter(Object source, String property) {
@@ -125,11 +75,11 @@ public final class JComboBoxAdapterProvider implements BeanAdapterProvider {
             throw new IllegalArgumentException();
         }
 
-        return new Adapter((JComboBox)source, property);
+        return new Adapter((JComboBox)source);
     }
 
     public Class<?> getAdapterClass(Class<?> type) {
-        return JComboBox.class.isAssignableFrom(type) ?
+        return JList.class.isAssignableFrom(type) ? 
             JComboBoxAdapterProvider.Adapter.class :
             null;
     }

@@ -83,6 +83,8 @@ public final class JSliderAdapterProvider implements BeanAdapterProvider {
             return false;
         }
 
+        property = property.intern();
+        
         return property == PROPERTY_BASE ||
                property == IGNORE_ADJUSTING;
     }
