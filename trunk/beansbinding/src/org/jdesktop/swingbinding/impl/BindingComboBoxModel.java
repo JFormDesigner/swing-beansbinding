@@ -88,22 +88,18 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
     }
     
     public void setSelectedItem(Object anObject) {
-        // This is what DefaultComboBoxModel does (yes, yuck!)
-        if ((selectedObject != null && !selectedObject.equals(anObject)) ||
-                selectedObject == null && anObject != null) {
-            handler.removeFrom();
-            selectedObject = anObject;
-            contentsChanged(-1, -1);
+        handler.removeFrom();
+        selectedObject = anObject;
+        contentsChanged(-1, -1);
             
-            selectedModelIndex = -1;
-            if (anObject != null) {
-                int size = size();
-                for (int i = 0; i < size; i++) {
-                    if (anObject.equals(getElementAt(i))) {
-                        selectedModelIndex = i;
-                        handler.addTo(getElement(selectedModelIndex));
-                        break;
-                    }
+        selectedModelIndex = -1;
+        if (anObject != null) {
+            int size = size();
+            for (int i = 0; i < size; i++) {
+                if (anObject.equals(getElementAt(i))) {
+                    selectedModelIndex = i;
+                    handler.addTo(getElement(selectedModelIndex));
+                    break;
                 }
             }
         }
@@ -158,17 +154,14 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
         }
         
         if (removedSelected) {
-            handler.removeFrom();
             if (size() == 0) {
                 setSelectedItem(null);
             } else {
-                int newIndex = Math.max(index - 1, 0);
-                setSelectedItem(getElementAt(newIndex));
-                //handler.addTo(getElement(newIndex));
+                setSelectedItem(getElementAt(Math.max(index - 1, 0)));
             }
         }
     }
-    
+
     protected void changed(int row) {
         contentsChanged(row, row);
         if (row == selectedModelIndex) {
