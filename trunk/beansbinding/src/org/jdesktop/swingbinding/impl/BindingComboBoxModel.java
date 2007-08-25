@@ -214,6 +214,7 @@ public final class BindingComboBoxModel extends ListBindingManager implements Co
         
         public void removeFrom() {
             idBinding.getSourceProperty().removePropertyStateListener(addedTo, this);
+            addedTo = null;
         }
         
         public void propertyStateChanged(PropertyStateEvent pse) {
