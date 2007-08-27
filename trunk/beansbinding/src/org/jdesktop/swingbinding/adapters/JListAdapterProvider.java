@@ -131,8 +131,9 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
 
         // PENDING(shannonh) - more cases to consider
         int index = list.getSelectionModel().getLeadSelectionIndex();
-        index = list.getSelectionModel().isSelectedIndex(index) ? index : -1;
-        
+        index = list.getSelectionModel().isSelectedIndex(index) ?
+            index : list.getSelectionModel().getMinSelectionIndex();
+
         if (index == -1) {
             return null;
         }
