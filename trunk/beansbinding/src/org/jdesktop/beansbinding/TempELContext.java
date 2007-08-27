@@ -19,7 +19,7 @@ import org.jdesktop.el.impl.lang.VariableMapperImpl;
  *
  * @author Shannon Hickey
  */
-public class TempELContext extends ELContext {
+class TempELContext extends ELContext {
     private final CompositeELResolver resolver;
     private final VariableMapper variableMapper = new VariableMapperImpl();
     private final FunctionMapper functionMapper = new FunctionMapperImpl();
