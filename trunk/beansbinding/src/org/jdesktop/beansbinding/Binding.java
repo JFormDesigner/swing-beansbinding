@@ -333,8 +333,8 @@ public abstract class Binding<SS, SV, TS, TV> {
         throwIfBound();
         throwIfManaged();
 
-        notifySourceEdited(false);
-        notifyTargetEdited(false);
+        hasEditedSource = false;
+        hasEditedTarget = false;
         isBound = true;
 
         psl = new PSL();
@@ -357,14 +357,14 @@ public abstract class Binding<SS, SV, TS, TV> {
         throwIfManaged();
 
         unbindImpl();
-        notifySourceEdited(false);
-        notifyTargetEdited(false);
 
         sourceProperty.removePropertyStateListener(sourceObject, psl);
         targetProperty.removePropertyStateListener(targetObject, psl);
         psl = null;
 
         isBound = false;
+        hasEditedSource = false;
+        hasEditedTarget = false;
 
         if (listeners != null) {
             for (BindingListener listener : listeners) {
