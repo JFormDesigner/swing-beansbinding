@@ -595,6 +595,22 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected void targetChangedImpl(PropertyStateEvent pse) {
     }
 
+    private void notifySourceEdited(boolean newValue) {
+        boolean old = hasEditedSource;
+        hasEditedSource = newValue;
+        if (changeSupport != null) {
+            changeSupport.firePropertyChange("hasEditedSource", old, hasEditedSource);
+        }
+    }
+    
+    private void notifyTargetEdited(boolean newValue) {
+        boolean old = hasEditedTarget;
+        hasEditedTarget = newValue;
+        if (changeSupport != null) {
+            changeSupport.firePropertyChange("hasEditedTarget", old, hasEditedTarget);
+        }
+    }
+
     public final void addPropertyChangeListener(PropertyChangeListener listener) {
         if (changeSupport == null) {
             changeSupport = new PropertyChangeSupport(this);
