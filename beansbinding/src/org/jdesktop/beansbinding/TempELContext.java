@@ -27,7 +27,6 @@ class TempELContext extends ELContext {
     public TempELContext() {
         resolver = new CompositeELResolver();
         // PENDING(shannonh) - EL also has an ArrayELResolver. Should that be added too?
-        // PENDING(shannonh) - custom resolver to resolve special bean properties
         resolver.add(new MapELResolver());
         resolver.add(new BeanDelegateELResolver());
     }
