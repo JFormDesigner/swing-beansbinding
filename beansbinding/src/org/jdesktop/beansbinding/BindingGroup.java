@@ -45,6 +45,7 @@ public class BindingGroup {
         }
 
         binding.addBindingListener(getHandler());
+        binding.addPropertyChangeListener(getHandler());
 
         if (binding.isBound()) {
             bound.add(binding);
@@ -77,6 +78,7 @@ public class BindingGroup {
         }
 
         binding.removeBindingListener(getHandler());
+        binding.removePropertyChangeListener(getHandler());
     }
 
     private void putNamed(String name, Binding binding) {
@@ -237,7 +239,7 @@ public class BindingGroup {
         return handler;
     }
 
-    private class Handler implements BindingListener {
+    private class Handler implements BindingListener, PropertyChangeListener {
         public void syncFailed(Binding binding, Binding.SyncFailure... failures) {
             if (listeners == null) {
                 return;
@@ -249,8 +251,6 @@ public class BindingGroup {
         }
 
         public void synced(Binding binding) {
-            updateEditedTargets(binding, false);
-
             if (listeners == null) {
                 return;
             }
@@ -271,8 +271,6 @@ public class BindingGroup {
         }
 
         public void targetEdited(Binding binding) {
-            updateEditedTargets(binding, true);
-
             if (listeners == null) {
                 return;
             }
@@ -294,6 +292,12 @@ public class BindingGroup {
             bound.remove(binding);
             unbound.add(binding);
             updateEditedTargets(binding, false);
+        }
+
+        public void propertyChange(PropertyChangeEvent pce) {
+            if (pce.getPropertyName() == "hasEditedTarget") {
+                updateEditedTargets((Binding)pce.getSource(), (Boolean)pce.getNewValue());
+            }
         }
     }
 }
