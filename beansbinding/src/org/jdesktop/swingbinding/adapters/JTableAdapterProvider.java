@@ -182,7 +182,8 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
 
         // PENDING(shannonh) - more cases to consider
         int index = table.getSelectionModel().getLeadSelectionIndex();
-        index = table.getSelectionModel().isSelectedIndex(index) ? index : -1;
+        index = table.getSelectionModel().isSelectedIndex(index) ?
+            index : table.getSelectionModel().getMinSelectionIndex();
         
         if (index == -1) {
             return null;
