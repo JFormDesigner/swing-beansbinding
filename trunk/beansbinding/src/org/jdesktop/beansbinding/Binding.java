@@ -7,6 +7,7 @@ package org.jdesktop.beansbinding;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.beans.*;
 
 /**
  * @author Shannon Hickey
@@ -30,6 +31,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     private boolean ignoreChange;
     private boolean isManaged;
     private boolean isBound;
+    private PropertyChangeSupport changeSupport;
 
     public enum SyncFailureType {
         TARGET_UNWRITEABLE,
@@ -593,6 +595,54 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected void targetChangedImpl(PropertyStateEvent pse) {
     }
 
+    public final void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (changeSupport == null) {
+            changeSupport = new PropertyChangeSupport(this);
+        }
+
+        changeSupport.addPropertyChangeListener(listener);
+    }
+
+    public final void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        if (changeSupport == null) {
+            changeSupport = new PropertyChangeSupport(this);
+        }
+
+        changeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public final void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (changeSupport == null) {
+            return;
+        }
+
+        changeSupport.removePropertyChangeListener(listener);
+    }
+
+    public final void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        if (changeSupport == null) {
+            return;
+        }
+
+        changeSupport.removePropertyChangeListener(propertyName, listener);
+    }
+
+    public final PropertyChangeListener[] getPropertyChangeListeners() {
+        if (changeSupport == null) {
+            return new PropertyChangeListener[0];
+        }
+        
+        return changeSupport.getPropertyChangeListeners();
+    }
+
+    public final PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
+        if (changeSupport == null) {
+            return new PropertyChangeListener[0];
+        }
+        
+        return changeSupport.getPropertyChangeListeners(propertyName);
+    }
+    
     private class PSL implements PropertyStateListener {
         public void propertyStateChanged(PropertyStateEvent pse) {
             if (ignoreChange) {
