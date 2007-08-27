@@ -333,8 +333,8 @@ public abstract class Binding<SS, SV, TS, TV> {
         throwIfBound();
         throwIfManaged();
 
-        hasEditedSource = false;
-        hasEditedTarget = false;
+        notifySourceEdited(false);
+        notifyTargetEdited(false);
         isBound = true;
 
         psl = new PSL();
@@ -357,6 +357,8 @@ public abstract class Binding<SS, SV, TS, TV> {
         throwIfManaged();
 
         unbindImpl();
+        notifySourceEdited(false);
+        notifyTargetEdited(false);
 
         sourceProperty.removePropertyStateListener(sourceObject, psl);
         targetProperty.removePropertyStateListener(targetObject, psl);
@@ -449,8 +451,8 @@ public abstract class Binding<SS, SV, TS, TV> {
             ignoreChange = false;
         }
 
-        hasEditedSource = false;
-        hasEditedTarget = false;
+        notifySourceEdited(false);
+        notifyTargetEdited(false);
         return null;
     }
 
@@ -470,8 +472,8 @@ public abstract class Binding<SS, SV, TS, TV> {
             ignoreChange = false;
         }
 
-        hasEditedSource = false;
-        hasEditedTarget = false;
+        notifySourceEdited(false);
+        notifyTargetEdited(false);
         return null;
     }
 
@@ -562,7 +564,7 @@ public abstract class Binding<SS, SV, TS, TV> {
             return;
         }
 
-        hasEditedSource = true;
+        notifySourceEdited(true);
 
         if (listeners != null) {
             for (BindingListener listener : listeners) {
@@ -581,7 +583,7 @@ public abstract class Binding<SS, SV, TS, TV> {
             return;
         }
 
-        hasEditedTarget = true;
+        notifyTargetEdited(true);
 
         if (listeners != null) {
             for (BindingListener listener : listeners) {
