@@ -7,7 +7,6 @@ package org.jdesktop.beansbinding;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.beans.*;
 
 /**
  * @author Shannon Hickey
@@ -31,7 +30,6 @@ public abstract class Binding<SS, SV, TS, TV> {
     private boolean ignoreChange;
     private boolean isManaged;
     private boolean isBound;
-    private PropertyChangeSupport changeSupport;
 
     public enum SyncFailureType {
         TARGET_UNWRITEABLE,
@@ -348,8 +346,6 @@ public abstract class Binding<SS, SV, TS, TV> {
                 listener.bindingBecameBound(this);
             }
         }
-
-        fireSourceWriteableChanged(false, isSourceWriteable());
     }
 
     protected abstract void bindImpl();
@@ -371,18 +367,12 @@ public abstract class Binding<SS, SV, TS, TV> {
                 listener.bindingBecameUnbound(this);
             }
         }
-
-        fireSourceWriteableChanged(sourceProperty.isWriteable(sourceObject), false);
     }
     
     protected abstract void unbindImpl();
 
     public final boolean isBound() {
         return isBound;
-    }
-
-    public final boolean isSourceWriteable() {
-        return isBound() && sourceProperty.isWriteable(sourceObject);
     }
     
     public final boolean getHasEditedSource() {
@@ -564,25 +554,8 @@ public abstract class Binding<SS, SV, TS, TV> {
                ", hasChangedTarget=" + hasEditedTarget +
                ", bound=" + isBound();
     }
-
-    private void fireSourceReadableChanged(boolean oldReadable, boolean newReadable) {
-        if (changeSupport != null) {
-            changeSupport.firePropertyChange("sourceReadable", oldReadable, newReadable);
-        }
-    }
-
-    private void fireSourceWriteableChanged(boolean oldWriteable, boolean newWriteable) {
-        if (changeSupport != null) {
-            changeSupport.firePropertyChange("sourceWriteable", oldWriteable, newWriteable);
-        }
-    }
     
     private void sourceChanged(PropertyStateEvent pse) {
-        if (pse.getWriteableChanged()) {
-            boolean isWriteable = isSourceWriteable();
-            fireSourceWriteableChanged(!isWriteable, isWriteable);
-        }
-
         if (!pse.getValueChanged()) {
             return;
         }
@@ -620,54 +593,6 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected void targetChangedImpl(PropertyStateEvent pse) {
     }
 
-    public final void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (changeSupport == null) {
-            changeSupport = new PropertyChangeSupport(this);
-        }
-
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    public final void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        if (changeSupport == null) {
-            changeSupport = new PropertyChangeSupport(this);
-        }
-
-        changeSupport.addPropertyChangeListener(propertyName, listener);
-    }
-
-    public final void removePropertyChangeListener(PropertyChangeListener listener) {
-        if (changeSupport == null) {
-            return;
-        }
-
-        changeSupport.removePropertyChangeListener(listener);
-    }
-
-    public final void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        if (changeSupport == null) {
-            return;
-        }
-
-        changeSupport.removePropertyChangeListener(propertyName, listener);
-    }
-
-    public final PropertyChangeListener[] getPropertyChangeListeners() {
-        if (changeSupport == null) {
-            return new PropertyChangeListener[0];
-        }
-        
-        return changeSupport.getPropertyChangeListeners();
-    }
-
-    public final PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
-        if (changeSupport == null) {
-            return new PropertyChangeListener[0];
-        }
-        
-        return changeSupport.getPropertyChangeListeners(propertyName);
-    }
-    
     private class PSL implements PropertyStateListener {
         public void propertyStateChanged(PropertyStateEvent pse) {
             if (ignoreChange) {
