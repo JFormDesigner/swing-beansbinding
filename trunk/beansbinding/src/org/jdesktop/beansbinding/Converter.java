@@ -11,13 +11,39 @@ import java.math.BigDecimal;
 /**
  * {@code Converter} is responsible for converting a value from one type
  * to another.
+ * <p>
+ * The conversion methods can throw {@code RuntimeExceptions} in response
+ * to a problem in conversion. For example, a {@code String} to {@code Integer}
+ * converter might throw a {@code NumberFormatException} if the {@code String}
+ * can't be parsed properly into an {@code Integer}.
  *
- * @author sky
+ * @param <S> the {@code Converter's} source type
+ * @param <T> the {@code Converter's} target type
+ *
  * @author Shannon Hickey
  * @author Jan Stola
+ * @author Scott Violet
  */
 public abstract class Converter<S, T> {
+
+    /**
+     * Converts a value from the source type to the target type.
+     * Can throw a {@code RuntimeException} to indicate a problem
+     * with the conversion.
+     *
+     * @param S the source value to convert
+     * @return the value, converted to the target type
+     */
     public abstract T convertForward(S value);
+
+    /**
+     * Converts a value from the target type to the source type.
+     * Can throw a {@code RuntimeException} to indicate a problem
+     * with the conversion.
+     *
+     * @param T the target value to convert
+     * @return the value, converted to the source type
+     */
     public abstract S convertReverse(T value);
 
     static final Converter BYTE_TO_STRING_CONVERTER = new Converter() {
