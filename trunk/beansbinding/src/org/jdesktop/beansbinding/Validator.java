@@ -63,7 +63,7 @@ public abstract class Validator<T> {
          * implementations. The returned string may be empty but may not
          * be {@code null}.
          *
-         * @return a string representation of this {@code result}
+         * @return a string representation of this {@code Result}
          */
         public String toString() {
             return getClass().getName() +
