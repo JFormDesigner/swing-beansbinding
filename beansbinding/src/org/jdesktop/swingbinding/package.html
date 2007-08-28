@@ -160,19 +160,19 @@
                 <th align="left">Binding class</th><th align="left">Description</th>
             </tr>
             <tr>
-                <td><b>{@link JComboBoxBinding}</b></td>
+                <td><b>{@link org.jdesktop.swingbinding.JComboBoxBinding}</b></td>
                 <td>Bind a {@code java.util.List} of items to be used as the
                     items in a {@code JComboBox}.
                 </td>
             </tr>
             <tr>
-                <td><b>{@link JListBinding}</b></td>
+                <td><b>{@link org.jdesktop.swingbinding.JListBinding}</b></td>
                 <td>Bind a {@code java.util.List} of elements to be the elements
                     of a {@code JList}, and specify how the elements are displayed.
                 </td>
             </tr>
             <tr>
-                <td><b>{@link JTableBinding}</b></td>
+                <td><b>{@link org.jdesktop.swingbinding.JTableBinding}</b></td>
                 <td>Bind a {@code java.util.List} of elements to be the elements
                     of a {@code JTable}, and specify how properties of the elements
                     are mapped to columns.
@@ -182,5 +182,56 @@
                 <td colspan="2"><font color="red"><b>&nbsp;&nbsp;more to come...</b></font></td>
             </tr>
         </table>
+        <p>
+            Instances of these classes are obtained by invoking the static {@code create}
+            methods provided by the {@link SwingBindings} class.
+        </p>
+        <h3>Examples</h3>
+        <p>
+            Bind a list of {@code Person} beans to a {@code JTable} and have it show
+            the {@code "firstName"} property of each bean in column 0 and the {@code "lastName"}
+            property in column 1:
+        </p>
+        <pre><code>
+    // create the person list
+    List<Person> people = createPersonList();
+            
+    // create the binding from list to table
+    JTableBinding tb = SwingBindings.createJTableBinding(READ, people, table);
+
+    // configure how the properties map to columns
+    tb.addColumnBinding(BeanProperty.create("firstName"));
+    tb.addColumnBinding(BeanProperty.create("lastName"));
+
+    // realize the binding
+    tb.bind();
+        </code></pre>
+        <p>
+            Given the binding above, create a second set of bindings that bind
+            the {@code "firstName"} property of the table's selected element to one
+            {@code JTextField} and the {@code "lastName"} property of the selected
+            element to another. Furthermore, specify that we want the text fields to
+            report change (and therefore have their values committed back to the
+            selected element) only on when focus is lost from the field:
+        </p>
+        <pre><code>
+    // create properties representing the selected person's first name and last name
+    Property selectedFirstP = BeanProperty.create("selectedElement.firstName");
+    Property selectedLastP = BeanProperty.create("selectedElement.lastName");
+
+    // create a property representing a text field's text with change reported only on focus lost
+    Property textP = BeanProperty.create("text_ON_FOCUS_LOST");
+
+    // bind the selected first name and last name to the two text fields
+    Binding b1 = Bindings.createAutoBinding(READ_WRITE, table, selectedFirstP, field1, textP);
+    Binding b2 = Bindings.createAutoBinding(READ_WRITE, table, selectedLastP, field2, textP);
+    
+    // realize the bindings
+    b1.bind();
+    b2.bind();
+        </code></pre>
+        <p>
+            What you've seen above is actually the simple building blocks of a typical master-detail application.
+        </p>
     </body>
 </html>
