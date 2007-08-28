@@ -19,12 +19,25 @@ package org.jdesktop.beansbinding;
  */
 public class PropertyResolutionException extends RuntimeException {
 
-    public PropertyResolutionException(String description) {
-        super(description);
+    /**
+     * Creates a {@code PropertyResolutionException} with the given message.
+     *
+     * @param message the exception's message
+     */
+    public PropertyResolutionException(String message) {
+        super(message);
     }
 
-    public PropertyResolutionException(String description, Exception reason) {
-        super(description, reason);
+    /**
+     * Creates a {@code PropertyResolutionException} with the given message
+     * and cause.
+     *
+     * @param message the exception's message
+     * @param reason the original exception that caused this exception
+     *        to be thrown
+     */
+    public PropertyResolutionException(String message, Exception reason) {
+        super(message, reason);
     }
 
 }
