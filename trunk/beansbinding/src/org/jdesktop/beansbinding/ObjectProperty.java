@@ -21,7 +21,7 @@ public final class ObjectProperty<S> extends Property<S, S> {
     private ObjectProperty() {}
 
     public Class<? extends S> getWriteType(S source) {
-        throw new IllegalStateException("Unwriteable");
+        throw new UnsupportedOperationException("Unwriteable");
     }
 
     public S getValue(S source) {
@@ -29,7 +29,7 @@ public final class ObjectProperty<S> extends Property<S, S> {
     }
 
     public void setValue(S source, S value) {
-        throw new IllegalStateException("Unwriteable");
+        throw new UnsupportedOperationException("Unwriteable");
     }
 
     public boolean isReadable(Object source) {
