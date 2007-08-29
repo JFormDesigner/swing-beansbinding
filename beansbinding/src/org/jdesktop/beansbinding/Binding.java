@@ -154,7 +154,6 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     protected final void setSourceProperty(Property<SS, SV> sourceProperty) {
         throwIfBound();
-        throwIfManaged();
         if (sourceProperty == null) {
             throw new IllegalArgumentException("source property can't be null");
         }
@@ -163,7 +162,6 @@ public abstract class Binding<SS, SV, TS, TV> {
     
     protected final void setTargetProperty(Property<TS, TV> targetProperty) {
         throwIfBound();
-        throwIfManaged();
         if (targetProperty == null) {
             throw new IllegalArgumentException("source property can't be null");
         }
@@ -191,14 +189,22 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     public final void setSourceObject(SS sourceObject) {
-        throwIfBound();
         throwIfManaged();
+        setSourceObjectUnmanaged(sourceObject);
+    }
+
+    protected final void setSourceObjectUnmanaged(SS sourceObject) {
+        throwIfBound();
         this.sourceObject = sourceObject;
     }
 
     public final void setTargetObject(TS targetObject) {
-        throwIfBound();
         throwIfManaged();
+        setTargetObjectUnmanaged(targetObject);
+    }
+
+    protected final void setTargetObjectUnmanaged(TS targetObject) {
+        throwIfBound();
         this.targetObject = targetObject;
     }
 
@@ -330,8 +336,12 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     public final void bind() {
-        throwIfBound();
         throwIfManaged();
+        bindUnmanaged();
+    }
+    
+    protected final void bindUnmanaged() {
+        throwIfBound();
 
         hasEditedSource = false;
         hasEditedTarget = false;
@@ -353,8 +363,12 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected abstract void bindImpl();
 
     public final void unbind() {
-        throwIfUnbound();
         throwIfManaged();
+        unbindUnmanaged();
+    }
+    
+    protected final void unbindUnmanaged() {
+        throwIfUnbound();
 
         unbindImpl();
 
@@ -436,8 +450,12 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     public final SyncFailure refresh() {
-        throwIfUnbound();
         throwIfManaged();
+        return refreshUnmanaged();
+    }
+    
+    protected final SyncFailure refreshUnmanaged() {
+        throwIfUnbound();
 
         ValueResult<TV> vr = getSourceValueForTarget();
         if (vr.failed()) {
@@ -457,8 +475,12 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     public final SyncFailure save() {
-        throwIfUnbound();
         throwIfManaged();
+        return saveUnmanaged();
+    }
+    
+    protected final SyncFailure saveUnmanaged() {
+        throwIfUnbound();
 
         ValueResult<SV> vr = getTargetValueForSource();
         if (vr.failed()) {
