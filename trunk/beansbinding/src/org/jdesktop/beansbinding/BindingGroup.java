@@ -9,6 +9,10 @@ import java.util.*;
 import java.beans.*;
 
 /**
+ * {@code BindingGroup} allows you to create a group of {@code Bindings}
+ * and operate on and/or track state changes to the {@code Bindings} as
+ * a group.
+ *
  * @author Shannon Hickey
  */
 public class BindingGroup {
@@ -20,9 +24,17 @@ public class BindingGroup {
     private Set<Binding> editedTargets;
     private PropertyChangeSupport changeSupport;
 
+    /**
+     * Creates an empty {@code BindingGroup}.
+     */
     public BindingGroup() {}
 
-    public final Binding addBinding(Binding binding) {
+    /**
+     * Adds a {@code Binding} to this group.
+     *
+     * @param binding the {@code Binding} to add
+     */
+    public final void addBinding(Binding binding) {
         if (binding == null) {
             throw new IllegalArgumentException("Binding must be non-null");
         }
@@ -55,8 +67,6 @@ public class BindingGroup {
         } else {
             unbound.add(binding);
         }
-
-        return binding;
     }
 
     public final void removeBinding(Binding binding) {
