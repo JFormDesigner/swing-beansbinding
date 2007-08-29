@@ -328,8 +328,23 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             cb.unbindInternal();
             cb.setEditingObject(null);
             cb.setSourceObjectInternal(null);
-            if (failure != null) {
-                BindingListener[] listeners = JTableBinding.this.getBindingListeners();
+            if (failure == null) {
+                BindingListener[] listeners;
+                listeners = cb.getBindingListeners();
+                for (BindingListener listener : listeners) {
+                    listener.synced(cb);
+                }
+                listeners = JTableBinding.this.getBindingListeners();
+                for (BindingListener listener : listeners) {
+                    listener.synced(cb);
+                }
+            } else {
+                BindingListener[] listeners;
+                listeners = cb.getBindingListeners();
+                for (BindingListener listener : listeners) {
+                    listener.syncFailed(cb, failure);
+                }
+                listeners = JTableBinding.this.getBindingListeners();
                 for (BindingListener listener : listeners) {
                     listener.syncFailed(cb, failure);
                 }
