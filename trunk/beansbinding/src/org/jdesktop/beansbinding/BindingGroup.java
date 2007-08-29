@@ -33,6 +33,9 @@ public class BindingGroup {
      * Adds a {@code Binding} to this group.
      *
      * @param binding the {@code Binding} to add
+     * @throws IllegalArgumentException if the binding is null, is a managed binding,
+     *         if the group already contains this binding, or if the group already
+     *         contains a binding with the same ({@code non-null}) name
      */
     public final void addBinding(Binding binding) {
         if (binding == null) {
@@ -69,7 +72,18 @@ public class BindingGroup {
         }
     }
 
+    /**
+     * Removes a {@code Binding} fromo this group.
+     *
+     * @param binding the {@code Binding} to remove
+     * @throws IllegalArgumentException if the binding is null or
+     *         if the group doesn't contain this binding
+     */
     public final void removeBinding(Binding binding) {
+        if (binding == null) {
+            throw new IllegalArgumentException("Binding must be non-null");
+        }
+
         if (binding.isBound()) {
             if (!bound.remove(binding)) {
                 throw new IllegalArgumentException("Unknown Binding");
