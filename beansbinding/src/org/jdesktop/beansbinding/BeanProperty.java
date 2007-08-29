@@ -117,7 +117,13 @@ import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
  * getter for {@code mother}, {@code Duke's mother} does not define a Java
  * Beans setter for {@code firstName}, {@code Duke} is {@code null},
  * {@code Duke's mother} is {@code null}.
- * 
+ * <p>
+ * In addition to working on Java Beans properties, any object in the path
+ * can be an instance of {@code Map}. In this case, the {@code Map's get}
+ * method is used with the property name as the getter, and the
+ * {@code Map's put} method is used with the property name as the setter.
+ * {@code BeanProperty} can only respond to changes in the {@code Map}
+ * if it is an instanceof {@link org.jdesktop.observablecollections.ObservableMap}.
  *
  * @param <S> the type of source object that this {@code Property} operates on
  * @param <V> the type of value that this {@code Property} represents
