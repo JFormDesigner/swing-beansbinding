@@ -506,6 +506,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * The default for this property is {@code null}.
      *
      * @return the value that replaces a source value of {@code null}, or {@code null}
+     *         if there is no replacement
      * @see #setSourceNullValue
      */
     public final TV getSourceNullValue() {
@@ -532,17 +533,36 @@ public abstract class Binding<SS, SV, TS, TV> {
      * The default for this property is {@code null}.
      *
      * @return the value that replaces a target value of {@code null}, or {@code null}
+     *         if there is no replacement
      * @see #setTargetNullValue
      */
     public final SV getTargetNullValue() {
         return targetNullValue;
     }
 
+    /**
+     * Sets the value to be returned by {@link #getSourceValueForTarget}
+     * when the source property is unreadable for the source object.
+     * The default for this property is {@code null}.
+     * This method may not be called on a bound binding.
+     *
+     * @param value the value, or {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     */
     public final void setSourceUnreadableValue(TV value) {
         throwIfBound();
         sourceUnreadableValue = value;
     }
 
+    /**
+     * Returns the value to be returned by {@link #getSourceValueForTarget}
+     * when the source property is unreadable for the source object.
+     * The default for this property is {@code null}.
+     *
+     * @return the value that replaces an unreadable source value, or {@code null}
+     *         if there is no replacement
+     * @see #setSourceNullValue
+     */
     public final TV getSourceUnreadableValue() {
         return sourceUnreadableValue;
     }
