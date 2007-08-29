@@ -84,10 +84,10 @@ public abstract class Property<S, V> {
 
     /**
      * Adds a {@code PropertyStateListener} to be notified when the state of the
-     * {@code Property} changes with respect to the given source. If a listener
-     * is added more than once, notifications are sent to that listener once for
-     * every time that it has been added. The ordering of listener notification is
-     * unspecified.
+     * {@code Property} changes with respect to the given source. Does nothing if
+     * the listener is {@code null}. If a listener is added more than once,
+     * notifications are sent to that listener once for every time that it has
+     * been added. The ordering of listener notification is unspecified.
      *
      * @param source the source object on which to operate
      * @param listener the listener to be notified
@@ -96,10 +96,10 @@ public abstract class Property<S, V> {
 
     /**
      * Removes a {@code PropertyStateListener} for the given source. Does
-     * nothing if the listener is not one of those registered for this source object.
-     * If the listener being removed was registered more than once, only one
-     * occurrence of the listener is removed from the list of listeners.
-     * The ordering of listener notification is unspecified.
+     * nothing if the listener is {@code null} or is not one of those registered
+     * for this source object. If the listener being removed was registered more
+     * than once, only one occurrence of the listener is removed from the list of
+     * listeners. The ordering of listener notification is unspecified.
      *
      * @param source the source object on which to operate
      * @param listener the listener to be removed
