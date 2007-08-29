@@ -26,6 +26,11 @@ import java.beans.*;
  * objects used by this binding are allowed to flow through to the caller
  * of the {@code Binding} methods.
  *
+ * @param <SS> the type of source object
+ * @param <SV> the type of value that the source property represents
+ * @param <TS> the type of target object
+ * @param <SV> the type of value that the target property represents
+ *
  * @author Shannon Hickey
  */
 public abstract class Binding<SS, SV, TS, TV> {
@@ -268,6 +273,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         }
     }
 
+    /**
+     * Create an instance of {@code Binding} between two properties of two objects.
+     *
+     * @param sourceObject the source object
+     * @param sourceProperty a property on the source object
+     * @param targetObject the target object
+     * @param targetProperty a property on the target object
+     * @param name a name for the {@code Binding}
+     * @throws IllegalArgumentException if the source property or target property is {@code null}
+     */
     protected Binding(SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty, String name) {
         setSourceProperty(sourceProperty);
         setTargetProperty(targetProperty);
@@ -279,6 +294,15 @@ public abstract class Binding<SS, SV, TS, TV> {
         this.name = name;
     }
 
+    /**
+     * Sets the source property on the {@code Binding}.
+     * This method may not be called on a bound binding.
+     *
+     * @param sourceProperty the source property
+     * @throws IllegalArgumentException if the source property is {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isBound()
+     */
     protected final void setSourceProperty(Property<SS, SV> sourceProperty) {
         throwIfBound();
         if (sourceProperty == null) {
@@ -287,6 +311,15 @@ public abstract class Binding<SS, SV, TS, TV> {
         this.sourceProperty = sourceProperty;
     }
     
+    /**
+     * Sets the target property on the {@code Binding}.
+     * This method may not be called on a bound binding.
+     *
+     * @param targetProperty the target property
+     * @throws IllegalArgumentException if the target property is {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isBound()
+     */
     protected final void setTargetProperty(Property<TS, TV> targetProperty) {
         throwIfBound();
         if (targetProperty == null) {
@@ -295,41 +328,106 @@ public abstract class Binding<SS, SV, TS, TV> {
         this.targetProperty = targetProperty;
     }
     
+    /**
+     * Returns the {@code Binding's} name, which may be {@code null}.
+     *
+     * @return the {@code Binding's} name, or {@code null}
+     */
     public final String getName() {
         return name;
     }
 
+    /**
+     * Returns the {@code Binding's} source property, which may not be {@code null}.
+     *
+     * @return the {@code Binding's} source property, {@code non-null}
+     */
     public final Property<SS, SV> getSourceProperty() {
         return sourceProperty;
     }
 
+    /**
+     * Returns the {@code Binding's} target property, which may not be {@code null}.
+     *
+     * @return the {@code Binding's} target property, {@code non-null}
+     */
     public final Property<TS, TV> getTargetProperty() {
         return targetProperty;
     }
 
+    /**
+     * Returns the {@code Binding's} source object, which may be {@code null}.
+     *
+     * @return the {@code Binding's} source object, or {@code null}
+     */
     public final SS getSourceObject() {
         return sourceObject;
     }
 
+    /**
+     * Returns the {@code Binding's} target object, which may be {@code null}.
+     *
+     * @return the {@code Binding's} target object, or {@code null}
+     */
     public final TS getTargetObject() {
         return targetObject;
     }
 
+    /**
+     * Sets the {@code Binding's} source object, which may be {@code null}.
+     * This method may not be called on a managed or bound binding.
+     *
+     * @param sourceObject the source object, or {@code null}
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     public final void setSourceObject(SS sourceObject) {
         throwIfManaged();
         setSourceObjectUnmanaged(sourceObject);
     }
 
+    /**
+     * A protected version of {@code setSourceObject} that allows managed
+     * subclasses to set the source object without throwing an exception
+     * for being managed.
+     *
+     * @param sourceObject the source object, or {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     protected final void setSourceObjectUnmanaged(SS sourceObject) {
         throwIfBound();
         this.sourceObject = sourceObject;
     }
 
+    /**
+     * Sets the {@code Binding's} target object, which may be {@code null}.
+     * This method may not be called on a managed or bound binding.
+     *
+     * @param targetObject the target object, or {@code null}
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     public final void setTargetObject(TS targetObject) {
         throwIfManaged();
         setTargetObjectUnmanaged(targetObject);
     }
 
+    /**
+     * A protected version of {@code setTargetObject} that allows managed
+     * subclasses to set the target object without throwing an exception
+     * for being managed.
+     *
+     * @param targetObject the target object, or {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     protected final void setTargetObjectUnmanaged(TS targetObject) {
         throwIfBound();
         this.targetObject = targetObject;
