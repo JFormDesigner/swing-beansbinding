@@ -186,6 +186,12 @@ public abstract class Binding<SS, SV, TS, TV> {
         }
     }
 
+    /**
+     * Encapsulates the result from calling
+     * {@link org.jdesktop.beansbinding.Binding#getSourceValueForTarget} or
+     * {@link org.jdesktop.beansbinding.Binding#getTargetValueForSource}, which
+     * can either be a successful value or a failure.
+     */
     public static final class ValueResult<V> {
         private V value;
         private SyncFailure failure;
@@ -202,10 +208,27 @@ public abstract class Binding<SS, SV, TS, TV> {
             this.failure = failure;
         }
 
+        /**
+         * Returns {@code true} if this {@code ValueResult} represents
+         * a failure and {@code false} otherwise.
+         *
+         * @return {@code true} if this {@code ValueResult} represents
+         *         a failure and {@code false} otherwise
+         * @see #getFailure
+         */
         public boolean failed() {
             return failure != null;
         }
 
+        /**
+         * Returns the resulting value if this {@code ValueResult} does
+         * not represent a failure and throws {@code UnsupportedOperationException}
+         * otherwise.
+         *
+         * @return the resulting value
+         * @throws UnsupportedOperationException if this {@code ValueResult} represents a failure
+         * @see #failed
+         */
         public V getValue() {
             if (failed()) {
                 throw new UnsupportedOperationException();
@@ -214,6 +237,15 @@ public abstract class Binding<SS, SV, TS, TV> {
             return value;
         }
 
+        /**
+         * Returns the failure if this {@code ValueResult} represents
+         * a failure and throws {@code UnsupportedOperationException}
+         * otherwise.
+         *
+         * @return the failure
+         * @throws UnsupportedOperationException if this {@code ValueResult} does not represent a failure
+         * @see #failed
+         */
         public SyncFailure getFailure() {
             if (!failed()) {
                 throw new UnsupportedOperationException();
