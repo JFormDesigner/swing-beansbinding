@@ -108,8 +108,8 @@ public abstract class Property<S, V> {
     public abstract void removePropertyStateListener(S source, PropertyStateListener listener);
 
     /**
-     * Returns the set of listeners registered for the given source.
-     * Returns an empty array if there are no listeners.
+     * Returns an arry containing the listeners registered for the given source.
+     * Order is undefined. Returns an empty array if there are no listeners.
      *
      * @param source the source object on which to operate
      * @return the set of listeners registered for the given source
