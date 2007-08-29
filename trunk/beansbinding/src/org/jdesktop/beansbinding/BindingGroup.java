@@ -282,6 +282,13 @@ public class BindingGroup {
      * {@code null}. If a listener is added more than once, notifications are
      * sent to that listener once for every time that it has been added.
      * The ordering of listener notification is unspecified.
+     * <p>
+     * {@code BindingGroup} fires property change notification for the following
+     * properties:
+     * <p>
+     * <ul>
+     *    <li>{@code hasEditedTargetBindings}
+     * </ul>
      *
      * @param listener the listener to add
      */
@@ -293,6 +300,24 @@ public class BindingGroup {
         changeSupport.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Adds a {@code PropertyChangeListener} to be notified when the property identified
+     * by the {@code propertyName} argument changes on this {@code BindingGroup}.
+     * Does nothing if the property name or listener is {@code null}.
+     * If a listener is added more than once, notifications are
+     * sent to that listener once for every time that it has been added.
+     * The ordering of listener notification is unspecified.
+     * <p>
+     * {@code BindingGroup} fires property change notification for the following
+     * properties:
+     * <p>
+     * <ul>
+     *    <li>{@code hasEditedTargetBindings}
+     * </ul>
+     *
+     * @param property the name of the property to listen for changes on
+     * @param listener the listener to add
+     */
     public final void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         if (changeSupport == null) {
             changeSupport = new PropertyChangeSupport(this);
@@ -319,6 +344,18 @@ public class BindingGroup {
         changeSupport.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Removes a {@code PropertyChangeListener} from the group for the given
+     * property name. Does nothing if the property name or listener is
+     * {@code null} or the listener is not one of those registered.
+     * If the listener being removed was registered more than once, only one
+     * occurrence of the listener is removed from the list of listeners.
+     * The ordering of listener notification is unspecified.
+     * 
+     * @param propertyName the name of the property to remove the listener for
+     * @param listener the listener to remove
+     * @see #addPropertyChangeListener(String, PropertyChangeListener)
+     */
     public final void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         if (changeSupport == null) {
             return;
@@ -327,6 +364,14 @@ public class BindingGroup {
         changeSupport.removePropertyChangeListener(propertyName, listener);
     }
 
+    /**
+     * Returns the list of {@code PropertyChangeListeners} registered on this
+     * group. Order is undefined. Returns an empty array if there are
+     * no listeners.
+     *
+     * @return the list of {@code PropertyChangeListeners} registered on this group
+     * @see #addPropertyChangeListener
+     */
     public final PropertyChangeListener[] getPropertyChangeListeners() {
         if (changeSupport == null) {
             return new PropertyChangeListener[0];
@@ -335,6 +380,16 @@ public class BindingGroup {
         return changeSupport.getPropertyChangeListeners();
     }
 
+    /**
+     * Returns the list of {@code PropertyChangeListeners} registered on this
+     * group for the given property name. Order is undefined. Returns an empty array
+     * if there are no listeners registered for the property name.
+     *
+     * @param propertyName the property name to retrieve the listeners for
+     * @return the list of {@code PropertyChangeListeners} registered on this group
+     *         for the given property name
+     * @see #addPropertyChangeListener(String, PropertyChangeListener)
+     */
     public final PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
         if (changeSupport == null) {
             return new PropertyChangeListener[0];
