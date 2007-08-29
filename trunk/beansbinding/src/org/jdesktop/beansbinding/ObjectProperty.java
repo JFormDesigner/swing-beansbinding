@@ -67,6 +67,7 @@ public final class ObjectProperty<S> extends Property<S, S> {
      * @param source {@inheritDoc}
      * @throws UnsupportedOperationException always; {@code ObjectProperty} is never writeable
      * @see #isWriteable
+     * @see #getWriteType
      */
     public void setValue(S source, S value) {
         throw new UnsupportedOperationException("Unwriteable");

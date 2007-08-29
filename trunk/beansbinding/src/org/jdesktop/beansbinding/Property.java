@@ -60,6 +60,7 @@ public abstract class Property<S, V> {
      * @throws UnsupportedOperationException if the {@code Property} is not
      *         writeable for the given source
      * @see #isWriteable
+     * @see #getWriteType
      */
     public abstract void setValue(S source, V value);
 
