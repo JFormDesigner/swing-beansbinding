@@ -486,6 +486,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         return converter;
     }
 
+    /**
+     * Sets the value to be returned by {@link #getSourceValueForTarget}
+     * when the source property returns {@code null} for the source object.
+     * The default for this property is {@code null}.
+     * This method may not be called on a bound binding.
+     *
+     * @param value the value, or {@code null}
+     * @return the value to replace a source value of {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     */
     public final void setSourceNullValue(TV value) {
         throwIfBound();
         sourceNullValue = value;
@@ -495,6 +505,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         return sourceNullValue;
     }
 
+    /**
+     * Sets the value to be returned by {@link #getTargetValueForSource}
+     * when the target property returns {@code null} for the target object.
+     * The default for this property is {@code null}.
+     * This method may not be called on a bound binding.
+     *
+     * @param value the value, or {@code null}
+     * @return the value to replace a target value of {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     */
     public final void setTargetNullValue(SV value) {
         throwIfBound();
         targetNullValue = value;
