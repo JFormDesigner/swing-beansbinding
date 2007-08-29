@@ -320,16 +320,6 @@ public class BindingGroup {
         
         return changeSupport.getPropertyChangeListeners(propertyName);
     }
-    
-    public final PropertyStateListener[] getPropertyStateListeners() {
-        if (listeners == null) {
-            return new PropertyStateListener[0];
-        }
-
-        PropertyStateListener[] ret = new PropertyStateListener[listeners.size()];
-        ret = listeners.toArray(ret);
-        return ret;
-    }
 
     private final Handler getHandler() {
         if (handler == null) {
