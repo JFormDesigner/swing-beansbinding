@@ -277,7 +277,7 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
     }
     
     public V getValue(S source) {
-        /*SourceEntry entry = map.get(source);
+        SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
@@ -288,19 +288,6 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
  
             return (V)entry.cachedValue;
         }
-        
-        Object src = getLastSource(source);
-        if (src == null || src == NOREAD) {
-            throw new UnsupportedOperationException("Unreadable");
-        }
-        
-        src = getProperty(src, path.getLast());
-        if (src == NOREAD) {
-            System.err.println("LOG: getValue(): missing read method");
-            throw new UnsupportedOperationException("Unreadable");
-        }
-
-        return (V)src;*/
 
         try {
             expression.setSource(getBeanFromSource(source, true));
@@ -366,25 +353,12 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
     }
     
     public boolean isReadable(S source) {
-        /*SourceEntry entry = map.get(source);
+        SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
             return entry.cachedIsReadable();
         }
-        
-        Object src = getLastSource(source);
-        if (src == null || src == NOREAD) {
-            return false;
-        }
-        
-        Object reader = getReader(src, path.getLast());
-        if (reader == null) {
-            System.err.println("LOG: isReadable(): missing read method");
-            return false;
-        }
-
-        return true;*/
 
         try {
             expression.setSource(getBeanFromSource(source, true));
@@ -404,25 +378,12 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
     }
 
     public boolean isWriteable(S source) {
-        /*SourceEntry entry = map.get(source);
+        SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
-            return entry.cachedIsWriteable();
+            return entry.cachedIsWriteable;
         }
-
-        Object src = getLastSource(source);
-        if (src == null || src == NOREAD) {
-            return false;
-        }
-
-        Object writer = getWriter(src, path.getLast());
-        if (writer == null) {
-            System.err.println("LOG: isWritable(): missing write method");
-            return false;
-        }
-
-        return true;*/
         
         try {
             expression.setSource(getBeanFromSource(source, true));
