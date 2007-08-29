@@ -41,6 +41,7 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
         private Object cachedBean;
         private Object cachedValue;
         private boolean cachedIsWriteable;
+        private Class<?> cachedWriteType;
         private boolean ignoreChange;
         private Set<RegisteredListener> registeredListeners;
         private Set<RegisteredListener> lastRegisteredListeners;
@@ -92,9 +93,11 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
                     log("updateCache()", "expression is unresolvable");
                     cachedValue = NOREAD;
                     cachedIsWriteable = false;
+                    cachedWriteType = null;
                 } else {
                     cachedValue = result.getResult();
                     cachedIsWriteable = !expression.isReadOnly(context);
+                    cachedWriteType = cachedIsWriteable ? expression.getType(context) : null;
                 }
 
                 resolvedProperties = result.getResolvedProperties();
@@ -131,16 +134,19 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
 
                     Object currValue;
                     boolean currIsWriteable;
+                    Class<?> currWriteType;
 
                     if (result.getType() == Expression.Result.Type.UNRESOLVABLE) {
                         currValue = NOREAD;
                         currIsWriteable = false;
+                        currWriteType = null;
                     } else {
                         currValue = result.getResult();
                         currIsWriteable = !expression.isReadOnly(context);
+                        currWriteType = currIsWriteable ? expression.getType(context) : null;
                     }
 
-                    if (currValue != cachedValue || currIsWriteable != cachedIsWriteable) {
+                    if (currValue != cachedValue || currIsWriteable != cachedIsWriteable || currWriteType != cachedWriteType) {
                         log("validateCache()", "concurrent modification");
                     }
                 } catch (ELException ele) {
@@ -240,19 +246,17 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
     }
 
     public Class<? extends V> getWriteType(S source) {
-        /*SourceEntry entry = map.get(source);
+        SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
  
-            if (entry.cachedWriter == null) {
+            if (!entry.cachedIsWriteable) {
                 throw new UnsupportedOperationException("Unwriteable");
             }
  
-            return (Class<? extends V>)getType(entry.cache[path.length() - 1], path.getLast());
+            return (Class<? extends V>)entry.cachedWriteType;
         }
-
-        return (Class<? extends V>)getType(getLastSource(source), path.getLast());*/
 
         try {
             expression.setSource(getBeanFromSource(source, true));
