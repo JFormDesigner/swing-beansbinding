@@ -433,20 +433,55 @@ public abstract class Binding<SS, SV, TS, TV> {
         this.targetObject = targetObject;
     }
 
+    /**
+     * Sets the {@code Validator} for the {@code Binding}, which may be {@code null}.
+     * This method may not be called on a bound binding.
+     * <p>
+     * See the documentation on {@link #getTargetValueForSource} for details on how
+     * a {@code Binding's Validator} is used.
+     *
+     * @param validator the {@code Validator}, or {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isBound()
+     */
     public final void setValidator(Validator<? super SV> validator) {
         throwIfBound();
         this.validator = validator;
     }
 
+    /**
+     * Returns the {@code Binding's Validator}, which may be {@code null}.
+     *
+     * @return the {@code Binding's Validator}, or {@code null}
+     * @see #setValidator
+     */
     public final Validator<? super SV> getValidator() {
         return validator;
     }
 
+    /**
+     * Sets the {@code Converter} for the {@code Binding}, which may be {@code null}.
+     * This method may not be called on a bound binding.
+     * <p>
+     * See the documentation on {@link #getTargetValueForSource} and
+     * {@link #getSourceValueForTarget} for details on how
+     * a {@code Binding's Covnerter} is used.
+     *
+     * @param converter the {@code Converter}, or {@code null}
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isBound()
+     */
     public final void setConverter(Converter<SV, TV> converter) {
         throwIfBound();
         this.converter = converter;
     }
 
+    /**
+     * Returns the {@code Binding's Converter}, which may be {@code null}.
+     *
+     * @return the {@code Binding's Converter}, or {@code null}
+     * @see #setConverter
+     */
     public final Converter<SV, TV> getConverter() {
         return converter;
     }
