@@ -33,11 +33,45 @@ public abstract class Binding<SS, SV, TS, TV> {
     private boolean isBound;
     private PropertyChangeSupport changeSupport;
 
+    /**
+     * An enumeration representing the reasons a sync ({@code save} or {@code refresh})
+     * can fail on a {@code Binding}.
+     *
+     * @see Binding#refresh
+     * @see Binding#save
+     */
     public enum SyncFailureType {
+        
+        /**
+         * A {@code refresh} failed because the {@code Binding's} target property is unwriteable
+         * for the {@code Binding's} target object.
+         */
         TARGET_UNWRITEABLE,
+        
+        /**
+         * A {@code save} failed because the {@code Binding's} source property is unwriteable
+         * for the {@code Binding's} source object.
+         */
         SOURCE_UNWRITEABLE,
+        
+        /**
+         * A {@code save} failed because the {@code Binding's} target property is unreadable
+         * for the {@code Binding's} target object.
+         */
         TARGET_UNREADABLE,
+        
+        /**
+         * A {@code save} failed due to a conversion failure on the value
+         * returned by the {@code Binding's} target property for the {@code Binding's}
+         * target object.
+         */
         CONVERSION_FAILED,
+        
+        /**
+         * A {@code save} failed due to a validation failure on the value
+         * returned by the {@code Binding's} target property for the {@code Binding's}
+         * target object.
+         */
         VALIDATION_FAILED
     }
 
