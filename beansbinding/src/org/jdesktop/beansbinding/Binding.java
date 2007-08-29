@@ -869,8 +869,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         return notifyAndReturn(refresh());
     }
 
+    protected final SyncFailure refreshAndNotifyUnmanaged() {
+        return notifyAndReturn(refreshUnmanaged());
+    }
+    
     public final SyncFailure saveAndNotify() {
         return notifyAndReturn(save());
+    }
+
+    protected final SyncFailure saveAndNotifyUnmanaged() {
+        return notifyAndReturn(saveUnmanaged());
     }
 
     public final SyncFailure refresh() {
