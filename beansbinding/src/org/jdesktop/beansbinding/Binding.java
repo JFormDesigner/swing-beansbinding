@@ -288,6 +288,10 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     public final void addBindingListener(BindingListener listener) {
+        if (listener == null) {
+            return;
+        }
+
         if (listeners == null) {
             listeners = new ArrayList<BindingListener>();
         }
@@ -296,6 +300,10 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     public final void removeBindingListener(BindingListener listener) {
+        if (listener == null) {
+            return;
+        }
+
         if (listeners != null) {
             listeners.remove(listener);
         }
