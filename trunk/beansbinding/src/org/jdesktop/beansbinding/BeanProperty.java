@@ -36,6 +36,92 @@ import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 
 /**
+ * An implementation of {@code Property} that uses a simple dot-separated path
+ * syntax to address Java Beans properties of source objects. For example, to
+ * create a property representing the {@code firstName} property of an obect:
+ * <p>
+ * <pre><code>
+ *    BeanProperty.create("firstName");
+ *</code></pre>
+ * <p>
+ * Or to create a property representing the {@code firstName} property of
+ * an object's {@code mother} property:
+ * <p>
+ * <pre><code>
+ *    BeanProperty.create("mother.firstName");
+ * </code></pre>
+ * <p>
+ * An instance of {@code BeanProperty} is immutable and can be used with
+ * different source objects. When a {@code PropertyStateListener} is added to
+ * a {@code BeanProperty} for a given source object, the {@code BeanProperty}
+ * starts listening to all objects along the path (based on that source object)
+ * for change notification, and reflects any changes by notifying the
+ * listener associated with the property for that source object. So, in the
+ * example above, if a {@code PropertyStateListener} is added to the property
+ * for an object {@code Duke}, the {@code PropertyStateListener} is notified
+ * when either {@code Duke's mother} changes (if the new mother's name is
+ * different), or {@code Duke's mother's firstName} changes.
+ * <p>
+ * It is very important that any bean properties addressed via a {@code BeanProperty}
+ * follow the Java Beans specification, including firing property change notification;
+ * otherwise, {@code BeanProperty} cannot respond to change. As some beans outside
+ * of your control may not follow the Java Beans specification, {@code BeanProperty}
+ * always checks the {@link org.jdesktop.beansbinding.ext.BeanAdapterFactory} to
+ * see if a delegate provider has been registered to provide a delegate bean to take
+ * the place of an object for a given property. See the
+ * <a href="ext/package-summary.html">ext package level</a> documentation for more
+ * details.
+ * <p>
+ * When there are no {@code PropertyStateListeners} installed on a {@code BeanProperty}
+ * for a given source, all {@code Property} methods act by traversing the entire
+ * path from the source to the end point, thereby always providing "live" information.
+ * On the contrary, when there are {@code PropertyStateListeners} installed, the beans
+ * along the path (including the final value) are cached, and only updated upon
+ * notification of change from a bean. Again, this makes it very important that any
+ * bean property that could change along the path fires property change notification.
+ * <p>
+ * <a name="READABILITY"><b>Readability</b></a> of a {@code BeanProperty} for a given source is defined as follows:
+ * <i>A {@code BeanProperty} is readable for a given source if and only if
+ * a) each bean in the path, starting with the source, defines a Java Beans getter
+ * method for the the property to be read on it AND b) each bean in the path,
+ * starting with the source and ending with the bean on which we read the final
+ * property, is {@code non-null}. The final value being {@code null} does not
+ * affect the readability.</i>
+ * <p>
+ * So, in the example given earlier, the {@code BeanProperty} is readable when all
+ * of the following are true: {@code Duke} defines a Java Beans getter for
+ * {@code mother}, {@code Duke's mother} defines a Java Beans getter for
+ * {@code firstName}, {@code Duke} is {@code non-null}, {@code Duke's mother}
+ * is {@code non-null}. The {@code BeanProperty} is therefore unreadable when
+ * any of the following is true: {@code Duke} does not define a Java Beans
+ * getter for {@code mother}, {@code Duke's mother} does not define a Java
+ * Beans getter for {@code firstName}, {@code Duke} is {@code null},
+ * {@code Duke's mother} is {@code null}.
+ * <p>
+ * <a name="WRITEABILITY"><b>Writeability</b></a> of a {@code BeanProperty} for a given source is defined as follows:
+ * <i>A {@code BeanProperty} is writeable for a given source if and only if
+ * a) each bean in the path, starting with the source and ending with the bean on
+ * which we set the final property, defines a Java Beans getter method for the
+ * property to be read on it AND b) the bean on which we set the final property
+ * defines a Java Beans setter for the property to be set on it AND c) each bean
+ * in the path,  starting with the source and ending with the bean on which we
+ * set the final property, is {@code non-null}. The final value being {@code null}
+ * does not affect the writeability.</i>
+ * <p>
+ * So, in the example given earlier, the {@code BeanProperty} is writeable when all
+ * of the following are true: {@code Duke} defines a Java Beans getter for
+ * {@code mother}, {@code Duke's mother} defines a Java Beans setter for
+ * {@code firstName}, {@code Duke} is {@code non-null}, {@code Duke's mother}
+ * is {@code non-null}. The {@code BeanProperty} is therefore unreadable when
+ * any of the following is true: {@code Duke} does not define a Java Beans
+ * getter for {@code mother}, {@code Duke's mother} does not define a Java
+ * Beans setter for {@code firstName}, {@code Duke} is {@code null},
+ * {@code Duke's mother} is {@code null}.
+ * 
+ *
+ * @param <S> the type of source object that this {@code Property} operates on
+ * @param <V> the type of value that this {@code Property} represents
+ *
  * @author Shannon Hickey
  * @author Scott Violet
  */
