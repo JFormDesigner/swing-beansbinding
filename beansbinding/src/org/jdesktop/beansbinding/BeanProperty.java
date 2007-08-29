@@ -413,10 +413,28 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         }
     }
 
+    /**
+     * Creates an instance of {@code BeanProperty} for the given path.
+     *
+     * @param path the path
+     * @return an instance of {@code BeanProperty} for the given path
+     * @throws IllegalArgumentException if the path is null, or contains
+     *         no property names
+     */
     public static final <S, V> BeanProperty<S, V> create(String path) {
         return new BeanProperty<S, V>(null, path);
     }
 
+    /**
+     * Creates an instance of {@code BeanProperty} for the given base property
+     * and path. The path is relative to the value of the base property.
+     *
+     * @param baseProperty the base property
+     * @param path the path
+     * @return an instance of {@code BeanProperty} for the given path
+     * @throws IllegalArgumentException if the path is null, or contains
+     *         no property names
+     */
     public static final <S, V> BeanProperty<S, V> create(Property<S, ?> baseProperty, String path) {
         return new BeanProperty<S, V>(baseProperty, path);
     }
@@ -452,6 +470,16 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         return src;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#WRITEABILITY">writeability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while resolving the path
+     * @see #setValue
+     * @see #isWriteable
+     */
     public Class<? extends V> getWriteType(S source) {
         SourceEntry entry = map.get(source);
 
@@ -468,6 +496,15 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         return (Class<? extends V>)getType(getLastSource(source), path.getLast());
     }
     
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#READABILITY">readability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while resolving the path
+     * @see #isReadable
+     */
     public V getValue(S source) {
         SourceEntry entry = map.get(source);
 
@@ -494,7 +531,17 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         
         return (V)src;
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#WRITEABILITY">writeability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while resolving the path
+     * @see #isWriteable
+     * @see #getWriteType
+     */
     public void setValue(S source, V value) {
         SourceEntry entry = map.get(source);
 
@@ -520,6 +567,15 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         }
     }
     
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#READABILITY">readability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while resolving the path
+     * @see #isWriteable
+     */
     public boolean isReadable(S source) {
         SourceEntry entry = map.get(source);
 
@@ -542,6 +598,15 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#WRITEABILITY">writeability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while resolving the path
+     * @see #isReadable
+     */
     public boolean isWriteable(S source) {
         SourceEntry entry = map.get(source);
 
@@ -633,6 +698,15 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         this.firePropertyStateChange(pse);
     }
 
+    /**
+     * Returns a string representation of the {@code BeanProperty}. This
+     * method is intended to be used for debugging purposes only, and
+     * the content and format of the returned string may vary between
+     * implementations. The returned string may be empty but may not
+     * be {@code null}.
+     *
+     * @return a string representation of this {@code BeanProperty}
+     */
     public String toString() {
         return getClass().getName() + "[" + path + "]";
     }
