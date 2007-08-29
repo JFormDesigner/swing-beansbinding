@@ -241,40 +241,20 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             return editableSet;
         }
 
-        private void bindInternal() {
-            setManaged(false);
-            try {
-                bind();
-            } finally {
-                setManaged(true);
-            }
+        private void bindUnmanaged0() {
+            bindUnmanaged();
         }
         
-        private void unbindInternal() {
-            setManaged(false);
-            try {
-                unbind();
-            } finally {
-                setManaged(true);
-            }
+        private void unbindUnmanaged0() {
+            unbindUnmanaged();
         }
 
-        private SyncFailure saveInternal() {
-            setManaged(false);
-            try {
-                return save();
-            } finally {
-                setManaged(true);
-            }
+        private SyncFailure saveUnmanaged0() {
+            return saveUnmanaged();
         }
-        
-        private void setSourceObjectInternal(Object object) {
-            setManaged(false);
-            try {
-                setSourceObject(object);
-            } finally {
-                setManaged(true);
-            }
+
+        private void setSourceObjectUnmanaged0(Object source) {
+            setSourceObjectUnmanaged(source);
         }
     }
 
@@ -321,13 +301,13 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
 
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             ColumnBinding cb = JTableBinding.this.getColumnBinding(columnIndex);
-            cb.setSourceObjectInternal(this.getElement(rowIndex));
+            cb.setSourceObjectUnmanaged0(this.getElement(rowIndex));
             cb.setEditingObject(value);
-            cb.bindInternal();
-            SyncFailure failure = cb.saveInternal();
-            cb.unbindInternal();
+            cb.bindUnmanaged0();
+            SyncFailure failure = cb.saveUnmanaged0();
+            cb.unbindUnmanaged0();
             cb.setEditingObject(null);
-            cb.setSourceObjectInternal(null);
+            cb.setSourceObjectUnmanaged0(null);
             if (failure == null) {
                 BindingListener[] listeners;
                 listeners = cb.getBindingListeners();
