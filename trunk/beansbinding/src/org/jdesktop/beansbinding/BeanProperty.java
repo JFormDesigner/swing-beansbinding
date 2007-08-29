@@ -124,6 +124,15 @@ import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
  * {@code Map's put} method is used with the property name as the setter.
  * {@code BeanProperty} can only respond to changes in the {@code Map}
  * if it is an instanceof {@link org.jdesktop.observablecollections.ObservableMap}.
+ * <p>
+ * Some methods in this class document that they can throw
+ * {@code PropertyResolutionException} if an exception occurs while trying
+ * to resolve the path. The throwing of this exception represents an abnormal
+ * condition and if listeners are installed for the given source object,
+ * leaves the {@code BeanProperty} in an inconsistent state for that source object.
+ * A {@code BeanProperty} should not be used again for that source object
+ * after such an exception without first removing all listeners associated with
+ * the {@code BeanProperty} for that source object.
  *
  * @param <S> the type of source object that this {@code Property} operates on
  * @param <V> the type of value that this {@code Property} represents
