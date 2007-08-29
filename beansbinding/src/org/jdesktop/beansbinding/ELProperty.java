@@ -311,28 +311,33 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
     }
     
     public void setValue(S source, V value) {
-        /*SourceEntry entry = map.get(source);
+        SourceEntry entry = map.get(source);
 
         if (entry != null) {
             entry.validateCache(-1);
  
-            if (entry.cachedWriter == null) {
+            if (!entry.cachedIsWriteable) {
                 throw new UnsupportedOperationException("Unwritable");
             }
 
             try {
                 entry.ignoreChange = true;
-                write(entry.cachedWriter, entry.cache[path.length() - 1], path.getLast(), value);
+                expression.setSource(getBeanFromSource(source, false));
+                expression.setValue(context, value);
+            } catch (ELException ele) {
+                throw new PropertyResolutionException("Error evaluating EL expression " + expression + " on " + source, ele);
             } finally {
                 entry.ignoreChange = false;
+                expression.setSource(null);
             }
  
             Object oldValue = entry.cachedValue;
-            entry.updateCachedValue();
-            notifyListeners(entry.cachedIsWriteable(), oldValue, entry);
-        } else {
-            setProperty(getLastSource(source), path.getLast(), value);
-        }*/
+            // PENDING(shannonh) - too heavyweight; should just update cached value
+            entry.updateCache();
+            notifyListeners(entry.cachedIsWriteable, oldValue, entry);
+
+            return;
+        }
 
         try {
             expression.setSource(getBeanFromSource(source, true));
