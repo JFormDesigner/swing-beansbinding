@@ -197,7 +197,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected final void setTargetProperty(Property<TS, TV> targetProperty) {
         throwIfBound();
         if (targetProperty == null) {
-            throw new IllegalArgumentException("source property can't be null");
+            throw new IllegalArgumentException("target property can't be null");
         }
         this.targetProperty = targetProperty;
     }
