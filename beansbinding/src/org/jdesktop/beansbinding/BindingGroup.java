@@ -113,6 +113,16 @@ public class BindingGroup {
         namedBindings.put(name, binding);
     }
 
+    /**
+     * Returns the {@code Binding} in this group with the given name,
+     * or {@code null} if this group doesn't contain a {@code Binding}
+     * with the given name.
+     *
+     * @param the name of the {@code Binding} to fetch
+     * @return the {@code Binding} in this group with the given name,
+     *         or {@code null}
+     * @throws IllegalArgumentException if {@code name} is {@code null}
+     */
     public final Binding getBinding(String name) {
         if (name == null) {
             throw new IllegalArgumentException("cannot fetch unnamed bindings");
@@ -121,12 +131,21 @@ public class BindingGroup {
         return namedBindings == null ? null : namedBindings.get(name);
     }
 
+    /**
+     * Returns a list of all {@code Bindings} in this group. Order is undefined.
+     * Returns an empty list if the group contains no {@code Bindings}.
+     *
+     * @return a list of all {@code Bindings} in this group.
+     */
     public final List<Binding> getBindings() {
         ArrayList list = new ArrayList(bound);
         list.addAll(unbound);
         return Collections.unmodifiableList(list);
     }
 
+    /**
+     * Calls {@code bind} on all unbound bindings in the group.
+     */
     public void bind() {
         List<Binding> toBind = new ArrayList<Binding>(unbound);
         for (Binding binding : toBind) {
@@ -134,6 +153,9 @@ public class BindingGroup {
         }
     }
 
+    /**
+     * Calls {@code unbind} on all bound bindings in the group.
+     */
     public void unbind() {
         List<Binding> toUnbind = new ArrayList<Binding>(bound);
         for (Binding binding : toUnbind) {
@@ -310,12 +332,28 @@ public class BindingGroup {
             if (binding.getHasEditedTarget()) {
                 updateEditedTargets(binding, true);
             }
+
+            if (listeners == null) {
+                return;
+            }
+            
+            for (BindingListener listener : listeners) {
+                listener.bindingBecameBound(binding);
+            }
         }
 
         public void bindingBecameUnbound(Binding binding) {
             bound.remove(binding);
             unbound.add(binding);
             updateEditedTargets(binding, false);
+
+            if (listeners == null) {
+                return;
+            }
+            
+            for (BindingListener listener : listeners) {
+                listener.bindingBecameUnbound(binding);
+            }
         }
 
         public void propertyChange(PropertyChangeEvent pce) {
