@@ -625,6 +625,39 @@ public abstract class Binding<SS, SV, TS, TV> {
         return ret;
     }
 
+    /**
+     * Fetches the value of the source property for the source object and
+     * returns a {@code ValueResult} representing that value in terms that
+     * can be set on the target property for the target object.
+     * <p>
+     * First, if the target property is not writeable for the target object,
+     * a {@code ValueResult} is returned representing a failure
+     * with failure type {@code SyncFailureType.TARGET_UNWRITEABLE}.
+     * Then, if the source property is unreadable for the source object,
+     * a {@code ValueResult} is returned containing the value of the
+     * {@code Binding's} {@link #getSourceUnreadableValue}.
+     * <p>
+     * Next, the value of the source property is fetched for the source
+     * object. If the value is {@code null}, a {@code ValueResult} is
+     * returned containing the value of the {@code Binding's}
+     * {@link #getSourceNullValue}. If the value is {@code non-null},
+     * the {@code Binding's Converter}, if any, is run to convert
+     * the value from source type to the target property's
+     * {@code getWriteType}, by calling its {@code convertForward}
+     * method with the value. If no {@code Converter} is registered,
+     * a set of default converters is checked to see if one of them
+     * can convert the value to the target type. Finally, the value
+     * (converted or not) is cast to the target write type.
+     * <p>
+     * This final value is returned in a {@code ValueResult}.
+     * <p>
+     * Any {@code RuntimeException} or {@ClassCastException} thrown by a
+     * converter or the final cast is propogated up to the caller of this method.
+     *
+     * @return a {@code ValueResult} as described above
+     * @throws RuntimeException if thrown by any of the converters
+     * @throws ClassCastException if thrown by a converter or the final cast
+     */
     public final ValueResult<TV> getSourceValueForTarget() {
         if (!targetProperty.isWriteable(targetObject)) {
             return new ValueResult<TV>(SyncFailure.TARGET_UNWRITEABLE);
@@ -649,6 +682,49 @@ public abstract class Binding<SS, SV, TS, TV> {
         return new ValueResult<TV>((TV)value);
     }
 
+    /**
+     * Fetches the value of the target property for the target object and
+     * returns a {@code ValueResult} representing that value in terms that
+     * can be set on the source property for the source object.
+     * <p>
+     * First, if the target property is not readable for the target object,
+     * a {@code ValueResult} is returned representing a failure
+     * with failure type {@code SyncFailureType.TARGET_UNREADABLE}.
+     * Then, if the source property is not writeable for the source object,
+     * a {@code ValueResult} is returned representing a failure
+     * with failure type {@code SyncFailureType.SOURCE_UNWRITEABLE}.
+     * <p>
+     * Next, the value of the target property is fetched for the target
+     * object. If the value is {@code null}, a {@code ValueResult} is
+     * returned containing the value of the {@code Binding's}
+     * {@link #getTargetNullValue}. If the value is {@code non-null},
+     * the {@code Binding's Converter}, if any, is run to convert
+     * the value from target type to the source property's
+     * {@code getWriteType}, by calling its {@code convertReverse}
+     * method with the value. If no {@code Converter} is registered,
+     * a set of default converters is checked to see if one of them
+     * can convert the value to the source type. Finally, the value
+     * (converted or not) is cast to the source write type.
+     * <p>
+     * If a converter throws a {@code RuntimeException} other than
+     * {@code ClassCastException}, this method returns a
+     * {@code ValueResult} containing the failure, with failure type
+     * {@code SyncFailureType.CONVERSION_FAILURE}.
+     * <p>
+     * As the last step, the {@code Binding's Validator}, if any, is called
+     * upon to validate the final value. If the {@code Validator}
+     * returns {@code non-null} from its {@code validate} method,
+     * a {@code ValueResult} is returned containing the validation
+     * result, with failure type {@code SyncFailureType.VALIDATION_FAILURE}.
+     * Otherwise a {@code ValueResult} is returned containing the
+     * final validated value.
+     * <p>
+     * Any {@code ClassCastException} thrown by a converter or the final
+     * cast is propogated up to the caller of this method.
+     *
+     * @return a {@code ValueResult} as described above
+     * @throws ClassCastException if thrown by a converter or the final cast
+     */
     public final ValueResult<SV> getTargetValueForSource() {
         if (!targetProperty.isReadable(targetObject)) {
             return new ValueResult<SV>(SyncFailure.TARGET_UNREADABLE);
