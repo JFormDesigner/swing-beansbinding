@@ -611,24 +611,55 @@ public abstract class Binding<SS, SV, TS, TV> {
         return converter.convertReverse(value);
     }
 
+    /**
+     * Throws an UnsupportedOperationException if the {@code Binding} is managed.
+     * Useful for calling at the beginning of method implementations that
+     * shouldn't be called on managed {@code Bindings}
+     *
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @see #isManaged()
+     */
     protected final void throwIfManaged() {
         if (isManaged()) {
-            throw new IllegalStateException("Can not call this method on a managed binding");
+            throw new UnsupportedOperationException("Can not call this method on a managed binding");
         }
     }
     
+    /**
+     * Throws an IllegalStateException if the {@code Binding} is bound.
+     * Useful for calling at the beginning of method implementations that
+     * shouldn't be called when the {@code Binding} is bound.
+     *
+     * @throws IllegalStateException if the {@code Binding} is bound.
+     */
     protected final void throwIfBound() {
         if (isBound()) {
             throw new IllegalStateException("Can not call this method on a bound binding");
         }
     }
 
+    /**
+     * Throws an IllegalStateException if the {@code Binding} is unbound.
+     * Useful for calling at the beginning of method implementations that should
+     * only be called when the {@code Binding} is bound.
+     *
+     * @throws IllegalStateException if the {@code Binding} is unbound.
+     */
     protected final void throwIfUnbound() {
         if (!isBound()) {
             throw new IllegalStateException("Can not call this method on an unbound binding");
         }
     }
 
+    /**
+     * Returns a string representation of the {@code Binding}. This
+     * method is intended to be used for debugging purposes only, and
+     * the content and format of the returned string may vary between
+     * implementations. The returned string may be empty but may not
+     * be {@code null}.
+     *
+     * @return a string representation of this {@code Binding}
+     */
     public String toString() {
         return getClass().getName() + " [" + paramString() + "]";
     }
