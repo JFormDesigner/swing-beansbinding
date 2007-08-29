@@ -18,9 +18,11 @@ import java.beans.*;
  * <p>
  * Some {@code Bindings} are managed, often by another {@code Binding}.
  * A managed {@code Binding} does not allow certain methods to be called by
- * the user. These methods are identified in the documentation.
- * {@code Binding} provides protected versions of these methods with the
- * suffix {@code "Unmanaged"} for the use of subclasses.
+ * the user. These methods are identified in their documentation.
+ * Subclasses should call {@code setManaged(true)} to make themselves managed.
+ * {@code Binding} provides protected versions of the managed methods with the
+ * suffix {@code "Unmanaged"} for subclasses to use internally without
+ * checking whether or not they are managed.
  * <p>
  * Any {@code PropertyResolutionExceptions} thrown by {@code Property}
  * objects used by this binding are allowed to flow through to the caller
@@ -831,6 +833,11 @@ public abstract class Binding<SS, SV, TS, TV> {
     
     protected abstract void unbindImpl();
 
+    /**
+     * Returns whether or not this {@code Binding} is bound.
+     *
+     * @return whether or not the {@code Binding} is bound
+     */
     public final boolean isBound() {
         return isBound;
     }
@@ -845,11 +852,34 @@ public abstract class Binding<SS, SV, TS, TV> {
         return hasEditedTarget;
     }
 
+    /**
+     * Sets whether or not this {@code Binding} is managed. Some
+     * {@code Bindings} are managed, often by another {@code Binding}.
+     * A managed {@code Binding} does not allow certain methods to be called by
+     * the user. These methods are identified in their documentation.
+     * Subclasses should call {@code setManaged(true)} to make themselves managed.
+     * {@code Binding} provides protected versions of the managed methods, with the
+     * suffix {@code "Unmanaged"}, for subclasses to use internally without
+     * checking whether or not they are managed.
+     */
     protected final void setManaged(boolean isManaged) {
         this.isManaged = isManaged;
     }
 
-    protected final boolean isManaged() {
+    /**
+     * Returns whether or not this {@code Binding} is managed. Some
+     * {@code Bindings} are managed, often by another {@code Binding}.
+     * A managed {@code Binding} does not allow certain methods to be called by
+     * the user. These methods are identified in their documentation.
+     * Subclasses should call {@code setManaged(true)} to make themselves managed.
+     * {@code Binding} provides protected versions of the managed methods, with the
+     * suffix {@code "Unmanaged"}, for subclasses to use internally without
+     * checking whether or not they are managed.
+     *
+     * @return whether or not the {@code Binding} is managed
+     * @see #setManaged
+     */
+    public final boolean isManaged() {
         return isManaged;
     }
 
