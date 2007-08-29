@@ -389,7 +389,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     /**
-     * A protected version of {@code setSourceObject} that allows managed
+     * A protected version of {@link #setSourceObject} that allows managed
      * subclasses to set the source object without throwing an exception
      * for being managed.
      *
@@ -419,7 +419,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     /**
-     * A protected version of {@code setTargetObject} that allows managed
+     * A protected version of {@link #setTargetObject} that allows managed
      * subclasses to set the target object without throwing an exception
      * for being managed.
      *
@@ -763,7 +763,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         throwIfManaged();
         bindUnmanaged();
     }
-    
+
+    /**
+     * A protected version of {@link #bind} that allows managed
+     * subclasses to bind without throwing an exception
+     * for being managed.
+     *
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     protected final void bindUnmanaged() {
         throwIfBound();
 
@@ -790,7 +799,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         throwIfManaged();
         unbindUnmanaged();
     }
-    
+
+    /**
+     * A protected version of {@link #unbind} that allows managed
+     * subclasses to unbind without throwing an exception
+     * for being managed.
+     *
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     protected final void unbindUnmanaged() {
         throwIfUnbound();
 
@@ -869,6 +887,15 @@ public abstract class Binding<SS, SV, TS, TV> {
         return notifyAndReturn(refresh());
     }
 
+    /**
+     * A protected version of {@link #refreshAndNotify} that allows managed
+     * subclasses to refresh and notify without throwing an exception
+     * for being managed.
+     *
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     protected final SyncFailure refreshAndNotifyUnmanaged() {
         return notifyAndReturn(refreshUnmanaged());
     }
@@ -877,6 +904,15 @@ public abstract class Binding<SS, SV, TS, TV> {
         return notifyAndReturn(save());
     }
 
+    /**
+     * A protected version of {@link #saveAndNotify} that allows managed
+     * subclasses to save and notify without throwing an exception
+     * for being managed.
+     *
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     protected final SyncFailure saveAndNotifyUnmanaged() {
         return notifyAndReturn(saveUnmanaged());
     }
@@ -885,7 +921,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         throwIfManaged();
         return refreshUnmanaged();
     }
-    
+
+    /**
+     * A protected version of {@link #refresh} that allows managed
+     * subclasses to refresh without throwing an exception
+     * for being managed.
+     *
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     protected final SyncFailure refreshUnmanaged() {
         throwIfUnbound();
 
@@ -910,7 +955,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         throwIfManaged();
         return saveUnmanaged();
     }
-    
+
+    /**
+     * A protected version of {@link #save} that allows managed
+     * subclasses to save without throwing an exception
+     * for being managed.
+     *
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @see #isManaged()
+     * @see #isBound()
+     */
     protected final SyncFailure saveUnmanaged() {
         throwIfUnbound();
 
