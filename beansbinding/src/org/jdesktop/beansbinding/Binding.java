@@ -287,6 +287,14 @@ public abstract class Binding<SS, SV, TS, TV> {
         return sourceUnreadableValue;
     }
 
+    /**
+     * Adds a {@code BindingListener} to be notified of changes to this {@code Binding}.
+     * Does nothing if the listener is {@code null}. If a listener is added more than once,
+     * notifications are sent to that listener once for every time that it has
+     * been added. The ordering of listener notification is unspecified.
+     *
+     * @param listener the listener to add
+     */
     public final void addBindingListener(BindingListener listener) {
         if (listener == null) {
             return;
@@ -299,6 +307,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         listeners.add(listener);
     }
 
+    /**
+     * Removes a {@code BindingListener} from the {@code Binding}. Does
+     * nothing if the listener is {@code null} or is not one of those registered.
+     * If the listener being removed was registered more than once, only one
+     * occurrence of the listener is removed from the list of listeners.
+     * The ordering of listener notification is unspecified.
+     *
+     * @param listener the listener to remove
+     * @see #addBindingListener
+     */
     public final void removeBindingListener(BindingListener listener) {
         if (listener == null) {
             return;
@@ -309,6 +327,14 @@ public abstract class Binding<SS, SV, TS, TV> {
         }
     }
 
+    /**
+     * Returns the list of {@code BindingListeners} registered on this
+     * {@code Binding}. Order is undefined. Returns an empty array if there are
+     * no listeners.
+     *
+     * @return the list of {@code BindingListeners} registered on this {@code Binding}
+     * @see #addBindingListener
+     */
     public final BindingListener[] getBindingListeners() {
         if (listeners == null) {
             return new BindingListener[0];
@@ -677,6 +703,27 @@ public abstract class Binding<SS, SV, TS, TV> {
         }
     }
 
+    /**
+     * Adds a {@code PropertyChangeListener} to be notified when any property of
+     * this {@code Binding} changes. Does nothing if the listener is
+     * {@code null}. If a listener is added more than once, notifications are
+     * sent to that listener once for every time that it has been added.
+     * The ordering of listener notification is unspecified.
+     * <p>
+     * {@code Binding} fires property change notification for the following
+     * properties:
+     * <p>
+     * <ul>
+     *    <li>{@code hasEditedSource}
+     *    <li>{@code hasEditedTarget}
+     * </ul>
+     * <p>
+     * For other types of {@code Binding} notifications register a
+     * {@code BindingListener}.
+     *
+     * @param listener the listener to add
+     * @see #addBindingListener
+     */
     public final void addPropertyChangeListener(PropertyChangeListener listener) {
         if (changeSupport == null) {
             changeSupport = new PropertyChangeSupport(this);
@@ -685,6 +732,28 @@ public abstract class Binding<SS, SV, TS, TV> {
         changeSupport.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Adds a {@code PropertyChangeListener} to be notified when the property identified
+     * by the {@code propertyName} argument changes on this {@code Binding}.
+     * Does nothing if the property name or listener is {@code null}.
+     * If a listener is added more than once, notifications are
+     * sent to that listener once for every time that it has been added.
+     * The ordering of listener notification is unspecified.
+     * <p>
+     * {@code Binding} fires property change notification for the following
+     * properties:
+     * <p>
+     * <ul>
+     *    <li>{@code hasEditedSource}
+     *    <li>{@code hasEditedTarget}
+     * </ul>
+     * <p>
+     * For other types of {@code Binding} notifications register a
+     * {@code BindingListener}.
+     *
+     * @param property the name of the property to listen for changes on
+     * @param listener the listener to add
+     */
     public final void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         if (changeSupport == null) {
             changeSupport = new PropertyChangeSupport(this);
@@ -693,6 +762,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         changeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
+    /**
+     * Removes a {@code PropertyChangeListener} from the {@code Binding}. Does
+     * nothing if the listener is {@code null} or is not one of those registered.
+     * If the listener being removed was registered more than once, only one
+     * occurrence of the listener is removed from the list of listeners.
+     * The ordering of listener notification is unspecified.
+     *
+     * @param listener the listener to remove
+     * @see #addPropertyChangeListener
+     */
     public final void removePropertyChangeListener(PropertyChangeListener listener) {
         if (changeSupport == null) {
             return;
@@ -701,6 +780,18 @@ public abstract class Binding<SS, SV, TS, TV> {
         changeSupport.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Removes a {@code PropertyChangeListener} from the {@code Binding} for the given
+     * property name. Does nothing if the property name or listener is
+     * {@code null} or the listener is not one of those registered.
+     * If the listener being removed was registered more than once, only one
+     * occurrence of the listener is removed from the list of listeners.
+     * The ordering of listener notification is unspecified.
+     * 
+     * @param propertyName the name of the property to remove the listener for
+     * @param listener the listener to remove
+     * @see #addPropertyChangeListener(String, PropertyChangeListener)
+     */
     public final void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
         if (changeSupport == null) {
             return;
@@ -709,6 +800,14 @@ public abstract class Binding<SS, SV, TS, TV> {
         changeSupport.removePropertyChangeListener(propertyName, listener);
     }
 
+    /**
+     * Returns the list of {@code PropertyChangeListeners} registered on this
+     * {@code Binding}. Order is undefined. Returns an empty array if there are
+     * no listeners.
+     *
+     * @return the list of {@code PropertyChangeListeners} registered on this {@code Binding}
+     * @see #addPropertyChangeListener
+     */
     public final PropertyChangeListener[] getPropertyChangeListeners() {
         if (changeSupport == null) {
             return new PropertyChangeListener[0];
@@ -717,6 +816,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         return changeSupport.getPropertyChangeListeners();
     }
 
+    /**
+     * Returns the list of {@code PropertyChangeListeners} registered on this
+     * {@code Binding} for the given property name. Order is undefined. Returns an empty array
+     * if there are no listeners registered for the property name.
+     *
+     * @param propertyName the property name to retrieve the listeners for
+     * @return the list of {@code PropertyChangeListeners} registered on this {@code Binding}
+     *         for the given property name
+     * @see #addPropertyChangeListener(String, PropertyChangeListener)
+     */
     public final PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
         if (changeSupport == null) {
             return new PropertyChangeListener[0];
