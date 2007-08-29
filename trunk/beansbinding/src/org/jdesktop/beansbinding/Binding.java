@@ -10,6 +10,22 @@ import java.util.ArrayList;
 import java.beans.*;
 
 /**
+ * {@code Binding} is an abstract class that represents the concept of a
+ * binding between two properties, typically of two objects, and contains
+ * methods for explicitly syncing the values of the two properties. {@code Binding}
+ * itself does no automatic syncing between property values. Subclasses
+ * will typically keep the values in sync according to some strategy.
+ * <p>
+ * Some {@code Bindings} are managed, often by another {@code Binding}.
+ * A managed {@code Binding} does not allow certain methods to be called by
+ * the user. These methods are identified in the documentation.
+ * {@code Binding} provides protected versions of these methods with the
+ * suffix {@code "Unmanaged"} for the use of subclasses.
+ * <p>
+ * Any {@code PropertyResolutionExceptions} thrown by {@code Property}
+ * objects used by this binding are allowed to flow through to the caller
+ * of the {@code Binding} methods.
+ *
  * @author Shannon Hickey
  */
 public abstract class Binding<SS, SV, TS, TV> {
@@ -75,6 +91,10 @@ public abstract class Binding<SS, SV, TS, TV> {
         VALIDATION_FAILED
     }
 
+    /**
+     * {@code SyncFailure} represents a failure to sync ({@code save} or {@code refresh}) a
+     * {@code Binding}.
+     */
     public static final class SyncFailure {
         private SyncFailureType type;
         private Object reason;
@@ -109,10 +129,24 @@ public abstract class Binding<SS, SV, TS, TV> {
             this.reason = result;
         }
 
+        /**
+         * Returns the type of failure.
+         *
+         * @return the type of failure
+         */
         public SyncFailureType getType() {
             return type;
         }
-        
+
+        /**
+         * Returns the exception that occurred during conversion if
+         * this failure represents a conversion failure. Throws
+         * {@code UnsupportedOperationException} otherwise.
+         *
+         * @return the exception that occurred during conversion
+         * @throws UnsupportedOperationException if the type of failure
+         *         is not {@code SyncFailureType.CONVERSION_FAILED}
+         */
         public RuntimeException getConversionException() {
             if (type != SyncFailureType.CONVERSION_FAILED) {
                 throw new UnsupportedOperationException();
@@ -121,6 +155,15 @@ public abstract class Binding<SS, SV, TS, TV> {
             return (RuntimeException)reason;
         }
 
+        /**
+         * Returns the result that was returned from the
+         * {@code Binding's} validator if this failure represents a
+         * validation failure. Throws {@code UnsupportedOperationException} otherwise.
+         *
+         * @return the result that was returned from the {@code Binding's} validator
+         * @throws UnsupportedOperationException if the type of failure
+         *         is not {@code SyncFailureType.VALIDATION_FAILED}
+         */
         public Validator.Result getValidationResult() {
             if (type != SyncFailureType.VALIDATION_FAILED) {
                 throw new UnsupportedOperationException();
@@ -129,6 +172,15 @@ public abstract class Binding<SS, SV, TS, TV> {
             return (Validator.Result)reason;
         }
 
+        /**
+         * Returns a string representation of the {@code SyncFailure}. This
+         * method is intended to be used for debugging purposes only, and
+         * the content and format of the returned string may vary between
+         * implementations. The returned string may be empty but may not
+         * be {@code null}.
+         *
+         * @return a string representation of this {@code SyncFailure}
+         */
         public String toString() {
             return type + (reason == null ? "" : ": " + reason.toString());
         }
@@ -170,6 +222,15 @@ public abstract class Binding<SS, SV, TS, TV> {
             return failure;
         }
 
+        /**
+         * Returns a string representation of the {@code ValueResult}. This
+         * method is intended to be used for debugging purposes only, and
+         * the content and format of the returned string may vary between
+         * implementations. The returned string may be empty but may not
+         * be {@code null}.
+         *
+         * @return a string representation of this {@code ValueResult}
+         */
         public String toString() {
             return value == null ? "failure: " + failure : "value: " + value;
         }
