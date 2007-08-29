@@ -60,7 +60,7 @@ public class BindingGroup {
         }
 
         binding.addBindingListener(getHandler());
-        binding.addPropertyChangeListener(getHandler());
+        binding.addPropertyChangeListener("hasEditedTarget", getHandler());
 
         if (binding.isBound()) {
             bound.add(binding);
@@ -73,7 +73,7 @@ public class BindingGroup {
     }
 
     /**
-     * Removes a {@code Binding} fromo this group.
+     * Removes a {@code Binding} from this group.
      *
      * @param binding the {@code Binding} to remove
      * @throws IllegalArgumentException if the binding is null or
@@ -102,7 +102,7 @@ public class BindingGroup {
         }
 
         binding.removeBindingListener(getHandler());
-        binding.removePropertyChangeListener(getHandler());
+        binding.removePropertyChangeListener("hasEditedTarget", getHandler());
     }
 
     private void putNamed(String name, Binding binding) {
@@ -163,10 +163,32 @@ public class BindingGroup {
         }
     }
 
+    /**
+     * Returns whether or not any of the {@code Bindings} in this group
+     * have an edited target. {@code BindingGroup} fires a
+     * property change notification with property name {@code "hasEditedTargetBindings"}
+     * when this property changes.
+     *
+     * @return whether or not any of the {@code Bindings} in this group
+     *         have an edited target
+     * @see Binding#getHasEditedTarget
+     * @see #getEditedTargetBindings
+     */
     public final boolean getHasEditedTargetBindings() {
         return editedTargets != null && editedTargets.size() != 0;
     }
 
+    /**
+     * Returns the list of {@code Bindings} in this group that
+     * have an edited target. Order is undefined.
+     * Returns an empty list if the group contains no {@code Bindings}
+     * with an edited target.
+     *
+     * @return the list of {@code Bindings} in this group that
+     *         have an edited target
+     * @see Binding#getHasEditedTarget
+     * @see #getHasEditedTargetBindings
+     */
     public List<Binding> getEditedTargetBindings() {
         if (editedTargets == null) {
             return Collections.emptyList();
@@ -194,8 +216,21 @@ public class BindingGroup {
             }
         }
     }
-    
+
+    /**
+     * Adds a {@code BindingListener} to be notified of all {@code BindingListener}
+     * notifications fired by any {@code Binding} in the group. Does nothing if
+     * the listener is {@code null}. If a listener is added more than once,
+     * notifications are sent to that listener once for every time that it has
+     * been added. The ordering of listener notification is unspecified.
+     *
+     * @param listener the listener to add
+     */
     public final void addBindingListener(BindingListener listener) {
+        if (listener == null) {
+            return;
+        }
+
         if (listeners == null) {
             listeners = new ArrayList<BindingListener>();
         }
@@ -203,12 +238,31 @@ public class BindingGroup {
         listeners.add(listener);
     }
 
+    /**
+     * Removes a {@code BindingListener} from the group. Does
+     * nothing if the listener is {@code null} or is not one of those registered
+     * for this source object. If the listener being removed was registered more
+     * than once, only one occurrence of the listener is removed from the list of
+     * listeners. The ordering of listener notification is unspecified.
+     *
+     * @param listener the listener to remove
+     * @see #addBindingListener
+     */
     public final void removeBindingListener(BindingListener listener) {
+        if (listener == null) {
+            return;
+        }
+
         if (listeners != null) {
             listeners.remove(listener);
         }
     }
 
+    /**
+     * Returns the list of {@code BindingListeners} registered on this
+     * group. Order is undefined. Returns an empty array if there are
+     * no listeners.
+     */
     public final BindingListener[] getBindingListeners() {
         if (listeners == null) {
             return new BindingListener[0];
