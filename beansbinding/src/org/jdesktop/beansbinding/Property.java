@@ -111,6 +111,8 @@ public abstract class Property<S, V> {
      * Returns an empty array if there are no listeners.
      *
      * @param source the source object on which to operate
+     * @return the set of listeners registered for the given source
+     * @see #addPropertyStateListener
      */
     public abstract PropertyStateListener[] getPropertyStateListeners(S source);
 
