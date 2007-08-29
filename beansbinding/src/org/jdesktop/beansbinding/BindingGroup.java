@@ -240,10 +240,10 @@ public class BindingGroup {
 
     /**
      * Removes a {@code BindingListener} from the group. Does
-     * nothing if the listener is {@code null} or is not one of those registered
-     * for this source object. If the listener being removed was registered more
-     * than once, only one occurrence of the listener is removed from the list of
-     * listeners. The ordering of listener notification is unspecified.
+     * nothing if the listener is {@code null} or is not one of those registered.
+     * If the listener being removed was registered more than once, only one
+     * occurrence of the listener is removed from the list of listeners.
+     * The ordering of listener notification is unspecified.
      *
      * @param listener the listener to remove
      * @see #addBindingListener
@@ -262,6 +262,9 @@ public class BindingGroup {
      * Returns the list of {@code BindingListeners} registered on this
      * group. Order is undefined. Returns an empty array if there are
      * no listeners.
+     *
+     * @return the list of {@code BindingListeners} registered on this group
+     * @see #addBindingListener
      */
     public final BindingListener[] getBindingListeners() {
         if (listeners == null) {
@@ -273,6 +276,15 @@ public class BindingGroup {
         return ret;
     }
 
+    /**
+     * Adds a {@code PropertyChangeListener} to be notified when any property of
+     * this {@code BindingGroup} changes. Does nothing if the listener is
+     * {@code null}. If a listener is added more than once, notifications are
+     * sent to that listener once for every time that it has been added.
+     * The ordering of listener notification is unspecified.
+     *
+     * @param listener the listener to add
+     */
     public final void addPropertyChangeListener(PropertyChangeListener listener) {
         if (changeSupport == null) {
             changeSupport = new PropertyChangeSupport(this);
@@ -289,6 +301,16 @@ public class BindingGroup {
         changeSupport.addPropertyChangeListener(propertyName, listener);
     }
 
+    /**
+     * Removes a {@code PropertyChangeListener} from the group. Does
+     * nothing if the listener is {@code null} or is not one of those registered.
+     * If the listener being removed was registered more than once, only one
+     * occurrence of the listener is removed from the list of listeners.
+     * The ordering of listener notification is unspecified.
+     *
+     * @param listener the listener to remove
+     * @see #addPropertyChangeListener
+     */
     public final void removePropertyChangeListener(PropertyChangeListener listener) {
         if (changeSupport == null) {
             return;
