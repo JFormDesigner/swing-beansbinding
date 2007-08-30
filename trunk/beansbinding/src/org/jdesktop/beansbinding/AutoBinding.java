@@ -15,12 +15,45 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
 
     private UpdateStrategy strategy;
 
+    /**
+     * An enumeration representing the possible update strategies of an
+     * {@code AutoBinding}. See the class level documentation of
+     * {@code AutoBinding} for complete details on the sync behavior for
+     * each possible update strategy.
+     */
     public enum UpdateStrategy {
+        
+        /**
+         * An update strategy where the {@code Binding} sets the target value
+         * from the source only once, at bind time.
+         */
         READ,
+
+        /**
+         * An update strategy where the {@code Binding} tries to keep the target
+         * in sync by updating it in response to changes in the source.
+         */
         READ_ONCE,
+
+        /**
+         * An update strategy where the {@code Binding} tries to keep the source
+         * and target in sync by updating both in response to changes in the other.
+         */
         READ_WRITE
     }
 
+    /**
+     * Create an instance of {@code AutoBinding} between two properties of two objects,
+     * with the given update strategy.
+     *
+     * @param strategy the update strategy
+     * @param sourceObject the source object
+     * @param sourceProperty a property on the source object
+     * @param targetObject the target object
+     * @param targetProperty a property on the target object
+     * @param name a name for the {@code Binding}
+     * @throws IllegalArgumentException if the source property or target property is {@code null}
+     */
     protected AutoBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, SV> sourceProperty, TS targetObject, Property<TS, TV> targetProperty, String name) {
         super(sourceObject, sourceProperty, targetObject, targetProperty, name);
 
@@ -31,6 +64,11 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
         this.strategy = strategy;
     }
 
+    /**
+     * Returns the {@code AutoBinding's} update strategy.
+     *
+     * @return the update strategy
+     */
     public final UpdateStrategy getUpdateStrategy() {
         return strategy;
     }
@@ -79,6 +117,15 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
 
     protected void unbindImpl() {}
 
+    /**
+     * Returns a string representation of the {@code AutoBinding}. This
+     * method is intended to be used for debugging purposes only, and
+     * the content and format of the returned string may vary between
+     * implementations. The returned string may be empty but may not
+     * be {@code null}.
+     *
+     * @return a string representation of this {@code AutoBinding}
+     */
     public String toString() {
         return getClass().getName() + " [" + paramString() + "]";
     }
