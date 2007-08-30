@@ -761,6 +761,19 @@ public abstract class Binding<SS, SV, TS, TV> {
         return new ValueResult<SV>((SV)value);
     }
 
+    /**
+     * Binds this binding. Adds a {@code PropertyStateListener} to the source
+     * property for the source object and the target property for the target
+     * object to start tracking changes, calls {@link #bindImpl} to allow
+     * subclasses to initiate binding, and then notifies all registered
+     * {@code BindingListeners} that the binding has become bound.
+     *
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @throws IllegalStateException if the {@code Binding} is already bound
+     * @see #isBound()
+     * @see #isManaged()
+     * @see #unbind
+     */
     public final void bind() {
         throwIfManaged();
         bindUnmanaged();
@@ -797,6 +810,18 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     protected abstract void bindImpl();
 
+    /**
+     * Unbinds this binding. Calls {@code unbindImpl} to allow subclasses
+     * to uninitiate the binding, removes the {@code PropertyStateListeners}
+     * added by {@code bind}, and then notifies all registered
+     * {@code BindingListeners} that the binding has become unbound.
+     *
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @see #isBound()
+     * @see #isManaged()
+     * @see #bind
+     */
     public final void unbind() {
         throwIfManaged();
         unbindUnmanaged();
@@ -837,6 +862,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Returns whether or not this {@code Binding} is bound.
      *
      * @return whether or not the {@code Binding} is bound
+     * @see #bind
      */
     public final boolean isBound() {
         return isBound;
