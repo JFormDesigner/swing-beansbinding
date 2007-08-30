@@ -440,7 +440,7 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
      *
      * @param baseProperty the base property
      * @param path the path
-     * @return an instance of {@code BeanProperty} for the given path
+     * @return an instance of {@code BeanProperty} for the given base property and path
      * @throws IllegalArgumentException if the path is null, or contains
      *         no property names
      */
