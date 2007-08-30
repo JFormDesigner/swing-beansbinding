@@ -1063,6 +1063,24 @@ public abstract class Binding<SS, SV, TS, TV> {
         return notifyAndReturn(saveUnmanaged());
     }
 
+    /**
+     * Fetches the value of the source property for the source object and sets
+     * it as the value of the target property for the target object.
+     * First calls {@link #getSourceValueForTarget}. If the return value
+     * from that method represents a failure, this method returns the failure.
+     * Otherwise, it calls {@code setValue} on the target property for the
+     * target object with the value obtained from the source.
+     *
+     * @returns the reason for failure if the binding could not be refreshed,
+     *          or {@code null} for success
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @throws RuntimeException if thrown by {@link #getSourceValueForTarget}
+     * @throws ClassCastException if thrown by {@link #getSourceValueForTarget}
+     * @see #isManaged()
+     * @see #isBound()
+     * @see #save
+     */
     public final SyncFailure refresh() {
         throwIfManaged();
         return refreshUnmanaged();
@@ -1097,6 +1115,23 @@ public abstract class Binding<SS, SV, TS, TV> {
         return null;
     }
 
+    /**
+     * Fetches the value of the target property for the target object and sets
+     * it as the value of the source property for the source object.
+     * First calls {@link #getTargetValueForSource}. If the return value
+     * from that method represents a failure, this method returns the failure.
+     * Otherwise, it calls {@code setValue} on the source property for the
+     * source object with the value obtained from the target.
+     *
+     * @returns the reason for failure if the binding could not be saved,
+     *          or {@code null} for success
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @throws ClassCastException if thrown by {@link #getTargetValueForSource}
+     * @see #isManaged()
+     * @see #isBound()
+     * @see #refresh
+     */
     public final SyncFailure save() {
         throwIfManaged();
         return saveUnmanaged();
