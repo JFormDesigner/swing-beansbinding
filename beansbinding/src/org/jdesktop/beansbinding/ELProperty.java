@@ -22,6 +22,9 @@ import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 
 /**
+ * @param <S> the type of source object that this {@code ELProperty} operates on
+ * @param <V> the type of value that this {@code ELProperty} represents
+ *
  * @author Shannon Hickey
  * @author Scott Violet
  */

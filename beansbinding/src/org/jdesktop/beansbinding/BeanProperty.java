@@ -134,8 +134,8 @@ import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
  * after such an exception without first removing all listeners associated with
  * the {@code BeanProperty} for that source object.
  *
- * @param <S> the type of source object that this {@code Property} operates on
- * @param <V> the type of value that this {@code Property} represents
+ * @param <S> the type of source object that this {@code BeanProperty} operates on
+ * @param <V> the type of value that this {@code BeanProperty} represents
  *
  * @author Shannon Hickey
  * @author Scott Violet
