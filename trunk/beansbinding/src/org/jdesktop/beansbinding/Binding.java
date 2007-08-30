@@ -955,6 +955,11 @@ public abstract class Binding<SS, SV, TS, TV> {
         return isManaged;
     }
 
+    /**
+     * Notifies all registered {@code BindingListeners} of a successful
+     * sync ({@code refresh} or {@code save}), by calling {@code synced}
+     * on each one.
+     */
     protected final void notifySynced() {
         if (listeners == null) {
             return;
@@ -965,6 +970,13 @@ public abstract class Binding<SS, SV, TS, TV> {
         }
     }
 
+    /**
+     * Notifies all registered {@code BindingListeners} of a failure to
+     * sync ({@code refresh} or {@code save}), by calling
+     * {@code syncFailed} on each one.
+     *
+     * @param failures the reasons that the sync failed
+     */
     protected final void notifySyncFailed(SyncFailure... failures) {
         if (listeners == null) {
             return;
@@ -985,6 +997,21 @@ public abstract class Binding<SS, SV, TS, TV> {
         return failure;
     }
 
+    /**
+     * The same as {@link #refresh} with the additional
+     * behavior of notifying all registered {@code BindingListeners}
+     * with {@code synced} if {@code refresh} returns {@code null}
+     * or {@code syncFailed} if {@code refresh} returns a
+     * {@code SyncFailure}.
+     *
+     * @return the return value from the call to {@code refresh}
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @throws RuntimeException as specified by {@link #refresh}
+     * @throws ClassCastException as specified by {@link #refresh}
+     * @see #isManaged()
+     * @see #isBound()
+     */
     public final SyncFailure refreshAndNotify() {
         return notifyAndReturn(refresh());
     }
@@ -995,6 +1022,8 @@ public abstract class Binding<SS, SV, TS, TV> {
      * for being managed.
      *
      * @throws IllegalStateException if the {@code Binding} is not bound
+     * @throws RuntimeException as specified by {@link #refresh}
+     * @throws ClassCastException as specified by {@link #refresh}
      * @see #isManaged()
      * @see #isBound()
      */
@@ -1002,6 +1031,20 @@ public abstract class Binding<SS, SV, TS, TV> {
         return notifyAndReturn(refreshUnmanaged());
     }
     
+    /**
+     * The same as {@link #save} with the additional
+     * behavior of notifying all registered {@code BindingListeners}
+     * with {@code synced} if {@code save} returns {@code null}
+     * or {@code syncFailed} if {@code save} returns a
+     * {@code SyncFailure}.
+     *
+     * @return the return value from the call to {@code save}
+     * @throws UnsupportedOperationException if the {@code Binding} is managed
+     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @throws ClassCastException as specified by {@link #refresh}
+     * @see #isManaged()
+     * @see #isBound()
+     */
     public final SyncFailure saveAndNotify() {
         return notifyAndReturn(save());
     }
@@ -1012,6 +1055,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * for being managed.
      *
      * @throws IllegalStateException if the {@code Binding} is not bound
+     * @throws ClassCastException as specified by {@link #save}
      * @see #isManaged()
      * @see #isBound()
      */
