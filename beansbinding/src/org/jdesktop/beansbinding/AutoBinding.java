@@ -162,7 +162,7 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
         } else if (strategy == UpdateStrategy.READ_WRITE) {
             if (pse.getValueChanged()) {
                 tryRefreshThenSave();
-            } else if (pse.getWriteableChanged() && pse.isWriteable()) {
+            } else if (pse.isWriteable()) {
                 saveAndNotify();
             }
         }
