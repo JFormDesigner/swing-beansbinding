@@ -220,16 +220,34 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
         }
     }
 
+    /**
+     * Creates an instance of {@code ELProperty} for the given expression.
+     *
+     * @param expression the expression
+     * @return an instance of {@code ELProperty} for the given expression
+     * @throws IllegalArgumentException if the path is null or empty
+     * @throws PropertyResolutionException if there's a problem with the expression
+     */
     public static final <S, V> ELProperty<S, V> create(String expression) {
         return new ELProperty<S, V>(null, expression);
     }
 
+    /**
+     * Creates an instance of {@code ELProperty} for the given base property
+     * and expression. The expression is relative to the value of the base property.
+     *
+     * @param baseProperty the base property
+     * @param expression the expression
+     * @return an instance of {@code ELProperty} for the given base property and expression
+     * @throws IllegalArgumentException if the path is null or empty
+     * @throws PropertyResolutionException if there's a problem with the expression
+     */
     public static final <S, V> ELProperty<S, V> create(Property<S, ?> baseProperty, String expression) {
         return new ELProperty<S, V>(baseProperty, expression);
     }
 
     /**
-     * @throws IllegalArgumentException for empty or {@code null} path.
+     * @throws IllegalArgumentException for empty or {@code null} expression.
      */
     private ELProperty(Property<S, ?> baseProperty, String expression) {
         if (expression == null || expression.length() == 0) {
@@ -245,6 +263,16 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
         this.baseProperty = baseProperty;
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#WRITEABILITY">writeability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while evaluating the expression
+     * @see #setValue
+     * @see #isWriteable
+     */
     public Class<? extends V> getWriteType(S source) {
         SourceEntry entry = map.get(source);
 
@@ -279,7 +307,16 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
             expression.setSource(null);
         }
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#READABILITY">readability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while evaluating the expression
+     * @see #isReadable
+     */
     public V getValue(S source) {
         SourceEntry entry = map.get(source);
 
@@ -309,7 +346,17 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
             expression.setSource(null);
         }
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#WRITEABILITY">writeability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while evaluating the expression
+     * @see #isWriteable
+     * @see #getWriteType
+     */
     public void setValue(S source, V value) {
         SourceEntry entry = map.get(source);
 
@@ -360,7 +407,16 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
             expression.setSource(null);
         }
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#READABILITY">readability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while evaluating the expression
+     * @see #isWriteable
+     */
     public boolean isReadable(S source) {
         SourceEntry entry = map.get(source);
 
@@ -386,6 +442,15 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * See the class level documentation for the definition of <a href="#WRITEABILITY">writeability</a>.
+     *
+     * @throws UnsupportedOperationException {@inheritDoc}
+     * @throws PropertyResolutionException if an exception occurs while evaluating the expression
+     * @see #isReadable
+     */
     public boolean isWriteable(S source) {
         SourceEntry entry = map.get(source);
 
@@ -491,6 +556,15 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
         this.firePropertyStateChange(pse);
     }
 
+    /**
+     * Returns a string representation of the {@code ELProperty}. This
+     * method is intended to be used for debugging purposes only, and
+     * the content and format of the returned string may vary between
+     * implementations. The returned string may be empty but may not
+     * be {@code null}.
+     *
+     * @return a string representation of this {@code ELProperty}
+     */
     public String toString() {
         return getClass().getName() + "[" + expression + "]";
     }
