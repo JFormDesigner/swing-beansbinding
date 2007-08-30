@@ -154,7 +154,7 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
 
     protected void sourceChangedImpl(PropertyStateEvent pse) {
         if (strategy == UpdateStrategy.READ_ONCE) {
-            // nothing to do - superclass already deals with edited
+            // nothing to do
         } else if (strategy == UpdateStrategy.READ) {
             if (pse.getValueChanged()) {
                 refreshAndNotify();
@@ -170,7 +170,7 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
 
     protected void targetChangedImpl(PropertyStateEvent pse) {
         if (strategy == UpdateStrategy.READ_ONCE) {
-            // nothing to do - superclass already deals with edited
+            // nothing to do
         } else if (strategy == UpdateStrategy.READ) {
             if (pse.getWriteableChanged() && pse.isWriteable()) {
                 refreshAndNotify();
