@@ -29,16 +29,16 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
     public enum UpdateStrategy {
         
         /**
-         * An update strategy where the {@code Binding} sets the target value
-         * from the source only once, at bind time.
-         */
-        READ,
-
-        /**
          * An update strategy where the {@code Binding} tries to keep the target
          * in sync by updating it in response to changes in the source.
          */
         READ_ONCE,
+
+        /**
+         * An update strategy where the {@code Binding} sets the target value
+         * from the source only once, at bind time.
+         */
+        READ,
 
         /**
          * An update strategy where the {@code Binding} tries to keep the source
