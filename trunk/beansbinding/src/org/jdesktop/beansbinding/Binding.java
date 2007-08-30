@@ -1245,40 +1245,54 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
     
     private void sourceChanged(PropertyStateEvent pse) {
-        if (!pse.getValueChanged()) {
-            return;
-        }
+        if (pse.getValueChanged()) {
+            notifySourceEdited(true);
 
-        notifySourceEdited(true);
-
-        if (listeners != null) {
-            for (BindingListener listener : listeners) {
-                listener.sourceEdited(this);
+            if (listeners != null) {
+                for (BindingListener listener : listeners) {
+                    listener.sourceEdited(this);
+                }
             }
         }
 
         sourceChangedImpl(pse);
     }
 
+    /**
+     * Called to indicate that the source property has fired a
+     * {@code PropertyStateEvent} to indicate that its state has changed for
+     * the source object. Called after the {@code Binding} has notified
+     * any property change listeners and {@code BindingListeners} that
+     * the source value has been edited (only if the {@code PropertyStateEvent}
+     * represents a value change). This method is useful for subclasses
+     * to detect source changes and perform syncing as appropriate.
+     */
     protected void sourceChangedImpl(PropertyStateEvent pse) {
     }
 
     private void targetChanged(PropertyStateEvent pse) {
-        if (!pse.getValueChanged()) {
-            return;
-        }
+        if (pse.getValueChanged()) {
+            notifyTargetEdited(true);
 
-        notifyTargetEdited(true);
-
-        if (listeners != null) {
-            for (BindingListener listener : listeners) {
-                listener.targetEdited(this);
+            if (listeners != null) {
+                for (BindingListener listener : listeners) {
+                    listener.targetEdited(this);
+                }
             }
         }
 
         targetChangedImpl(pse);
     }
 
+    /**
+     * Called to indicate that the target property has fired a
+     * {@code PropertyStateEvent} to indicate that its state has changed for
+     * the target object. Called after the {@code Binding} has notified
+     * any property change listeners and {@code BindingListeners} that
+     * the target value has been edited (only if the {@code PropertyStateEvent}
+     * represents a value change). This method is useful for subclasses
+     * to detect target changes and perform syncing as appropriate.
+     */
     protected void targetChangedImpl(PropertyStateEvent pse) {
     }
 
