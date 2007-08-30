@@ -808,6 +808,15 @@ public abstract class Binding<SS, SV, TS, TV> {
         }
     }
 
+    /**
+     * Called by {@link #bind} to allow subclasses to initiate binding.
+     * Subclasses typically need not install {@code PropertyStateListeners}
+     * on the source property and target property as they will be notified
+     * by calls to {@link #sourceChangedImpl} and {@link #targetChangedImpl}
+     * when the source and target properties change respectively.
+     *
+     * @see unbindImpl
+     */
     protected abstract void bindImpl();
 
     /**
@@ -855,7 +864,12 @@ public abstract class Binding<SS, SV, TS, TV> {
             }
         }
     }
-    
+
+    /**
+     * Called by {@link #unbind} to allow subclasses to uninitiate binding.
+     *
+     * @see unbindImpl
+     */
     protected abstract void unbindImpl();
 
     /**
