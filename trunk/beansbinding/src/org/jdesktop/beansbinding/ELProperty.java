@@ -146,7 +146,7 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
                         currWriteType = currIsWriteable ? expression.getType(context) : null;
                     }
 
-                    if (currValue != cachedValue || currIsWriteable != cachedIsWriteable || currWriteType != cachedWriteType) {
+                    if (!match(currValue, cachedValue) || currIsWriteable != cachedIsWriteable || currWriteType != cachedWriteType) {
                         log("validateCache()", "concurrent modification");
                     }
                 } catch (ELException ele) {
