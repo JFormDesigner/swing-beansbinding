@@ -177,8 +177,18 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
             }
         } else if (strategy == UpdateStrategy.READ_WRITE) {
             if (pse.getWriteableChanged() && pse.isWriteable()) {
-                tryRefreshThenSave();
-            } else {
+                SyncFailure refreshFailure = refresh();
+                if (refreshFailure == null) {
+                    notifySynced();
+                } else if (pse.getValueChanged()) {
+                    SyncFailure saveFailure = save();
+                    if (saveFailure == null) {
+                        notifySynced();
+                    } else {
+                        notifySyncFailed(refreshFailure, saveFailure);
+                    }
+                }
+            } else if (pse.getValueChanged()) {
                 trySaveThenRefresh();
             }
         }
