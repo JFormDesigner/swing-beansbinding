@@ -10,9 +10,9 @@ import java.util.ArrayList;
 
 /**
  * An implementation of {@code Binding} that automatically syncs the source
- * and target values by calling {@code save} and {@code refresh} according
- * to a specified update strategy. The update strategy is specified on
- * creation of an {@code AutoBinding}, and is one of:
+ * and target by refreshing and saving according to one of three update
+ * strategies. The update strategy is specified for an {@code AutoBinding}
+ * on creation, and is one of:
  * <p>
  * <ul>
  *     <li>{@code Binding.UpdateStrategy.READ_ONCE}</li>
@@ -23,17 +23,55 @@ import java.util.ArrayList;
  * <a name="STRATEGY_BEHAVIOR">The behavior</a> of {@code AutoBinding} for each
  * of the update strategies is defined as follows:
  * <p>
- * <h3>{@code READ_ONCE}</h3>
- * <p>
- * Foo bar baz...
- * <p>
- * <h3>{@code READ}</h3>
- * <p>
- * Foo bar baz...
- * <p>
- * <h3>{@code READ_WRITE}</h3>
- * <p>
- * Foo bar baz...
+ * <table border="0">
+ * <tr valign="baseline">
+ *   <td><b><font size="+1">{@code READ_ONCE}</font></b></td>
+ *   <td>&nbsp;&nbsp;&nbsp;</td>
+ *   <td>
+ *     <b>Summary:</b><br>
+ *     Tries to set the target from the source only once, at bind time.
+ *     <p>
+ *     <b>Details:</b><br>
+ *     At bind time, tries to sync the target from the source, by calling
+ *     {@code refreshAndNotify}. No further automatic syncing is done.
+ *   </td>
+ * </tr>
+ * <tr><td colspan="3"><br></td></tr>
+ * <tr valign="baseline">
+ *   <td><b><font size="+1">{@code READ}</font></b></td>
+ *   <td>&nbsp;&nbsp;&nbsp;</td>
+ *   <td>
+ *     <b>Summary:</b><br>
+ *     Tries to keep the target in sync by updating it in response to
+ *     changes in the source.
+ *     <p>
+ *     <b>Details:</b><br>
+ *     At bind time, tries to sync the target from the source, by calling
+ *     {@code refreshAndNotify}. Then automatically tries to sync the target
+ *     from the source by calling {@code refreshAndNotify} when either the source
+ *     changes value, or the target changes from unwriteable to writeable.
+ *   </td>
+ * </tr>
+ * <tr><td colspan="3"><br></td></tr>
+ * <tr valign="baseline">
+ *   <td><b><font size="+1">{@code READ_WRITE}</font></b></td>
+ *   <td>&nbsp;&nbsp;&nbsp;</td>
+ *   <td>
+ *     <b>Summary:</b><br>
+ *     Tries to keep both the source and target in sync by updating them in
+ *     response to changes in the other.
+ *     <p>
+ *     <b>Details:</b><br>
+ *     At bind time, first tries to sync the target from the source, by calling
+ *     {@code refresh}. If the call succeeds, notifies the binding listeners
+ *     of a successful sync. If the call fails, then tries to instead sync the
+ *     source from the target by calling {@code save}. If this second call succeeds,
+ *     notifies the binding listeners of a succesful sync. If it fails, notifies
+ *     the binding listeners of a failed sync, providing the reasons for both
+ *     the refresh and save failures.
+ *   </td>
+ * </tr>
+ * </table>
  *
  * @param <SS> the type of source object
  * @param <SV> the type of value that the source property represents
@@ -48,27 +86,27 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
 
     /**
      * An enumeration representing the possible update strategies of an
-     * {@code AutoBinding}. See the class level documentation of
-     * {@code AutoBinding} for complete details on the sync behavior for
-     * each possible update strategy.
+     * {@code AutoBinding}. See {@code AutoBinding's} class level
+     * <a href="AutoBinding.html#STRATEGY_BEHAVIOR">documentation</a> for complete
+     * details on the sync behavior for each possible update strategy.
      */
     public enum UpdateStrategy {
 
         /**
-         * An update strategy where the {@code Binding} sets the target value
-         * from the source only once, at bind time.
+         * An update strategy where the {@code AutoBinding} tries to set the
+         * target from the source only once, at bind time.
          */
         READ_ONCE,
 
         /**
-         * An update strategy where the {@code Binding} tries to keep the target
+         * An update strategy where the {@code AutoBinding} tries to keep the target
          * in sync by updating it in response to changes in the source.
          */
         READ,
 
         /**
-         * An update strategy where the {@code Binding} tries to keep the source
-         * and target in sync by updating both in response to changes in the other.
+         * An update strategy where the {@code AutoBinding} tries to keep both the
+         * source and target in sync by updating them in response to changes in the other.
          */
         READ_WRITE
     }
