@@ -22,6 +22,46 @@ import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 
 /**
+ * TBD - CLASS LEVEL DOC. What follows is an outline of what it will
+ * likely contain, based on the doc for BeanProperty:
+ * <p>
+ * Description.
+ * For example...:
+ * <p>
+ * <pre><code>
+ *   Example
+ *</code></pre>
+ * <p>
+ * Or:
+ * <p>
+ * <pre><code>
+ *    Example
+ * </code></pre>
+ * <p>
+ * An instance of {@code ELProperty} is immutable and can be used with
+ * different source objects...
+ * <p>
+ * It is very important that any bean properties addressed via an {@code ELProperty}
+ * follow the Java Beans specification...
+ * <p>
+ * When there are no {@code PropertyStateListeners} installed on an {@code ELProperty}
+ * for a given source...
+ * <p>
+ * <a name="READABILITY"><b>Readability</b></a> of an {@code ELProperty} for a given source is defined as follows:
+ * <i>Definition</i>
+ * <p>
+ * So, in the example given earlier...
+ * <p>
+ * <a name="WRITEABILITY"><b>Writeability</b></a> of an {@code ELProperty} for a given source is defined as follows:
+ * <i>Definition</i>
+ * <p>
+ * So, in the example given earlier...
+ * <p>
+ * In addition to working on Java Beans properties...{@code Map}...
+ * <p>
+ * Some methods in this class document that they can throw
+ * {@code PropertyResolutionException}...
+ *
  * @param <S> the type of source object that this {@code ELProperty} operates on
  * @param <V> the type of value that this {@code ELProperty} represents
  *
