@@ -9,6 +9,32 @@ import java.util.List;
 import java.util.ArrayList;
 
 /**
+ * An implementation of {@code Binding} that automatically syncs the source
+ * and target values by calling {@code save} and {@code refresh} according
+ * to a specified update strategy. The update strategy is specified on
+ * creation of an {@code AutoBinding}, and is one of:
+ * <p>
+ * <ul>
+ *     <li>{@code Binding.UpdateStrategy.READ_ONCE}</li>
+ *     <li>{@code Binding.UpdateStrategy.READ}</li>
+ *     <li>{@code Binding.UpdateStrategy.READ_WRITE}</li>
+ * </ul>
+ * <p>
+ * <a name="STRATEGY_BEHAVIOR">The behavior</a> of {@code AutoBinding} for each
+ * of the update strategies is defined as follows:
+ * <p>
+ * <h3>{@code READ_ONCE}</h3>
+ * <p>
+ * Foo bar baz...
+ * <p>
+ * <h3>{@code READ}</h3>
+ * <p>
+ * Foo bar baz...
+ * <p>
+ * <h3>{@code READ_WRITE}</h3>
+ * <p>
+ * Foo bar baz...
+ *
  * @param <SS> the type of source object
  * @param <SV> the type of value that the source property represents
  * @param <TS> the type of target object
@@ -27,16 +53,16 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
      * each possible update strategy.
      */
     public enum UpdateStrategy {
-        
-        /**
-         * An update strategy where the {@code Binding} tries to keep the target
-         * in sync by updating it in response to changes in the source.
-         */
-        READ_ONCE,
 
         /**
          * An update strategy where the {@code Binding} sets the target value
          * from the source only once, at bind time.
+         */
+        READ_ONCE,
+
+        /**
+         * An update strategy where the {@code Binding} tries to keep the target
+         * in sync by updating it in response to changes in the source.
          */
         READ,
 
