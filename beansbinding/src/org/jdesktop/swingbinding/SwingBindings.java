@@ -12,6 +12,11 @@ import org.jdesktop.beansbinding.ObjectProperty;
 import org.jdesktop.beansbinding.Property;
 
 /**
+ * A factory class for creating instances of the custom Swing {@code Binding}
+ * implementations provided by this package. See the
+ * <a href="package-summary.html">package summary</a> for full details on
+ * binding to Swing components.
+ *
  * @author Shannon Hickey
  */
 public class SwingBindings {

@@ -82,7 +82,7 @@
         <pre><code>
     BeanProperty firstNameP = BeanProperty.create("firstName");
     BeanProperty textP = BeanProperty.create("text");
-    Binding binding = Bindings.createAutoBinding(person, firstNameP, jTextField, textP);
+    Binding binding = Bindings.createAutoBinding(READ_WRITE, person, firstNameP, jTextField, textP);
     binding.bind();
         </code></pre>
         <p>
