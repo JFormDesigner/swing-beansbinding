@@ -29,7 +29,7 @@ import java.util.ArrayList;
  *   <td>&nbsp;&nbsp;&nbsp;</td>
  *   <td>
  *     <b>Summary:</b><br>
- *     Tries to set the target from the source only once, at bind time.
+ *     Tries to sync the target from the source only once, at bind time.
  *     <p>
  *     <b>Details:</b><br>
  *     At bind time, tries to sync the target from the source, by calling
@@ -42,8 +42,7 @@ import java.util.ArrayList;
  *   <td>&nbsp;&nbsp;&nbsp;</td>
  *   <td>
  *     <b>Summary:</b><br>
- *     Tries to keep the target in sync by updating it in response to
- *     changes in the source.
+ *     Tries to keep the target in sync with the source.
  *     <p>
  *     <b>Details:</b><br>
  *     At bind time, tries to sync the target from the source, by calling
@@ -58,17 +57,37 @@ import java.util.ArrayList;
  *   <td>&nbsp;&nbsp;&nbsp;</td>
  *   <td>
  *     <b>Summary:</b><br>
- *     Tries to keep both the source and target in sync by updating them in
- *     response to changes in the other.
+ *     Tries to keep both the source and target in sync with each other.
  *     <p>
  *     <b>Details:</b><br>
  *     At bind time, first tries to sync the target from the source, by calling
  *     {@code refresh}. If the call succeeds, notifies the binding listeners
- *     of a successful sync. If the call fails, then tries to instead sync the
+ *     of a successful sync. If the call returns failure, then tries to instead sync the
  *     source from the target by calling {@code save}. If this second call succeeds,
- *     notifies the binding listeners of a succesful sync. If it fails, notifies
+ *     notifies the binding listeners of a succesful sync. If it returns failure, notifies
  *     the binding listeners of a failed sync, providing the reasons for both
  *     the refresh and save failures.
+ *     <p>
+ *     Automatically responds to changes in the state of the source as follows:
+ *     If the change represents a value change, use the try-refresh-then-save
+ *     procedure mentioned above. Otherwise, if the change represents the
+ *     source becoming writeable, tries to update the source from the target
+ *     by calling {@code saveAndNotify}.
+ *     <p>
+ *     Automatically responds to changes in the state of the target as follows:
+ *     If the change represents the target simply becoming writeable, try to
+ *     sync the target from the source by calling {@code refreshAndNotify}. If
+ *     the change represents the target becoming writeable and the value changing
+ *     together, use the try-refresh-then-save procedure mentioned above. Finally
+ *     if the change represents the target's value changing alone, first try to
+ *     sync the source from the target by calling {@code save}.
+ *     If that succeeds, notify the listeners of a successful sync. If it
+ *     returns failure due to conversion or validation, notify the listeners of a sync
+ *     failure, providing the conversion or validation failure. If it fails for
+ *     any other reason, then instead try to sync the target from the source by
+ *     calling {@code refresh}. If this succeeds, notify the listeners of successful
+ *     sync. Otherwise notify them of failure with the reasons for both the save
+ *     and refresh failures.
  *   </td>
  * </tr>
  * </table>
@@ -93,20 +112,20 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
     public enum UpdateStrategy {
 
         /**
-         * An update strategy where the {@code AutoBinding} tries to set the
+         * An update strategy where the {@code AutoBinding} tries to sync the
          * target from the source only once, at bind time.
          */
         READ_ONCE,
 
         /**
          * An update strategy where the {@code AutoBinding} tries to keep the target
-         * in sync by updating it in response to changes in the source.
+         * in sync with the source.
          */
         READ,
 
         /**
          * An update strategy where the {@code AutoBinding} tries to keep both the
-         * source and target in sync by updating them in response to changes in the other.
+         * source and target in sync with each other.
          */
         READ_WRITE
     }
@@ -241,16 +260,10 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
             }
         } else if (strategy == UpdateStrategy.READ_WRITE) {
             if (pse.getWriteableChanged() && pse.isWriteable()) {
-                SyncFailure refreshFailure = refresh();
-                if (refreshFailure == null) {
-                    notifySynced();
-                } else if (pse.getValueChanged()) {
-                    SyncFailure saveFailure = save();
-                    if (saveFailure == null) {
-                        notifySynced();
-                    } else {
-                        notifySyncFailed(refreshFailure, saveFailure);
-                    }
+                if (pse.getValueChanged()) {
+                    tryRefreshThenSave();
+                } else {
+                    refreshAndNotify();
                 }
             } else if (pse.getValueChanged()) {
                 trySaveThenRefresh();
