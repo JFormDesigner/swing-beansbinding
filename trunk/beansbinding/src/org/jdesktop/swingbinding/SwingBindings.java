@@ -23,10 +23,26 @@ public class SwingBindings {
     
     private SwingBindings() {}
 
+    /**
+     * Creates a {@code JListBinding} from direct references to a {@code List} and {@code JList}.
+     *
+     * @param strategy the update strategy
+     * @param sourceList the source {@code List}
+     * @param targetJList the target {@code JList}
+     * @return the {@code JTableBinding}
+     */
     public static <E> JListBinding<E, List<E>, JList> createListBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, JList targetJList) {
         return new JListBinding<E, List<E>, JList>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetJList, ObjectProperty.<JList>create(), null);
     }
 
+    /**
+     * Creates a named {@code JListBinding} from direct references to a {@code List} and {@code JList}.
+     *
+     * @param strategy the update strategy
+     * @param sourceList the source {@code List}
+     * @param targetJList the target {@code JList}
+     * @return the {@code JListBinding}
+     */
     public static <E> JListBinding<E, List<E>, JList> createListBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, JList targetJList, String name) {
         return new JListBinding<E, List<E>, JList>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetJList, ObjectProperty.<JList>create(), name);
     }
@@ -169,10 +185,26 @@ public class SwingBindings {
 
 
 
+    /**
+     * Creates a {@code JComboBoxBinding} from direct references to a {@code List} and {@code JComboBox}.
+     *
+     * @param strategy the update strategy
+     * @param sourceList the source {@code List}
+     * @param targetJComboBox the target {@code JComboBox}
+     * @return the {@code JComboBoxBinding}
+     */
     public static <E> JComboBoxBinding<E, List<E>, JComboBox> createComboBoxBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, JComboBox targetJComboBox) {
         return new JComboBoxBinding<E, List<E>, JComboBox>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetJComboBox, ObjectProperty.<JComboBox>create(), null);
     }
 
+    /**
+     * Creates a named {@code JComboBoxBinding} from direct references to a {@code List} and {@code JComboBox}.
+     *
+     * @param strategy the update strategy
+     * @param sourceList the source {@code List}
+     * @param targetJComboBox the target {@code JComboBox}
+     * @return the {@code JComboBoxBinding}
+     */
     public static <E> JComboBoxBinding<E, List<E>, JComboBox> createComboBoxBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, JComboBox targetJComboBox, String name) {
         return new JComboBoxBinding<E, List<E>, JComboBox>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetJComboBox, ObjectProperty.<JComboBox>create(), name);
     }
