@@ -32,8 +32,9 @@ import org.jdesktop.swingbinding.impl.ListBindingManager;
  * Instances of {@code JListBinding} are obtained by calling one of the
  * {@code createJListBinding} methods in the {@code SwingBindings} class. There
  * are methods for creating a {@code JListBinding} using direct references to a
- * {@code List} and/or {@code JList} and methods for providing the {@code List}
- * and/or {@code JList} as {@code Properties} on source/target objects.
+ * {@code List} and/or {@code JList} and methods for creating a {@code JListBinding} by
+ * providing the {@code List} and/or {@code JList} as {@code Property} instances
+ * that derive the {@code List}/{@code JList} from the binding's source/target objects.
  * <p>
  * This class is a subclass of {@code AutoBinding}. The update strategy
  * dictates how the binding responds to changes in the value of the source
