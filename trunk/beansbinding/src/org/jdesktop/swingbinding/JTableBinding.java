@@ -54,9 +54,9 @@ import java.awt.FocusTraversalPolicy;
  * at bind time if the {@code JTable} property is readable, or whenever it becomes
  * readable after binding. This model is uninstalled when the property becomes unreadable
  * or the binding is unbound. It is also uninstalled, and installed on the replacement,
- * when the value of the {@code JTable} property changes. When this model is uninstalled from a
- * {@code JTable}, it is replaced with an empty {@code DefaultTableModel} so that
- * the {@code JTable} is left with a functioning model.
+ * when the value of the {@code JTable} property changes. When the model is uninstalled from a
+ * {@code JTable}, the {@code JTable's} model is replaced with an empty {@code DefaultTableModel}
+ * so that it is left functional.
  * <p>
  * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
  * automatically applied to the target {@code JTable} (if readable) only once, at bind time.

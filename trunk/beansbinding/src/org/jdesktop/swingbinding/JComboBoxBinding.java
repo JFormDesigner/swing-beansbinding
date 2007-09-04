@@ -42,13 +42,13 @@ import org.jdesktop.swingbinding.impl.*;
  * at bind time if the {@code JComboBox} property is readable, or whenever it becomes
  * readable after binding. This model is uninstalled when the property becomes unreadable
  * or the binding is unbound. It is also uninstalled, and installed on the replacement,
- * when the value of the {@code JComboBox} property changes. When this model is uninstalled from a
- * {@code JComboBox}, it is replaced with an empty {@code DefaultComboBoxModel} so that
- * the {@code JComboBox} is left with a functioning model.
+ * when the value of the {@code JComboBox} property changes. When the model is uninstalled from a
+ * {@code JComboBox}, the JComboBox's model is replaced with an empty {@code DefaultComboBoxModel}
+ * so that it is left functional.
  * <p>
  * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
  * automatically applied to the target {@code JComboBox} (if readable) only once, at bind time.
- * As a result, if the target {@code JComboBox} changes, it gets the model, but the elements are
+ * As a result, if the target {@code JComboBox} changes, it gets the model, but the items are
  * not automatically set on it.
  * <p>
  * Here is an example of creating a binding from a {@code List} of {@code Country}
