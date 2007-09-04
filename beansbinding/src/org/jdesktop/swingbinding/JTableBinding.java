@@ -195,9 +195,10 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * {@code JTable}, with a {@code ColumnBinding's} order in the list determining its
      * table model index.
      *
-     * @param columnProperty the property with which to fetch cell values from the
+     * @param columnProperty the property with which to derive cell values from the
      *                       elements of the source {@code List}
      * @return the {@code ColumnBinding}
+     * @throws IllegalArgumentException if {@code columnProperty} is {@code null}
      * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
     public ColumnBinding addColumnBinding(Property<E, ?> columnProperty) {
@@ -212,10 +213,11 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * {@code JTable}, with a {@code ColumnBinding's} order in the list determining its
      * table model index.
      *
-     * @param columnProperty the property with which to fetch cell values from the
+     * @param columnProperty the property with which to derive cell values from the
      *                       elements of the source {@code List}
      * @param name a name for the column binding
      * @return the {@code ColumnBinding}
+     * @throws IllegalArgumentException if {@code columnProperty} is {@code null}
      * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
     public ColumnBinding addColumnBinding(Property<E, ?> columnProperty, String name) {
@@ -243,9 +245,10 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * table model index.
      *
      * @param index the index at which to insert the {@code ColumnBinding}
-     * @param columnProperty the property with which to fetch cell values from the
+     * @param columnProperty the property with which to derive cell values from the
      *                       elements of the source {@code List}
      * @return the {@code ColumnBinding}
+     * @throws IllegalArgumentException if {@code columnProperty} is {@code null}
      * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
     public ColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty) {
@@ -261,10 +264,11 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * table model index.
      *
      * @param index the index at which to insert the {@code ColumnBinding}
-     * @param columnProperty the property with which to fetch cell values from the
+     * @param columnProperty the property with which to derive cell values from the
      *                       elements of the source {@code List}
      * @param name a name for the {@code ColumnBinding}
      * @return the {@code ColumnBinding}
+     * @throws IllegalArgumentException if {@code columnProperty} is {@code null}
      * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
     public ColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty, String name) {
