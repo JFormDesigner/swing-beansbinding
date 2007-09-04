@@ -386,6 +386,9 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
     }
 
+    /**
+     *
+     */
     public final class ColumnBinding extends AbstractColumnBinding {
         private Class<?> columnClass;
         private boolean editable;
@@ -406,6 +409,16 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             setColumn(newCol);
         }
 
+        /**
+         * Sets a name for the column represented by this {@code ColumnBinding}.
+         * This is used to initialize the table's column header name. If
+         * {@code null} is specified, the {@code toString()} value of the
+         * {@code ColumnBinding's} source property is used.
+         *
+         * @param name the name
+         * @return the {@code ColumnBinding} itself, to allow for method chaining
+         * @see javax.swing.table.TableModel#getColumnName
+         */
         public ColumnBinding setColumnName(String name) {
             JTableBinding.this.throwIfBound();
             this.columnName = name;
@@ -422,6 +435,16 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             return columnClass == null ? Object.class : columnClass;
         }
 
+        /**
+         * Returns the name for the column represented by this {@code ColumnBinding}.
+         * This is used to initialize the table's column header name.  If no name
+         * has been specified, or if it has been set to {@code null}, the
+         * {@code toString()} value of the {@code ColumnBinding's} source property is returned.
+         *
+         * @return the name for the column
+         * @see #setColumnName
+         * @see javax.swing.table.TableModel#getColumnName
+         */
         public String getColumnName() {
             return columnName == null ? getSourceProperty().toString() : columnName;
         }
