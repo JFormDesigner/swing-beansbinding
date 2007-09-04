@@ -61,9 +61,9 @@ import java.awt.FocusTraversalPolicy;
  * <p>
  * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
  * column when all of the following are true: the property specified for that column
- * by its {@code ColumnBinding} is editable for the object in that row, the "editable" property
- * of the {@code JTableBinding} is either {@code true} or unset, and the "editable"
- * property of the {@code ColumnBinding} is either {@code true} or unset.
+ * by its {@code ColumnBinding} is editable for the object in that row, the {@code "editable"} property
+ * of the {@code JTableBinding} is {@code true} (the default), and the {@code "editable"}
+ * property of the {@code ColumnBinding} is {@code true} (the default).
  * <p>
  * {@code ColumnBindings} are managed by the {@code JTableBinding}. They are not
  * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
@@ -116,8 +116,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
     private Handler handler = new Handler();
     private BindingTableModel model;
     private JTable table;
-    private boolean editable;
-    private boolean editableSet;
+    private boolean editable = true;
     private List<ColumnBinding> columnBindings = new ArrayList<ColumnBinding>();
 
     /**
@@ -154,6 +153,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
     
     /**
      * Sets whether or not the cells of the table should be editable.
+     * The default for this property is {@code true}.
      * See this <a href="#EDITABILITY">paragraph</a> in the class level
      * documentation on editability.
      *
@@ -161,11 +161,11 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      */
     public void setEditable(boolean editable) {
         this.editable = editable;
-        this.editableSet = true;
     }
 
     /**
      * Returns whether or not the cells of the table should be editable.
+     * The default for this property is {@code true}.
      * See this <a href="#EDITABILITY">paragraph</a> in the class level
      * documentation on editability.
      *
@@ -173,19 +173,6 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      */
     public boolean isEditable() {
         return editable;
-    }
-
-    /**
-     * Returns whether or not {@code setEditable} has been called on
-     * this {@code JTableBinding}.
-     *
-     * @return whether or not {@code setEditable} has been called on this
-     *         {@code JTableBinding}
-     * @deprecated Unused and to be removed in a future version.
-     */
-    @Deprecated
-    public boolean isEditableSet() {
-        return editableSet;
     }
 
     /**
@@ -435,7 +422,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      */
     public final class ColumnBinding extends AbstractColumnBinding {
         private Class<?> columnClass;
-        private boolean editable;
+        private boolean editable = true;
         private boolean editableSet;
         private String columnName;
         private Object editingObject;
@@ -475,6 +462,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
          * {@code ColumnBinding}.
          *
          * @param columnClass the column class
+         * @return the {@code ColumnBinding} itself, to allow for method chaining
          * @see javax.swing.table.TableModel#getColumnClass
          */
         public ColumnBinding setColumnClass(Class<?> columnClass) {
@@ -511,19 +499,21 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
 
         /**
          * Sets whether or not the cells of the column should be editable.
+         * The default for this property is {@code true}.
          * See this <a href="JTableBinding.html#EDITABILITY">paragraph</a> in the class level
          * documentation on editability.
          *
          * @param editable whether or not the cells of the column should be editable
+         * @return the {@code ColumnBinding} itself, to allow for method chaining
          */
         public ColumnBinding setEditable(boolean editable) {
             this.editable = editable;
-            this.editableSet = true;
             return this;
         }
 
         /**
          * Returns whether or not the cells of the column should be editable.
+         * The default for this property is {@code true}.
          * See this <a href="JTableBinding.html#EDITABILITY">paragraph</a> in the class level
          * documentation on editability.
          *
@@ -531,19 +521,6 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
          */
         public boolean isEditable() {
             return editable;
-        }
-
-        /**
-         * Returns whether or not {@code setEditable} has been called on
-         * this {@code ColumnBinding}.
-         *
-         * @return whether or not {@code setEditable} has been called on this
-         *         {@code ColumnBinding}
-         * @deprecated Unused and to be removed in a future version.
-         */
-        @Deprecated
-        public boolean isEditableSet() {
-            return editableSet;
         }
 
         private void bindUnmanaged0() {
@@ -667,12 +644,12 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public boolean isCellEditable(int rowIndex, int columnIndex) {
-            if (JTableBinding.this.isEditableSet() && !JTableBinding.this.isEditable()) {
+            if (!JTableBinding.this.isEditable()) {
                 return false;
             }
 
             ColumnBinding binding = JTableBinding.this.getColumnBinding(columnIndex);
-            if (binding.isEditableSet() && !binding.isEditable()) {
+            if (!binding.isEditable()) {
                 return false;
             }
 
