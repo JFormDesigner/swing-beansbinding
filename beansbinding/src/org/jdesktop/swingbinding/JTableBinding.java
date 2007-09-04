@@ -31,7 +31,7 @@ import java.awt.FocusTraversalPolicy;
  * to this {@code JTableBinding}.
  * <p>
  * If the {@code List} is an instance of {@code ObservableList}, then changes
- * to the {@code List} are reflected in the table. {@code JTableBinding}
+ * to the {@code List} are reflected in the {@code JTable}. {@code JTableBinding}
  * also listens to the properties specified for {@code ColumnBindings}, for all rows,
  * and updates its display values in response to change.
  * <p>
@@ -39,7 +39,7 @@ import java.awt.FocusTraversalPolicy;
  * {@code createJTableBinding} methods in the {@code SwingBindings} class. There
  * are methods for creating a {@code JTableBinding} using direct references to a
  * {@code List} and/or {@code JTable} and methods for providing the {@code List}
- * and/or table as {@code Properties} on source/target objects.
+ * and/or {@code JTable} as {@code Properties} on source/target objects.
  * <p>
  * This class is a subclass of {@code AutoBinding}. The update strategy
  * dictates how the binding responds to changes in the value of the source
@@ -56,7 +56,7 @@ import java.awt.FocusTraversalPolicy;
  * is unbound. It is also uninstalled, and installed on the replacement, when the value
  * of the {@code JTable} property changes. When this model is uninstalled from a
  * {@code JTable}, it is replaced with an empty {@code DefaultTableModel} so that
- * the table is left with a functioning model.
+ * the {@code JTable} is left with a functioning model.
  * <p>
  * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
  * column when all of the following are true: the property specified for that column
@@ -73,15 +73,15 @@ import java.awt.FocusTraversalPolicy;
  * {@code JTableBinding} itself are also notified of {@code sync} and {@code syncFailed}
  * for the {@code JTableBinding's ColumnBindings}.
  * <p>
- * Here is an example of creating a binding from a {@List} of {@code Person}
- * objects to a table:
+ * Here is an example of creating a binding from a {@code List} of {@code Person}
+ * objects to a {@code JTable}:
  * <p>
  * <pre><code>
- *    // create the person list
+ *    // create the person List
  *    List<Person> people = createPersonList();
  *
- *    // create the binding from list to table
- *    JTableBinding tb = SwingBindings.createJTableBinding(READ, people, table);
+ *    // create the binding from List to JTable
+ *    JTableBinding tb = SwingBindings.createJTableBinding(READ, people, jTable);
  *
  *    // define the properties to be used for the columns
  *    BeanProperty firstNameP = BeanProperty.create("firstName");
@@ -98,7 +98,9 @@ import java.awt.FocusTraversalPolicy;
  * </code></pre>
  * <p>
  * In addition to binding the elements of a {@code JTable}, it is possible to
- * bind to the selection of a table. See the list of <a href="package-summary.html#SWING_PROPS">
+ * bind to the selection of a {@code JTable}. When binding to the selection of a {@code JTable}
+ * backed by a {@code JTableBinding}, the selection is always in terms of elements
+ * from the source {@code List}. See the list of <a href="package-summary.html#SWING_PROPS">
  * interesting swing properties</a> in the package summary for more details.
  *
  * @param <E> the type of elements in the source {@code List}
@@ -125,7 +127,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * @param sourceProperty a property on the source object that resolves to the {@code List} of elements
      * @param targetObject the target object
      * @param targetProperty a property on the target object that resolves to a {@code JTable}
-     * @param name a name for the {@code Binding}
+     * @param name a name for the {@code JTableBinding}
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JTableBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
