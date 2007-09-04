@@ -95,7 +95,7 @@ import java.util.ArrayList;
  * @param <SS> the type of source object
  * @param <SV> the type of value that the source property represents
  * @param <TS> the type of target object
- * @param <SV> the type of value that the target property represents
+ * @param <TV> the type of value that the target property represents
  *
  * @author Shannon Hickey
  */

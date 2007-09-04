@@ -31,7 +31,7 @@ import java.beans.*;
  * @param <SS> the type of source object
  * @param <SV> the type of value that the source property represents
  * @param <TS> the type of target object
- * @param <SV> the type of value that the target property represents
+ * @param <TV> the type of value that the target property represents
  *
  * @author Shannon Hickey
  */
@@ -653,7 +653,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * <p>
      * This final value is returned in a {@code ValueResult}.
      * <p>
-     * Any {@code RuntimeException} or {@ClassCastException} thrown by a
+     * Any {@code RuntimeException} or {@code ClassCastException} thrown by a
      * converter or the final cast is propogated up to the caller of this method.
      *
      * @return a {@code ValueResult} as described above
@@ -815,7 +815,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * by calls to {@link #sourceChangedImpl} and {@link #targetChangedImpl}
      * when the source and target properties change respectively.
      *
-     * @see unbindImpl
+     * @see #unbindImpl
      */
     protected abstract void bindImpl();
 
@@ -868,7 +868,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     /**
      * Called by {@link #unbind} to allow subclasses to uninitiate binding.
      *
-     * @see unbindImpl
+     * @see #bindImpl
      */
     protected abstract void unbindImpl();
 
@@ -1071,8 +1071,8 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Otherwise, it calls {@code setValue} on the target property for the
      * target object with the value obtained from the source.
      *
-     * @returns the reason for failure if the binding could not be refreshed,
-     *          or {@code null} for success
+     * @return the reason for failure if the binding could not be refreshed,
+     *         or {@code null} for success
      * @throws UnsupportedOperationException if the {@code Binding} is managed
      * @throws IllegalStateException if the {@code Binding} is not bound
      * @throws RuntimeException if thrown by {@link #getSourceValueForTarget}
@@ -1123,8 +1123,8 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Otherwise, it calls {@code setValue} on the source property for the
      * source object with the value obtained from the target.
      *
-     * @returns the reason for failure if the binding could not be saved,
-     *          or {@code null} for success
+     * @return the reason for failure if the binding could not be saved,
+     *         or {@code null} for success
      * @throws UnsupportedOperationException if the {@code Binding} is managed
      * @throws IllegalStateException if the {@code Binding} is not bound
      * @throws ClassCastException if thrown by {@link #getTargetValueForSource}
@@ -1395,7 +1395,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * For other types of {@code Binding} notifications register a
      * {@code BindingListener}.
      *
-     * @param property the name of the property to listen for changes on
+     * @param propertyName the name of the property to listen for changes on
      * @param listener the listener to add
      */
     public final void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {

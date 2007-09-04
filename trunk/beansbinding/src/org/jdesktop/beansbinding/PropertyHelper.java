@@ -217,7 +217,7 @@ public abstract class PropertyHelper<S, V> extends Property<S, V> {
      * Returns whether or not there are any {@code PropertyStateListeners}
      * installed for the given source object.
      *
-     * @param the source object of interest
+     * @param source the source object of interest
      * @return whether or not there are any {@code PropertyStateListeners}
      *         installed for the given source object
      */

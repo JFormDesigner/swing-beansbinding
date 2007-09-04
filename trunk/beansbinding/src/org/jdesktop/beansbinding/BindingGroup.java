@@ -118,7 +118,7 @@ public class BindingGroup {
      * or {@code null} if this group doesn't contain a {@code Binding}
      * with the given name.
      *
-     * @param the name of the {@code Binding} to fetch
+     * @param name the name of the {@code Binding} to fetch
      * @return the {@code Binding} in this group with the given name,
      *         or {@code null}
      * @throws IllegalArgumentException if {@code name} is {@code null}
@@ -315,7 +315,7 @@ public class BindingGroup {
      *    <li>{@code hasEditedTargetBindings}
      * </ul>
      *
-     * @param property the name of the property to listen for changes on
+     * @param propertyName the name of the property to listen for changes on
      * @param listener the listener to add
      */
     public final void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {

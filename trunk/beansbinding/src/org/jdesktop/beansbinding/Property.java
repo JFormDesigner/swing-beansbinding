@@ -56,7 +56,6 @@ public abstract class Property<S, V> {
      *
      * @param source the source object on which to operate
      * @param value the new value for the {@code Property}
-     * @return the value of this {@code Property} for the given source
      * @throws UnsupportedOperationException if the {@code Property} is not
      *         writeable for the given source
      * @see #isWriteable

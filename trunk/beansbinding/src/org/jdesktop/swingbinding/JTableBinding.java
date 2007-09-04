@@ -131,9 +131,9 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      *
      * @param strategy the update strategy
      * @param sourceObject the source object
-     * @param sourceProperty a property on the source object that resolves to the {@code List} of elements
+     * @param sourceListProperty a property on the source object that resolves to the {@code List} of elements
      * @param targetObject the target object
-     * @param targetProperty a property on the target object that resolves to a {@code JTable}
+     * @param targetJTableProperty a property on the target object that resolves to a {@code JTable}
      * @param name a name for the {@code JTableBinding}
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
@@ -483,7 +483,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
          * the renderer and editor for the column represented by this
          * {@code ColumnBinding}.
          *
-         * @see setColumnClass
+         * @see #setColumnClass
          * @see javax.swing.table.TableModel#getColumnClass
          */
         public Class<?> getColumnClass() {
