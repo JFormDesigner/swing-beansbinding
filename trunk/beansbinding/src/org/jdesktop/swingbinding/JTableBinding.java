@@ -162,8 +162,6 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
     /**
      * Returns whether or not {@code setEditable} has been called on
      * this {@code JTableBinding}.
-     * <p>
-     * Note: This method will be going away in a future version.
      *
      * @return whether or not {@code setEditable} has been called on this
      *         {@code JTableBinding}
@@ -175,13 +173,34 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
     }
 
     /**
-     * Adds a column binding to the end of the list of column bindings
-     * maintained by this.....TBD
+     * Creates a column binding and adds it to the end of the list of column bindings
+     * maintained by this {@code JTableBinding}.
+     * <p>
+     * The list of column bindings dictates the columns to be displayed in the
+     * {@code JTable}, with a column binding's order in the list determining its
+     * table model index.
+     *
+     * @param columnProperty the property with which to fetch cell values from the
+     *                       elements of the source list
+     * @return the column binding
      */
     public ColumnBinding addColumnBinding(Property<E, ?> columnProperty) {
         return addColumnBinding(columnProperty, null);
     }
 
+    /**
+     * Creates a named column binding and adds it to the end of the list of column bindings
+     * maintained by this {@code JTableBinding}.
+     * <p>
+     * The list of column bindings dictates the columns to be displayed in the
+     * {@code JTable}, with a column binding's order in the list determining its
+     * table model index.
+     *
+     * @param columnProperty the property with which to fetch cell values from the
+     *                       elements of the source list
+     * @param name a name for the column binding
+     * @return the column binding
+     */
     public ColumnBinding addColumnBinding(Property<E, ?> columnProperty, String name) {
         throwIfBound();
 
@@ -198,10 +217,37 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         return binding;
     }
 
+    /**
+     * Creates a column binding and inserts it at the given index into the list
+     * of column bindings maintained by this {@code JTableBinding}.
+     * <p>
+     * The list of column bindings dictates the columns to be displayed in the
+     * {@code JTable}, with a column binding's order in the list determining its
+     * table model index.
+     *
+     * @param index the index at which to insert the column binding
+     * @param columnProperty the property with which to fetch cell values from the
+     *                       elements of the source list
+     * @return the column binding
+     */
     public ColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty) {
         return addColumnBinding(index, columnProperty, null);
     }
 
+    /**
+     * Creates a column binding and inserts it at the given index into the list
+     * of column bindings maintained by this {@code JTableBinding}.
+     * <p>
+     * The list of column bindings dictates the columns to be displayed in the
+     * {@code JTable}, with a column binding's order in the list determining its
+     * table model index.
+     *
+     * @param index the index at which to insert the column binding
+     * @param columnProperty the property with which to fetch cell values from the
+     *                       elements of the source list
+     * @param name a name for the column binding
+     * @return the column binding
+     */
     public ColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty, String name) {
         throwIfBound();
 
