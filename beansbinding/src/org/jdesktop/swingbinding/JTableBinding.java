@@ -27,7 +27,8 @@ import java.awt.FocusTraversalPolicy;
  * Binds a {@code List} of objects to act as the elements of a {@code JTable}.
  * Each object in the source {@code List} represents one row in the {@code JTable}.
  * Mappings from properties of the source objects to columns are created by
- * adding {@code ColumnBindings} to this {@code JTableBinding}.
+ * adding {@link org.jdesktop.swingbinding.JTableBinding.ColumnBinding ColumnBindings}
+ * to this {@code JTableBinding}.
  * <p>
  * If the {@code List} is an instance of {@code ObservableList}, then changes
  * to the {@code List} are reflected in the table. {@code JTableBinding}
@@ -183,6 +184,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * @param columnProperty the property with which to fetch cell values from the
      *                       elements of the source list
      * @return the {@code ColumnBinding}
+     * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
     public ColumnBinding addColumnBinding(Property<E, ?> columnProperty) {
         return addColumnBinding(columnProperty, null);
@@ -200,6 +202,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      *                       elements of the source list
      * @param name a name for the column binding
      * @return the {@code ColumnBinding}
+     * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
     public ColumnBinding addColumnBinding(Property<E, ?> columnProperty, String name) {
         throwIfBound();
@@ -229,6 +232,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * @param columnProperty the property with which to fetch cell values from the
      *                       elements of the source list
      * @return the {@code ColumnBinding}
+     * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
     public ColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty) {
         return addColumnBinding(index, columnProperty, null);
@@ -247,6 +251,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      *                       elements of the source list
      * @param name a name for the {@code ColumnBinding}
      * @return the {@code ColumnBinding}
+     * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
     public ColumnBinding addColumnBinding(int index, Property<E, ?> columnProperty, String name) {
         throwIfBound();
@@ -387,7 +392,27 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
     }
 
     /**
+     * {@code ColumnBinding} represents a binding between a property of the elements
+     * in the {@code JTableBinding's} source list, and a column in the table. Each
+     * {@code ColumnBinding} added to a {@code JTableBinding} represents a column
+     * to be displayed by the {@code JTable}. A value for any given row in a column
+     * is aquired by fetching the value of the associated {@code ColumnBinding's}
+     * source property for the element in the source list representing that row.
+     * <p>
+     * A {@code Converter} may be specified on a {@code ColumnBinding}, as may be
+     * a {@code Validator}. Validation occurs at the time a cell value is to be
+     * committed back to the source list.
+     * <p>
+     * {@code BindingListeners} registered on
+     * a {@code ColumnBinding} are notified of successful {@code sync} or
+     * {@code syncFailure}. These notifications are also sent to the
+     * {@code JTableBinding's} {@code BindingListeners}.
+     * <p>
+     * {@code ColumnBindings} are managed by their {@code JTableBinding}. They are not
+     * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
+     * in a way that is not allowed for a managed binding.
      *
+     * @see org.jdesktop.swingbinding.JTableBinding#addColumnBinding(Property, String)
      */
     public final class ColumnBinding extends AbstractColumnBinding {
         private Class<?> columnClass;
@@ -425,12 +450,28 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             return this;
         }
 
+        /**
+         * Sets the column class to be used by {@code JTable} to determine
+         * the renderer and editor for the column represented by this
+         * {@code ColumnBinding}.
+         *
+         * @param columnClass the column class
+         * @see javax.swing.table.TableModel#getColumnClass
+         */
         public ColumnBinding setColumnClass(Class<?> columnClass) {
             JTableBinding.this.throwIfBound();
             this.columnClass = columnClass;
             return this;
         }
 
+        /**
+         * Returns the column class to be used by {@code JTable} to determine
+         * the renderer and editor for the column represented by this
+         * {@code ColumnBinding}.
+         *
+         * @see setColumnClass
+         * @see javax.swing.table.TableModel#getColumnClass
+         */
         public Class<?> getColumnClass() {
             return columnClass == null ? Object.class : columnClass;
         }
