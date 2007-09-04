@@ -56,6 +56,7 @@ public class SwingBindings {
      * @param sourceListProperty a property on the source object that resolves to a {@code List}
      * @param targetJList the target {@code JList}
      * @return the {@code JListBinding}
+     * @throws IllegalArgumentException if {@code sourceListProperty} is {@code null}
      */
     public static <E, SS> JListBinding<E, SS, JList> createListBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, JList targetJList) {
         return new JListBinding<E, SS, JList>(strategy, sourceObject, sourceListProperty, targetJList, ObjectProperty.<JList>create(), null);
@@ -69,6 +70,7 @@ public class SwingBindings {
      * @param sourceListProperty a property on the source object that resolves to a {@code List}
      * @param targetJList the target {@code JList}
      * @return the {@code JListBinding}
+     * @throws IllegalArgumentException if {@code sourceListProperty} is {@code null}
      */
     public static <E, SS> JListBinding<E, SS, JList> createListBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, JList targetJList, String name) {
         return new JListBinding<E, SS, JList>(strategy, sourceObject, sourceListProperty, targetJList, ObjectProperty.<JList>create(), name);
@@ -83,6 +85,7 @@ public class SwingBindings {
      * @param targetObject the target object
      * @param targetJListProperty a property on the target object that resolves to a {@code JList}
      * @return the {@code JListBinding}
+     * @throws IllegalArgumentException if {@code targetJListProperty} is {@code null}
      */
     public static <E, TS> JListBinding<E, List<E>, TS> createListBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, TS targetObject, Property<TS, ? extends JList> targetJListProperty) {
         return new JListBinding<E, List<E>, TS>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetObject, targetJListProperty, null);
@@ -96,6 +99,7 @@ public class SwingBindings {
      * @param targetObject the target object
      * @param targetJListProperty a property on the target object that resolves to a {@code JList}
      * @return the {@code JListBinding}
+     * @throws IllegalArgumentException if {@code targetJListProperty} is {@code null}
      */
     public static <E, TS> JListBinding<E, List<E>, TS> createListBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
         return new JListBinding<E, List<E>, TS>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetObject, targetJListProperty, name);
@@ -111,6 +115,7 @@ public class SwingBindings {
      * @param targetObject the target object
      * @param targetJListProperty a property on the target object that resolves to a {@code JList}
      * @return the {@code JListBinding}
+     * @throws IllegalArgumentException if {@code sourceListProperty} or {@code targetJListProperty} is {@code null}
      */
     public static <E, SS, TS> JListBinding<E, SS, TS> createListBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty) {
         return new JListBinding<E, SS, TS>(strategy, sourceObject, sourceListProperty, targetObject, targetJListProperty, null);
@@ -125,6 +130,7 @@ public class SwingBindings {
      * @param targetObject the target object
      * @param targetJListProperty a property on the target object that resolves to a {@code JList}
      * @return the {@code JListBinding}
+     * @throws IllegalArgumentException if {@code sourceListProperty} or {@code targetJListProperty} is {@code null}
      */
     public static <E, SS, TS> JListBinding<E, SS, TS> createListBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
         return new JListBinding<E, SS, TS>(strategy, sourceObject, sourceListProperty, targetObject, targetJListProperty, name);
