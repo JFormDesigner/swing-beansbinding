@@ -38,12 +38,11 @@ import org.jdesktop.swingbinding.impl.*;
  * {@code List} property itself. The strategy can be {@code READ_ONCE} or {@code READ}
  * ({@code READ_WRITE} is treated as {@code READ}).
  * <p>
- * {@code JComboBoxBinding} works by installing a custom model on the target {@code JComboBox}.
- * This model is installed at bind time if both the {@code List} property and
- * {@code JComboBox} property are readable, or whenever they become readable after binding.
- * This model is uninstalled when either property becomes unreadable or the binding
- * is unbound. It is also uninstalled, and installed on the replacement, when the value
- * of the {@code JComboBox} property changes. When this model is uninstalled from a
+ * {@code JComboBoxBinding} works by installing a custom model on the target {@code JComboBox},
+ * at bind time if the {@code JComboBox} property is readable, or whenever it becomes
+ * readable after binding. This model is uninstalled when the property becomes unreadable
+ * or the binding is unbound. It is also uninstalled, and installed on the replacement,
+ * when the value of the {@code JComboBox} property changes. When this model is uninstalled from a
  * {@code JComboBox}, it is replaced with an empty {@code DefaultComboBoxModel} so that
  * the {@code JComboBox} is left with a functioning model.
  * <p>
