@@ -286,6 +286,7 @@ public class SwingBindings {
      * @param sourceListProperty a property on the source object that resolves to a {@code List}
      * @param targetJComboBox the target {@code JComboBox}
      * @return the {@code JComboBoxBinding}
+     * @throws IllegalArgumentException if {@code sourceListProperty} is {@code null}
      */
     public static <E, SS> JComboBoxBinding<E, SS, JComboBox> createComboBoxBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, JComboBox targetJComboBox) {
         return new JComboBoxBinding<E, SS, JComboBox>(strategy, sourceObject, sourceListProperty, targetJComboBox, ObjectProperty.<JComboBox>create(), null);
@@ -299,6 +300,7 @@ public class SwingBindings {
      * @param sourceListProperty a property on the source object that resolves to a {@code List}
      * @param targetJComboBox the target {@code JComboBox}
      * @return the {@code JComboBoxBinding}
+     * @throws IllegalArgumentException if {@code sourceListProperty} is {@code null}
      */
     public static <E, SS> JComboBoxBinding<E, SS, JComboBox> createComboBoxBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, JComboBox targetJComboBox, String name) {
         return new JComboBoxBinding<E, SS, JComboBox>(strategy, sourceObject, sourceListProperty, targetJComboBox, ObjectProperty.<JComboBox>create(), name);
@@ -313,6 +315,7 @@ public class SwingBindings {
      * @param targetObject the target object
      * @param targetJComboBoxProperty a property on the target object that resolves to a {@code JComboBox}
      * @return the {@code JComboBoxBinding}
+     * @throws IllegalArgumentException if {@code targetJComboBoxProperty} is {@code null}
      */
     public static <E, TS> JComboBoxBinding<E, List<E>, TS> createComboBoxBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty) {
         return new JComboBoxBinding<E, List<E>, TS>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetObject, targetJComboBoxProperty, null);
@@ -326,6 +329,7 @@ public class SwingBindings {
      * @param targetObject the target object
      * @param targetJComboBoxProperty a property on the target object that resolves to a {@code JComboBox}
      * @return the {@code JComboBoxBinding}
+     * @throws IllegalArgumentException if {@code targetJComboBoxProperty} is {@code null}
      */
     public static <E, TS> JComboBoxBinding<E, List<E>, TS> createComboBoxBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty, String name) {
         return new JComboBoxBinding<E, List<E>, TS>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetObject, targetJComboBoxProperty, name);
@@ -341,6 +345,7 @@ public class SwingBindings {
      * @param targetObject the target object
      * @param targetJComboBoxProperty a property on the target object that resolves to a {@code JComboBox}
      * @return the {@code JComboBoxBinding}
+     * @throws IllegalArgumentException if {@code sourceListProperty} or {@code targetJComboBoxProperty} is {@code null}
      */
     public static <E, SS, TS> JComboBoxBinding<E, SS, TS> createComboBoxBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty) {
         return new JComboBoxBinding<E, SS, TS>(strategy, sourceObject, sourceListProperty, targetObject, targetJComboBoxProperty, null);
@@ -355,6 +360,7 @@ public class SwingBindings {
      * @param targetObject the target object
      * @param targetJComboBoxProperty a property on the target object that resolves to a {@code JComboBox}
      * @return the {@code JComboBoxBinding}
+     * @throws IllegalArgumentException if {@code sourceListProperty} or {@code targetJComboBoxProperty} is {@code null}
      */
     public static <E, SS, TS> JComboBoxBinding<E, SS, TS> createComboBoxBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty, String name) {
         return new JComboBoxBinding<E, SS, TS>(strategy, sourceObject, sourceListProperty, targetObject, targetJComboBoxProperty, name);
