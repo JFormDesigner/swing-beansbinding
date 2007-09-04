@@ -36,18 +36,18 @@ import org.jdesktop.swingbinding.impl.ListBindingManager;
  * providing the {@code List} and/or {@code JList} as {@code Property} instances
  * that derive the {@code List}/{@code JList} from the binding's source/target objects.
  * <p>
- * This class is a subclass of {@code AutoBinding}. The update strategy
- * dictates how the binding responds to changes in the value of the source
- * {@code List} property itself. The strategy can be {@code READ_ONCE} or {@code READ}
- * ({@code READ_WRITE} is treated as {@code READ}).
- * <p>
  * {@code JListBinding} works by installing a custom model on the target {@code JList},
  * at bind time if the {@code JList} property is readable, or whenever it becomes
  * readable after binding. This model is uninstalled when the property becomes unreadable
  * or the binding is unbound. It is also uninstalled, and installed on the replacement,
- * when the value of the {@code JList} property changes. When this model is uninstalled from a
- * {@code JList}, it is replaced with an empty {@code DefaultListModel} so that
- * the {@code JList} is left with a functioning model.
+ * when the value of the {@code JList} property changes. When the model is uninstalled from a
+ * {@code JList}, the {@code JList's} model is replaced with an empty {@code DefaultListModel}
+ * so that it is left functional.
+ * <p>
+ * This class is a subclass of {@code AutoBinding}. The update strategy dictates how
+ * the binding applies the value of the source {@code List} property to the model
+ * used for the {@code JList}. The strategy can be {@code READ_ONCE} or {@code READ}
+ * ({@code READ_WRITE} is treated as {@code READ}).
  * <p>
  * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
  * automatically applied to the target {@code JList} (if readable) only once, at bind time.
