@@ -42,14 +42,6 @@ import java.awt.FocusTraversalPolicy;
  * providing the {@code List} and/or {@code JTable} as {@code Property} instances
  * that derive the {@code List} and/or {@code JTable} from binding's the source/target objects.
  * <p>
- * This class is a subclass of {@code AutoBinding}. The update strategy
- * dictates how the binding responds to changes in the value of the source
- * {@code List} property itself. The strategy can be {@code READ_ONCE} or {@code READ}
- * ({@code READ_WRITE} is treated as {@code READ}). The update strategy does not
- * dictate how changes made to cell values are committed back to the {@code List};
- * since the {@code JTable} is acting as a view for the live {@code List} values,
- * all changes are committed back immediately.
- * <p>
  * {@code JTableBinding} works by installing a custom model on the target {@code JTable},
  * at bind time if the {@code JTable} property is readable, or whenever it becomes
  * readable after binding. This model is uninstalled when the property becomes unreadable
@@ -58,16 +50,27 @@ import java.awt.FocusTraversalPolicy;
  * {@code JTable}, the {@code JTable's} model is replaced with an empty {@code DefaultTableModel}
  * so that it is left functional.
  * <p>
- * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
- * automatically applied to the target {@code JTable} (if readable) only once, at bind time.
- * As a result, if the target {@code JTable} changes, it gets the model, but the elements are
- * not automatically set on it.
+ * This class is a subclass of {@code AutoBinding}. The update strategy dictates how
+ * the binding applies the value of the source {@code List} property to the model
+ * used for the {@code JTable}. At bind time, if the source {@code List} property and
+ * the target {@code JTable} property are both readable, the source {@code List}
+ * becomes the source of elements for the model. If the strategy is {@code READ_ONCE}
+ * then there is no further automatic syncing after this point, including if the
+ * target {@code JTable} property changes or becomes readable; the new {@code JTable} gets the model,
+ * but no elements. If the strategy is {@code READ}, however, the {@code List} is synced
+ * to the model every time the source {@code List} property changes value, or the
+ * target {@code JTable} property changes value or becomes readable. For
+ * {@code JTableBinding}, the {@code READ_WRITE} strategy behaves identical to {@code READ}.
  * <p>
  * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
  * column when all of the following are true: the property specified for that column
  * by its {@code ColumnBinding} is editable for the object in that row, the {@code "editable"} property
  * of the {@code JTableBinding} is {@code true} (the default), and the {@code "editable"}
  * property of the {@code ColumnBinding} is {@code true} (the default).
+ * <p>
+ * Note that the {@code JTable} target of a {@code JTableBinding} is acting as a view for the
+ * live {@code List} of elements in the source {@code List}. As such, all successful changes made
+ * to cell values are committed back immediately to the source {@code List}.
  * <p>
  * {@code ColumnBindings} are managed by the {@code JTableBinding}. They are not
  * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
