@@ -40,12 +40,12 @@ public final class PropertyStateEvent extends EventObject {
      *
      * @param sourceProperty the {@code Property} whose state has changed
      * @param sourceObject the source object for which the {@code Property's} state has changed
-     * @param valueChange whether or not the {@code Property's} value has changed for the source object
+     * @param valueChanged whether or not the {@code Property's} value has changed for the source object
      * @param oldValue the old value of the {@code Property} for the source object,
      *        or {@code UNREADABLE} if the {@code Property} was not previously readable for the source object
      * @param newValue the new value of the {@code Property} for the source object,
      *        or {@code UNREADABLE} if the {@code Property} is not currently readable for the source object
-     * @param writeableChange whether or not the {@code Property's} writeability has changed for the source object
+     * @param writeableChanged whether or not the {@code Property's} writeability has changed for the source object
      * @param isWriteable whether or not the {@code Property} is now writeable for the source object
      * @throws IllegalArgumentException if neither the value or the writeability has changed
      * @throws IllegalArgumentException if {@code valueChanged} is {@code true} and both

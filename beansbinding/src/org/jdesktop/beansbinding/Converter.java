@@ -31,7 +31,7 @@ public abstract class Converter<S, T> {
      * Can throw a {@code RuntimeException} to indicate a problem
      * with the conversion.
      *
-     * @param S the source value to convert
+     * @param value the source value to convert
      * @return the value, converted to the target type
      */
     public abstract T convertForward(S value);
@@ -41,7 +41,7 @@ public abstract class Converter<S, T> {
      * Can throw a {@code RuntimeException} to indicate a problem
      * with the conversion.
      *
-     * @param T the target value to convert
+     * @param value the target value to convert
      * @return the value, converted to the source type
      */
     public abstract S convertReverse(T value);
