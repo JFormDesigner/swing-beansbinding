@@ -46,6 +46,11 @@ import org.jdesktop.swingbinding.impl.*;
  * {@code JComboBox}, it is replaced with an empty {@code DefaultComboBoxModel} so that
  * the {@code JComboBox} is left with a functioning model.
  * <p>
+ * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
+ * automatically applied to the target {@code JComboBox} (if readable) only once, at bind time.
+ * As a result, if the target {@code JComboBox} changes, it gets the model, but the elements are
+ * not automatically set on it.
+ * <p>
  * Here is an example of creating a binding from a {@code List} of {@code Country}
  * objects to a {@code JComboBox}:
  * <p>
