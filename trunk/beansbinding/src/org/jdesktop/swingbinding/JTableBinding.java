@@ -35,14 +35,28 @@ import java.awt.FocusTraversalPolicy;
  * also listens to the properties specified for {@code ColumnBindings}, for all rows,
  * and updates its display values in response to change.
  * <p>
+ * Instances of {@code JTableBinding} are obtained by calling one of the
+ * {@code createJTableBinding} methods in the {@code SwingBindings} class. There
+ * are methods for creating a {@code JTableBinding} using direct references to a
+ * {@code List} and/or {@code JTable} and methods for providing the {@code List}
+ * and/or table as {@code Properties} on source/target objects.
+ * <p>
  * This class is a subclass of {@code AutoBinding}. The update strategy
- * dictates how the binding responds to changes to the value of the source
- * {@code List} property itself. Strategies {@code READ_ONCE} and {@code READ}
- * are the only two that make sense ({@code READ_WRITE} acts like {@code READ})
- * since the table end of the binding never changes the list value. The update
- * strategy does not dictate how changes made to cell values are committed back
- * to the list; since the {@code JTable} is acting as a view for the live list values,
+ * dictates how the binding responds to changes in the value of the source
+ * {@code List} property itself. The strategy can be {@code READ_ONCE} or {@code READ}
+ * ({@code READ_WRITE} is treated as {@code READ}). The update strategy does not
+ * dictate how changes made to cell values are committed back to the {@code List};
+ * since the {@code JTable} is acting as a view for the live {@code List} values,
  * all changes are committed back immediately.
+ * <p>
+ * {@code JTableBinding} works by installing a custom model on the target {@code JTable}.
+ * This model is installed at bind time if both the {@code List} property and
+ * {@code JTable} property are readable, or whenever they become readable after binding.
+ * This model is uninstalled when either property becomes unreadable or the binding
+ * is unbound. It is also uninstalled, and installed on the replacement, when the value
+ * of the {@code JTable} property changes. When this model is uninstalled from a
+ * {@code JTable}, it is replaced with an empty {@code DefaultTableModel} so that
+ * the table is left with a functioning model.
  * <p>
  * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
  * column when all of the following are true: the property specified for that column
@@ -54,14 +68,12 @@ import java.awt.FocusTraversalPolicy;
  * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
  * in a way that is not allowed for a managed binding. {@code BindingListeners}
  * added to a {@code ColumnBinding} are notified at the time an edited table value
- * is to be committed back to the source list. They receive notification of either
+ * is to be committed back to the source {@code List}. They receive notification of either
  * {@code synced} or {@code syncFailed}. {@code BindingListeners} added to the
  * {@code JTableBinding} itself are also notified of {@code sync} and {@code syncFailed}
  * for the {@code JTableBinding's ColumnBindings}.
  * <p>
- * Instances of {@code JTableBinding} are obtained by calling one of the
- * {@code createJTableBinding} methods in the {@code SwingBindings} class.
- * Here is an example of creating a binding from a list of {@code Person}
+ * Here is an example of creating a binding from a {@List} of {@code Person}
  * objects to a table:
  * <p>
  * <pre><code>
@@ -89,9 +101,9 @@ import java.awt.FocusTraversalPolicy;
  * bind to the selection of a table. See the list of <a href="package-summary.html#SWING_PROPS">
  * interesting swing properties</a> in the package summary for more details.
  *
- * @param <E> the type of elements in the source list
- * @param <SS> the type of source object (on which the source property resolves to List)
- * @param <TS> the type of target object (on which the target property resolves to JTable}
+ * @param <E> the type of elements in the source {@code List}
+ * @param <SS> the type of source object (on which the source property resolves to {@code List})
+ * @param <TS> the type of target object (on which the target property resolves to {@code JTable})
  *
  * @author Shannon Hickey
  */
@@ -110,7 +122,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      *
      * @param strategy the update strategy
      * @param sourceObject the source object
-     * @param sourceProperty a property on the source object that resolves to the list of elements
+     * @param sourceProperty a property on the source object that resolves to the {@code List} of elements
      * @param targetObject the target object
      * @param targetProperty a property on the target object that resolves to a {@code JTable}
      * @param name a name for the {@code Binding}
@@ -182,7 +194,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * table model index.
      *
      * @param columnProperty the property with which to fetch cell values from the
-     *                       elements of the source list
+     *                       elements of the source {@code List}
      * @return the {@code ColumnBinding}
      * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
@@ -199,7 +211,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * table model index.
      *
      * @param columnProperty the property with which to fetch cell values from the
-     *                       elements of the source list
+     *                       elements of the source {@code List}
      * @param name a name for the column binding
      * @return the {@code ColumnBinding}
      * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
@@ -230,7 +242,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      *
      * @param index the index at which to insert the {@code ColumnBinding}
      * @param columnProperty the property with which to fetch cell values from the
-     *                       elements of the source list
+     *                       elements of the source {@code List}
      * @return the {@code ColumnBinding}
      * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
      */
@@ -248,7 +260,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      *
      * @param index the index at which to insert the {@code ColumnBinding}
      * @param columnProperty the property with which to fetch cell values from the
-     *                       elements of the source list
+     *                       elements of the source {@code List}
      * @param name a name for the {@code ColumnBinding}
      * @return the {@code ColumnBinding}
      * @see org.jdesktop.swingbinding.JTableBinding.ColumnBinding
@@ -393,15 +405,15 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
 
     /**
      * {@code ColumnBinding} represents a binding between a property of the elements
-     * in the {@code JTableBinding's} source list, and a column in the table. Each
+     * in the {@code JTableBinding's} source {@code List}, and a column in the table. Each
      * {@code ColumnBinding} added to a {@code JTableBinding} represents a column
      * to be displayed by the {@code JTable}. A value for any given row in a column
      * is aquired by fetching the value of the associated {@code ColumnBinding's}
-     * source property for the element in the source list representing that row.
+     * source property for the element in the source {@code List} representing that row.
      * <p>
      * A {@code Converter} may be specified on a {@code ColumnBinding}, as may be
      * a {@code Validator}. Validation occurs at the time a cell value is to be
-     * committed back to the source list.
+     * committed back to the source {@code List}.
      * <p>
      * {@code BindingListeners} registered on
      * a {@code ColumnBinding} are notified of successful {@code sync} or

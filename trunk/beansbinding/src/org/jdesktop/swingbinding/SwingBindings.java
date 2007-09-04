@@ -60,37 +60,109 @@ public class SwingBindings {
 
     
 
+    /**
+     * Creates a {@code JTableBinding} from direct references to a {@code List} and {@code JTable}.
+     *
+     * @param strategy the update strategy
+     * @param sourceList the source {@code List}
+     * @param targetJTable the target {@code JTable}
+     * @return the {@code JTableBinding}
+     */
     public static <E> JTableBinding<E, List<E>, JTable> createTableBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, JTable targetJTable) {
         return new JTableBinding<E, List<E>, JTable>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetJTable, ObjectProperty.<JTable>create(), null);
     }
 
+    /**
+     * Creates a named {@code JTableBinding} from direct references to a {@code List} and {@code JTable}.
+     *
+     * @param strategy the update strategy
+     * @param sourceList the source {@code List}
+     * @param targetJTable the target {@code JTable}
+     * @return the {@code JTableBinding}
+     */
     public static <E> JTableBinding<E, List<E>, JTable> createTableBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, JTable targetJTable, String name) {
         return new JTableBinding<E, List<E>, JTable>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetJTable, ObjectProperty.<JTable>create(), name);
     }
 
 
+    /**
+     * Creates a {@code JTableBinding} from an object and property that resolves to a {@code List} and a direct reference to a {@code JTable}.
+     *
+     * @param strategy the update strategy
+     * @param sourceObject the source object
+     * @param sourceListProperty a property on the source object that resolves to a {@code List}
+     * @param targetJTable the target {@code JTable}
+     * @return the {@code JTableBinding}
+     */
     public static <E, SS> JTableBinding<E, SS, JTable> createTableBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, JTable targetJTable) {
         return new JTableBinding<E, SS, JTable>(strategy, sourceObject, sourceListProperty, targetJTable, ObjectProperty.<JTable>create(), null);
     }
 
+    /**
+     * Creates a named {@code JTableBinding} from an object and property that resolves to a {@code List} and a direct reference to a {@code JTable}.
+     *
+     * @param strategy the update strategy
+     * @param sourceObject the source object
+     * @param sourceListProperty a property on the source object that resolves to a {@code List}
+     * @param targetJTable the target {@code JTable}
+     * @return the {@code JTableBinding}
+     */
     public static <E, SS> JTableBinding<E, SS, JTable> createTableBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, JTable targetJTable, String name) {
         return new JTableBinding<E, SS, JTable>(strategy, sourceObject, sourceListProperty, targetJTable, ObjectProperty.<JTable>create(), name);
     }
 
     
+    /**
+     * Creates a {@code JTableBinding} from a direct reference to a {@code List} and an object and property that resolves to a {@code JTable}.
+     *
+     * @param strategy the update strategy
+     * @param sourceList the source {@code List}
+     * @param targetObject the target object
+     * @param targetJTableProperty a property on the target object that resolves to a {@code JTable}
+     * @return the {@code JTableBinding}
+     */
     public static <E, TS> JTableBinding<E, List<E>, TS> createTableBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty) {
         return new JTableBinding<E, List<E>, TS>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetObject, targetJTableProperty, null);
     }
 
+    /**
+     * Creates a named {@code JTableBinding} from a direct reference to a {@code List} and an object and property that resolves to a {@code JTable}.
+     *
+     * @param strategy the update strategy
+     * @param sourceList the source {@code List}
+     * @param targetObject the target object
+     * @param targetJTableProperty a property on the target object that resolves to a {@code JTable}
+     * @return the {@code JTableBinding}
+     */
     public static <E, TS> JTableBinding<E, List<E>, TS> createTableBinding(AutoBinding.UpdateStrategy strategy, List<E> sourceList, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
         return new JTableBinding<E, List<E>, TS>(strategy, sourceList, ObjectProperty.<List<E>>create(), targetObject, targetJTableProperty, name);
     }
 
 
+    /**
+     * Creates a {@code JTableBinding} from an object and property that resolves to a {@code List} and an object and property that resolves to a {@code JTable}.
+     *
+     * @param strategy the update strategy
+     * @param sourceObject the source object
+     * @param sourceListProperty a property on the source object that resolves to a {@code List}
+     * @param targetObject the target object
+     * @param targetJTableProperty a property on the target object that resolves to a {@code JTable}
+     * @return the {@code JTableBinding}
+     */
     public static <E, SS, TS> JTableBinding<E, SS, TS> createTableBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty) {
         return new JTableBinding<E, SS, TS>(strategy, sourceObject, sourceListProperty, targetObject, targetJTableProperty, null);
     }
-    
+
+    /**
+     * Creates a named {@code JTableBinding} from an object and property that resolves to a {@code List} and an object and property that resolves to a {@code JTable}.
+     *
+     * @param strategy the update strategy
+     * @param sourceObject the source object
+     * @param sourceListProperty a property on the source object that resolves to a {@code List}
+     * @param targetObject the target object
+     * @param targetJTableProperty a property on the target object that resolves to a {@code JTable}
+     * @return the {@code JTableBinding}
+     */
     public static <E, SS, TS> JTableBinding<E, SS, TS> createTableBinding(AutoBinding.UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
         return new JTableBinding<E, SS, TS>(strategy, sourceObject, sourceListProperty, targetObject, targetJTableProperty, name);
     }
