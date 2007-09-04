@@ -20,7 +20,8 @@ import org.jdesktop.swingbinding.impl.ListBindingManager;
 /**
  * Binds a {@code List} of objects to act as the elements of a {@code JList}.
  * Each object in the source {@code List} provides one element in the {@code JList}.
- * By setting a {@code DetailBinding} you can specify the property to use to
+ * By setting a {@link org.jdesktop.swingbinding.JListBinding.DetailBinding DetailBinding}
+ * you can specify the property to use to
  * derive each list element from its corresponding object in the source {@code List}.
  * The default {@code DetailBinding} uses the objects directly.
  * <p>
@@ -46,13 +47,15 @@ import org.jdesktop.swingbinding.impl.ListBindingManager;
  * <p>
  * This class is a subclass of {@code AutoBinding}. The update strategy dictates how
  * the binding applies the value of the source {@code List} property to the model
- * used for the {@code JList}. The strategy can be {@code READ_ONCE} or {@code READ}
- * ({@code READ_WRITE} is treated as {@code READ}).
- * <p>
- * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
- * automatically applied to the target {@code JList} (if readable) only once, at bind time.
- * As a result, if the target {@code JList} changes, it gets the model, but the elements are
- * not automatically set on it.
+ * used for the {@code JList}. At bind time, if the source {@code List} property and
+ * the target {@code JList} property are both readable, the source {@code List}
+ * becomes the source of elements for the model. If the strategy is {@code READ_ONCE}
+ * then there is no further automatic syncing after this point, including if the
+ * target {@code JList} property changes or becomes readable; the new {@code JList} gets the model,
+ * but no elements. If the strategy is {@code READ}, however, the {@code List} is synced
+ * to the model every time the source {@code List} property changes value, or the
+ * target {@code JList} property changes value or becomes readable. For
+ * {@code JListBinding}, the {@code READ_WRITE} strategy behaves identical to {@code READ}.
  * <p>
  * {@code DetailBindings} are managed by the {@code JList}. They are not
  * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed

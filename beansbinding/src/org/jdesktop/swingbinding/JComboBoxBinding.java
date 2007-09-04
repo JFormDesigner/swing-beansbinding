@@ -33,23 +33,25 @@ import org.jdesktop.swingbinding.impl.*;
  * providing the {@code List} and/or {@code JComboBox} as {@code Property} instances
  * that derive the {@code List}/{@code JComboBox} from the binding's source/target objects.
  * <p>
- * This class is a subclass of {@code AutoBinding}. The update strategy
- * dictates how the binding responds to changes in the value of the source
- * {@code List} property itself. The strategy can be {@code READ_ONCE} or {@code READ}
- * ({@code READ_WRITE} is treated as {@code READ}).
- * <p>
  * {@code JComboBoxBinding} works by installing a custom model on the target {@code JComboBox},
  * at bind time if the {@code JComboBox} property is readable, or whenever it becomes
  * readable after binding. This model is uninstalled when the property becomes unreadable
  * or the binding is unbound. It is also uninstalled, and installed on the replacement,
  * when the value of the {@code JComboBox} property changes. When the model is uninstalled from a
- * {@code JComboBox}, the JComboBox's model is replaced with an empty {@code DefaultComboBoxModel}
+ * {@code JComboBox}, the {@code JComboBox's} model is replaced with an empty {@code DefaultComboBoxModel}
  * so that it is left functional.
  * <p>
- * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
- * automatically applied to the target {@code JComboBox} (if readable) only once, at bind time.
- * As a result, if the target {@code JComboBox} changes, it gets the model, but the items are
- * not automatically set on it.
+ * This class is a subclass of {@code AutoBinding}. The update strategy dictates how
+ * the binding applies the value of the source {@code List} property to the model
+ * used for the {@code JComboBox}. At bind time, if the source {@code List} property and
+ * the target {@code JComboBox} property are both readable, the source {@code List}
+ * becomes the source of items in the model. If the strategy is {@code READ_ONCE}
+ * then there is no further automatic syncing after this point, including if the
+ * target {@code JComboBox} property changes or becomes readable; the new {@code JComboBox} gets the model,
+ * but no items. If the strategy is {@code READ}, however, the {@code List} is synced
+ * to the model every time the source {@code List} property changes value, or the
+ * target {@code JComboBox} property changes value or becomes readable. For
+ * {@code JComboBoxBinding}, the {@code READ_WRITE} strategy behaves identical to {@code READ}.
  * <p>
  * Here is an example of creating a binding from a {@code List} of {@code Country}
  * objects to a {@code JComboBox}:
