@@ -24,6 +24,69 @@ import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
 
 /**
+ * Binds a {@code List} of objects to act as the elements of a {@code JTable}.
+ * Each object in the source {@code List} represents one row in the {@code JTable}.
+ * Mappings from properties of the source objects to columns are created by
+ * adding {@code ColumnBindings} to this {@code JTableBinding}.
+ * <p>
+ * If the {@code List} is an instance of {@code ObservableList}, then changes
+ * to the {@code List} are reflected in the table. {@code JTableBinding}
+ * also listens to the properties specified for colum bindings, for all rows,
+ * and updates its display values in response to change.
+ * <p>
+ * This class is a subclass of {@code AutoBinding}. The update strategy
+ * dictates how the binding responds to changes to the value of the source
+ * {@code List} property itself. Strategies {@code READ_ONCE} and {@code READ}
+ * are the only two that make sense ({@code READ_WRITE} acts like {@code READ})
+ * since the table end of the binding never changes the list value. The update
+ * strategy does not dictate how changes made to cell values are committed back
+ * to the list; since the {@code JTable} is acting as a view for the live list values,
+ * all changes are committed back immediately.
+ * <p>
+ * By default, a cell in the {@code JTable} is editable for any given row and
+ * column when the property specified for that column by the column binding is
+ * editable for the object in that row. {@code ColumnBinding} allows you to
+ * turn off editability of a single column by specifying {@code setEditable(false)}
+ * and {@code JTableBinding} allows you to do the same to affect the whole
+ * table.
+ * <p>
+ * {@code ColumnBindings} are managed by the {@code JTableBinding}. They are not
+ * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
+ * in a way that is not allowed for a managed binding. {@code BindingListeners}
+ * added to a {@code ColumnBinding} are notified at the time an edited table value
+ * is to be committed back to the source list. They receive notification of either
+ * {@code synced} or {@code syncFailed}.
+ * <p>
+ * Instances of {@code JTableBinding} are obtained by calling one of the
+ * {@code createJTableBinding} methods in the {@code SwingBindings} class.
+ * Here is an example of creating a binding from a list of {@code Person}
+ * objects to a table:
+ * <p>
+ * <pre><code>
+ *    // create the person list
+ *    List<Person> people = createPersonList();
+ *
+ *    // create the binding from list to table
+ *    JTableBinding tb = SwingBindings.createJTableBinding(READ, people, table);
+ *
+ *    // define the properties to be used for the columns
+ *    BeanProperty firstNameP = BeanProperty.create("firstName");
+ *    BeanProperty lastNameP = BeanProperty.create("lastName");
+ *    BeanProperty ageP = BeanProperty.create("age");
+ *
+ *    // configure how the properties map to columns
+ *    tb.addColumnBinding(firstNameP).setColumnName("First Name");
+ *    tb.addColumnBinding(lastNameP).setColumnName("Last Name");
+ *    tb.addColumnBinding(ageP).setColumnName("Age").setColumnClass(Integer.class);
+ *
+ *    // realize the binding
+ *    tb.bind();
+ * </code></pre>
+ *
+ * @param <E> the type of elements in the source list
+ * @param <SS> the type of source object (on which the source property resolves to List)
+ * @param <TS> the type of target object (on which the target property resolves to JTable}
+ *
  * @author Shannon Hickey
  */
 public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, List> {
