@@ -38,8 +38,9 @@ import java.awt.FocusTraversalPolicy;
  * Instances of {@code JTableBinding} are obtained by calling one of the
  * {@code createJTableBinding} methods in the {@code SwingBindings} class. There
  * are methods for creating a {@code JTableBinding} using direct references to a
- * {@code List} and/or {@code JTable} and methods for providing the {@code List}
- * and/or {@code JTable} as {@code Properties} on source/target objects.
+ * {@code List} and/or {@code JTable} and methods for creating a {@code JTableBinding} by
+ * providing the {@code List} and/or {@code JTable} as {@code Property} instances
+ * that derive the {@code List} and/or {@code JTable} from binding's the source/target objects.
  * <p>
  * This class is a subclass of {@code AutoBinding}. The update strategy
  * dictates how the binding responds to changes in the value of the source
