@@ -20,9 +20,9 @@ import org.jdesktop.swingbinding.impl.ListBindingManager;
 /**
  * Binds a {@code List} of objects to act as the elements of a {@code JList}.
  * Each object in the source {@code List} provides one element in the {@code JList}.
- * By default, the {@code List} elements are used directly as the {@code JList} elements,
- * but this can be changed by setting a {@code DetailBinding} specifying a
- * {@code Property} of the {@code List} elements to be used instead.
+ * By setting a {@code DetailBinding} you can specify the property to use to
+ * derive each list element from its corresponding object in the source {@code List}.
+ * The default {@code DetailBinding} uses the objects directly.
  * <p>
  * If the {@code List} is an instance of {@code ObservableList}, then changes
  * to the {@code List} are reflected in the {@code JList}. {@code JListBinding}
@@ -128,10 +128,32 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
         super.unbindImpl();
     }
 
+    /**
+     * Creates a {@code DetailBinding} and sets it as the {@code DetailBinding}
+     * for this {@code JListBinding}. A {@code DetailBinding} specifies the property
+     * of the objects in the source {@code List} to be used as the elements of the
+     * {@code JList}. If the {@code detailProperty} parameter is {@code null}, the
+     * {@code DetailBinding} specifies that the objects themselves be used.
+     *
+     * @param detailProperty the property with which to derive each list value
+     *        from its corresponding object in the source {@code List}
+     * @return the {@code DetailBinding}
+     */
     public DetailBinding setDetailBinding(Property<E, ?> detailProperty) {
         return setDetailBinding(detailProperty, null);
     }
 
+    /**
+     * Creates a named {@code DetailBinding} and sets it as the {@code DetailBinding}
+     * for this {@code JListBinding}. A {@code DetailBinding} specifies the property
+     * of the objects in the source {@code List} to be used as the elements of the
+     * {@code JList}. If the {@code detailProperty} parameter is {@code null}, the
+     * {@code DetailBinding} specifies that the objects themselves be used.
+     *
+     * @param detailProperty the property with which to derive each list value
+     *        from its corresponding object in the source {@code List}
+     * @return the {@code DetailBinding}
+     */
     public DetailBinding setDetailBinding(Property<E, ?> detailProperty, String name) {
         throwIfBound();
 
@@ -145,6 +167,14 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
         return detailBinding;
     }
 
+    /**
+     * Returns the {@code DetailBinding} for this {@code JListBinding}.
+     * A {@code DetailBinding} specifies the property of the source {@code List} elements
+     * to be used as the elements of the {@code JList}.
+     *
+     * @return the {@code DetailBinding}
+     * @see #setDetailBinding(Property, String)
+     */
     public DetailBinding getDetailBinding() {
         return detailBinding;
     }
@@ -183,6 +213,23 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
         }
     };
 
+    /**
+     * {@code DetailBinding} represents a binding between a property of the elements
+     * in the {@code JListBinding's} source {@code List}, and the values shown in
+     * the {@code JList}. Values in the {@code JList} are aquired by fetching the
+     * value of the {@code DetailBinding's} source property for the associated object
+     * in the source {@code List}.
+     * <p>
+     * A {@code Converter} may be specified on a {@code ColumnBinding}. Specifying a
+     * {@code Validator} is also possible, but doesn't make sense since {@code JList}
+     * values aren't editable.
+     * <p>
+     * {@code ColumnBindings} are managed by their {@code JListBinding}. They are not
+     * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
+     * in a way that is not allowed for a managed binding.
+     *
+     * @see org.jdesktop.swingbinding.JListBinding#setDetailBinding(Property, String)
+     */
     public final class DetailBinding extends AbstractColumnBinding {
 
         private DetailBinding(Property<E, ?> detailProperty, String name) {
