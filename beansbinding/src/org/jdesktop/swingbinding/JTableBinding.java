@@ -82,6 +82,10 @@ import java.awt.FocusTraversalPolicy;
  *    // realize the binding
  *    tb.bind();
  * </code></pre>
+ * <p>
+ * In addition to binding the elements of a {@code JTable}, it is possible to
+ * bind to the selection of a table. See the list of <a href="package-summary.html#SWING_PROPS">
+ * interesting swing properties</a> in the package summary for more details.
  *
  * @param <E> the type of elements in the source list
  * @param <SS> the type of source object (on which the source property resolves to List)
