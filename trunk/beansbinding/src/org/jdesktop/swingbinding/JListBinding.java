@@ -18,6 +18,73 @@ import org.jdesktop.swingbinding.impl.AbstractColumnBinding;
 import org.jdesktop.swingbinding.impl.ListBindingManager;
 
 /**
+ * Binds a {@code List} of objects to act as the elements of a {@code JList}.
+ * Each object in the source {@code List} provides one element in the {@code JList}.
+ * By default, the {@code List} elements are used directly as the {@code JList} elements,
+ * but this can be changed by setting a {@code DetailBinding} specifying a
+ * {@code Property} of the {@code List} elements to be used instead.
+ * <p>
+ * If the {@code List} is an instance of {@code ObservableList}, then changes
+ * to the {@code List} are reflected in the {@code JList}. {@code JListBinding}
+ * also listens to the property specified for any {@code DetailBinding}, for all elements,
+ * and updates its display values in response to change.
+ * <p>
+ * Instances of {@code JListBinding} are obtained by calling one of the
+ * {@code createJListBinding} methods in the {@code SwingBindings} class. There
+ * are methods for creating a {@code JListBinding} using direct references to a
+ * {@code List} and/or {@code JList} and methods for providing the {@code List}
+ * and/or {@code JList} as {@code Properties} on source/target objects.
+ * <p>
+ * This class is a subclass of {@code AutoBinding}. The update strategy
+ * dictates how the binding responds to changes in the value of the source
+ * {@code List} property itself. The strategy can be {@code READ_ONCE} or {@code READ}
+ * ({@code READ_WRITE} is treated as {@code READ}).
+ * <p>
+ * {@code JListBinding} works by installing a custom model on the target {@code JList}.
+ * This model is installed at bind time if both the {@code List} property and
+ * {@code JList} property are readable, or whenever they become readable after binding.
+ * This model is uninstalled when either property becomes unreadable or the binding
+ * is unbound. It is also uninstalled, and installed on the replacement, when the value
+ * of the {@code JList} property changes. When this model is uninstalled from a
+ * {@code JList}, it is replaced with an empty {@code DefaultListModel} so that
+ * the {@code JList} is left with a functioning model.
+ * <p>
+ * {@code DetailBindings} are managed by the {@code JList}. They are not
+ * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
+ * in a way that is not allowed for a managed binding.
+ * <p>
+ * Here is an example of creating a binding from a {@code List} of {@code Person}
+ * objects to a {@code JList} and specifying that it should use the full
+ * name of the person as the list elements:
+ * <p>
+ * <pre><code>
+ *    // create the person list
+ *    List<Person> people = createPersonList();
+ *
+ *    // create the binding from List to JList
+ *    JListBinding lb = SwingBindings.createJListBinding(READ, people, jList);
+ *
+ *    // define the property to be used as the items
+ *    ELProperty fullNameP = ELProperty.create("${fistName} ${lastName}");
+ *
+ *    // add the detail binding
+ *    lb.setDetailBinding(fullNameP);
+ *
+ *    // realize the binding
+ *    lb.bind();
+ * </code></pre>
+ * <p>
+ * In addition to binding the elements of a {@code JList}, it is possible to
+ * bind to the selection of a {@code JList}. When binding to the selection of a {@code JList}
+ * backed by a {@code JListBinding}, the selection is always in terms of elements
+ * from the source {@code List}, regardless of any {@code DetailBinding} specified.
+ * See the list of <a href="package-summary.html#SWING_PROPS">
+ * interesting swing properties</a> in the package summary for more details.
+ *
+ * @param <E> the type of elements in the source {@code List}
+ * @param <SS> the type of source object (on which the source property resolves to {@code List})
+ * @param <TS> the type of target object (on which the target property resolves to {@code JList})
+ *
  * @author Shannon Hickey
  */
 public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, List> {
@@ -28,6 +95,17 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
     private JList list;
     private DetailBinding detailBinding;
 
+    /**
+     * Constructs an instance of {@code JListBinding}.
+     *
+     * @param strategy the update strategy
+     * @param sourceObject the source object
+     * @param sourceProperty a property on the source object that resolves to the {@code List} of elements
+     * @param targetObject the target object
+     * @param targetProperty a property on the target object that resolves to a {@code JList}
+     * @param name a name for the {@code JListBinding}
+     * @throws IllegalArgumentException if the source property or target property is {@code null}
+     */
     protected JListBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
         super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
         ep = (ElementsProperty<TS, JList>)getTargetProperty();
