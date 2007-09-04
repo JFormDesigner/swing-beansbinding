@@ -31,7 +31,7 @@ import java.awt.FocusTraversalPolicy;
  * <p>
  * If the {@code List} is an instance of {@code ObservableList}, then changes
  * to the {@code List} are reflected in the table. {@code JTableBinding}
- * also listens to the properties specified for colum bindings, for all rows,
+ * also listens to the properties specified for column bindings, for all rows,
  * and updates its display values in response to change.
  * <p>
  * This class is a subclass of {@code AutoBinding}. The update strategy
@@ -43,19 +43,20 @@ import java.awt.FocusTraversalPolicy;
  * to the list; since the {@code JTable} is acting as a view for the live list values,
  * all changes are committed back immediately.
  * <p>
- * By default, a cell in the {@code JTable} is editable for any given row and
- * column when the property specified for that column by the column binding is
- * editable for the object in that row. {@code ColumnBinding} allows you to
- * turn off editability of a single column by specifying {@code setEditable(false)}
- * and {@code JTableBinding} allows you to do the same to affect the whole
- * table.
+ * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
+ * column when all of the following are true: the property specified for that column
+ * by the column binding is editable for the object in that row, the "editable" property
+ * of the {@code JTableBinding} is either {@code true} or unset, and the "editable"
+ * property of the {@code ColumnBinding} is either {@code true} or unset.
  * <p>
  * {@code ColumnBindings} are managed by the {@code JTableBinding}. They are not
  * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
  * in a way that is not allowed for a managed binding. {@code BindingListeners}
  * added to a {@code ColumnBinding} are notified at the time an edited table value
  * is to be committed back to the source list. They receive notification of either
- * {@code synced} or {@code syncFailed}.
+ * {@code synced} or {@code syncFailed}. {@code BindingListeners} added to the
+ * {@code JTableBinding} itself are also notified of {@code sync} and {@code syncFailed}
+ * for the {@code JTableBinding's ColumnBindings}.
  * <p>
  * Instances of {@code JTableBinding} are obtained by calling one of the
  * {@code createJTableBinding} methods in the {@code SwingBindings} class.
@@ -103,6 +104,17 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
     private boolean editableSet;
     private List<ColumnBinding> columnBindings = new ArrayList<ColumnBinding>();
 
+    /**
+     * Constructs an instance of {@code JTableBinding}.
+     *
+     * @param strategy the update strategy
+     * @param sourceObject the source object
+     * @param sourceProperty a property on the source object that resolves to the list of elements
+     * @param targetObject the target object
+     * @param targetProperty a property on the target object that resolves to a {@code JTable}
+     * @param name a name for the {@code Binding}
+     * @throws IllegalArgumentException if the source property or target property is {@code null}
+     */
     protected JTableBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
         super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetJTableProperty), name);
         ep = (ElementsProperty<TS, JTable>)getTargetProperty();
@@ -124,19 +136,48 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         super.unbindImpl();
     }
     
+    /**
+     * Sets whether or not the cells of the table should be editable.
+     * See this <a href="#EDITABILITY">paragraph</a> in the class level
+     * documentation on editability.
+     *
+     * @param editable whether or not the cells of the table should be editable
+     */
     public void setEditable(boolean editable) {
         this.editable = editable;
         this.editableSet = true;
     }
 
+    /**
+     * Returns whether or not the cells of the table should be editable.
+     * See this <a href="#EDITABILITY">paragraph</a> in the class level
+     * documentation on editability.
+     *
+     * @return whether or not the cells of the table should be editable
+     */
     public boolean isEditable() {
         return editable;
     }
 
+    /**
+     * Returns whether or not {@code setEditable} has been called on
+     * this {@code JTableBinding}.
+     * <p>
+     * Note: This method will be going away in a future version.
+     *
+     * @return whether or not {@code setEditable} has been called on this
+     *         {@code JTableBinding}
+     * @deprecated Unused and to be removed in a future version.
+     */
+    @Deprecated
     public boolean isEditableSet() {
         return editableSet;
     }
 
+    /**
+     * Adds a column binding to the end of the list of column bindings
+     * maintained by this.....TBD
+     */
     public ColumnBinding addColumnBinding(Property<E, ?> columnProperty) {
         return addColumnBinding(columnProperty, null);
     }
@@ -294,16 +335,39 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
             return columnName == null ? getSourceProperty().toString() : columnName;
         }
 
+        /**
+         * Sets whether or not the cells of the column should be editable.
+         * See this <a href="JTableBinding.html#EDITABILITY">paragraph</a> in the class level
+         * documentation on editability.
+         *
+         * @param editable whether or not the cells of the column should be editable
+         */
         public ColumnBinding setEditable(boolean editable) {
             this.editable = editable;
             this.editableSet = true;
             return this;
         }
 
+        /**
+         * Returns whether or not the cells of the column should be editable.
+         * See this <a href="JTableBinding.html#EDITABILITY">paragraph</a> in the class level
+         * documentation on editability.
+         *
+         * @return whether or not the cells of the column should be editable
+         */
         public boolean isEditable() {
             return editable;
         }
 
+        /**
+         * Returns whether or not {@code setEditable} has been called on
+         * this {@code ColumnBinding}.
+         *
+         * @return whether or not {@code setEditable} has been called on this
+         *         {@code ColumnBinding}
+         * @deprecated Unused and to be removed in a future version.
+         */
+        @Deprecated
         public boolean isEditableSet() {
             return editableSet;
         }
