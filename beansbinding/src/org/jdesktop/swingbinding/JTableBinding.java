@@ -50,14 +50,18 @@ import java.awt.FocusTraversalPolicy;
  * since the {@code JTable} is acting as a view for the live {@code List} values,
  * all changes are committed back immediately.
  * <p>
- * {@code JTableBinding} works by installing a custom model on the target {@code JTable}.
- * This model is installed at bind time if both the {@code List} property and
- * {@code JTable} property are readable, or whenever they become readable after binding.
- * This model is uninstalled when either property becomes unreadable or the binding
- * is unbound. It is also uninstalled, and installed on the replacement, when the value
- * of the {@code JTable} property changes. When this model is uninstalled from a
+ * {@code JTableBinding} works by installing a custom model on the target {@code JTable},
+ * at bind time if the {@code JTable} property is readable, or whenever it becomes
+ * readable after binding. This model is uninstalled when the property becomes unreadable
+ * or the binding is unbound. It is also uninstalled, and installed on the replacement,
+ * when the value of the {@code JTable} property changes. When this model is uninstalled from a
  * {@code JTable}, it is replaced with an empty {@code DefaultTableModel} so that
  * the {@code JTable} is left with a functioning model.
+ * <p>
+ * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
+ * automatically applied to the target {@code JTable} (if readable) only once, at bind time.
+ * As a result, if the target {@code JTable} changes, it gets the model, but the elements are
+ * not automatically set on it.
  * <p>
  * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
  * column when all of the following are true: the property specified for that column

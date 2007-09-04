@@ -41,14 +41,18 @@ import org.jdesktop.swingbinding.impl.ListBindingManager;
  * {@code List} property itself. The strategy can be {@code READ_ONCE} or {@code READ}
  * ({@code READ_WRITE} is treated as {@code READ}).
  * <p>
- * {@code JListBinding} works by installing a custom model on the target {@code JList}.
- * This model is installed at bind time if both the {@code List} property and
- * {@code JList} property are readable, or whenever they become readable after binding.
- * This model is uninstalled when either property becomes unreadable or the binding
- * is unbound. It is also uninstalled, and installed on the replacement, when the value
- * of the {@code JList} property changes. When this model is uninstalled from a
+ * {@code JListBinding} works by installing a custom model on the target {@code JList},
+ * at bind time if the {@code JList} property is readable, or whenever it becomes
+ * readable after binding. This model is uninstalled when the property becomes unreadable
+ * or the binding is unbound. It is also uninstalled, and installed on the replacement,
+ * when the value of the {@code JList} property changes. When this model is uninstalled from a
  * {@code JList}, it is replaced with an empty {@code DefaultListModel} so that
  * the {@code JList} is left with a functioning model.
+ * <p>
+ * Keep in mind that with a {@code READ_ONCE} update strategy, the source {@code List} (if readable) is
+ * automatically applied to the target {@code JList} (if readable) only once, at bind time.
+ * As a result, if the target {@code JList} changes, it gets the model, but the elements are
+ * not automatically set on it.
  * <p>
  * {@code DetailBindings} are managed by the {@code JList}. They are not
  * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
