@@ -56,10 +56,10 @@ import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
  * a {@code BeanProperty} for a given source object, the {@code BeanProperty}
  * starts listening to all objects along the path (based on that source object)
  * for change notification, and reflects any changes by notifying the
- * listener associated with the property for that source object. So, in the
+ * listener associated with the property for that source object. So, in the second
  * example above, if a {@code PropertyStateListener} is added to the property
  * for an object {@code Duke}, the {@code PropertyStateListener} is notified
- * when either {@code Duke's mother} changes (if the new mother's name is
+ * when either {@code Duke's} mother changes (if the new mother's name is
  * different), or {@code Duke's mother's firstName} changes.
  * <p>
  * It is very important that any bean properties addressed via a {@code BeanProperty}
@@ -88,7 +88,7 @@ import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
  * property, is {@code non-null}. The final value being {@code null} does not
  * affect the readability.</i>
  * <p>
- * So, in the example given earlier, the {@code BeanProperty} is readable when all
+ * So, in the second example given earlier, the {@code BeanProperty} is readable for (@code Duke} when all
  * of the following are true: {@code Duke} defines a Java Beans getter for
  * {@code mother}, {@code Duke's mother} defines a Java Beans getter for
  * {@code firstName}, {@code Duke} is {@code non-null}, {@code Duke's mother}
@@ -104,11 +104,11 @@ import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
  * which we set the final property, defines a Java Beans getter method for the
  * property to be read on it AND b) the bean on which we set the final property
  * defines a Java Beans setter for the property to be set on it AND c) each bean
- * in the path,  starting with the source and ending with the bean on which we
+ * in the path, starting with the source and ending with the bean on which we
  * set the final property, is {@code non-null}. The final value being {@code null}
  * does not affect the writeability.</i>
  * <p>
- * So, in the example given earlier, the {@code BeanProperty} is writeable when all
+ * So, in the second example given earlier, the {@code BeanProperty} is writeable for {@code Duke} when all
  * of the following are true: {@code Duke} defines a Java Beans getter for
  * {@code mother}, {@code Duke's mother} defines a Java Beans setter for
  * {@code firstName}, {@code Duke} is {@code non-null}, {@code Duke's mother}
@@ -122,15 +122,15 @@ import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
  * can be an instance of {@code Map}. In this case, the {@code Map's get}
  * method is used with the property name as the getter, and the
  * {@code Map's put} method is used with the property name as the setter.
- * {@code BeanProperty} can only respond to changes in the {@code Map}
- * if it is an instanceof {@link org.jdesktop.observablecollections.ObservableMap}.
+ * {@code BeanProperty} can only respond to changes in {@code Maps}
+ * if they are instances of {@link org.jdesktop.observablecollections.ObservableMap}.
  * <p>
  * Some methods in this class document that they can throw
  * {@code PropertyResolutionException} if an exception occurs while trying
  * to resolve the path. The throwing of this exception represents an abnormal
  * condition and if listeners are installed for the given source object,
  * leaves the {@code BeanProperty} in an inconsistent state for that source object.
- * A {@code BeanProperty} should not be used again for that source object
+ * A {@code BeanProperty} should not be used again for that same source object
  * after such an exception without first removing all listeners associated with
  * the {@code BeanProperty} for that source object.
  *
