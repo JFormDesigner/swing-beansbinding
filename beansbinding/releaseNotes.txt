@@ -1,5 +1,40 @@
 Release notes for Beans Binding (http://beansbinding.dev.java.net)
 
+1.0 Release (2007/09/05)
+--------------------------
+This release represents a major re-architecture of Beans Binding, based
+on feedback from members of the expert group and the community (Thank You!).
+While the work on this project continues through the JCP process,
+with feature additions and possible API changes to come, the current
+state represents the core API that is expected, for the most part, to
+persist. As such, we're calling it 1.0 and releasing!
+
+Some of the major points of interest in this release:
+
+  1) The concept of a property has been factored out into an abstract Property class,
+     with two concrete implementations of interest: BeanProperty and ELProperty.
+
+  2) Binding is now an abstract class representing a binding between two Property
+     instances (typically associated with two objects).
+
+  3) Binding with automatic syncing is implemented by a new concrete AutoBinding subclass.
+
+  4) Bindings to complex Swing components (such as JTable, JList and JComboBox) are
+     now handled by custom Binding subclasses.
+
+  5) For those synthetic Swing properties that we expose via adapters, those with
+     multiple possible behaviors are exposed as multiple synthetic properties.
+     For example: "text", "text_ON_FOCUS_LOST" and "text_ON_ACTION_OR_FOCUS_LOST"
+     for JTextField; "selectedElement" and "selectedElement_IGNORE_ADJUSTING" for
+     JList and JTable.
+
+  6) The classes have been repackaged under org.jdesktop packages.
+
+Please note that the process of updating the project's unit test suite for the
+re-architecture has not yet been completed. As such, the majority of unit tests
+are not compileable or runnable.
+
+
 0.6.1 Release (2007/06/22)
 --------------------------
 The purpose of this release is a set of name changes that make things
