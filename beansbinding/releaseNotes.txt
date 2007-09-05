@@ -28,7 +28,7 @@ Some of the major points of interest in this release:
      for JTextField; "selectedElement" and "selectedElement_IGNORE_ADJUSTING" for
      JList and JTable.
 
-  6) The classes have been repackaged under org.jdesktop packages.
+  6) Everything has been repackaged into org.jdesktop packages.
 
 Please note that the process of updating the project's unit test suite for the
 re-architecture has not yet been completed. As such, the majority of unit tests
