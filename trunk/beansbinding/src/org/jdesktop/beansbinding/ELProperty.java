@@ -22,45 +22,130 @@ import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
 import org.jdesktop.beansbinding.ext.BeanAdapterFactory;
 
 /**
- * TBD - CLASS LEVEL DOC. What follows is an outline of what it will
- * likely contain, based on the doc for BeanProperty:
- * <p>
- * Description.
- * For example...:
+ * An implementation of {@code Property} that allows Java Beans properties of
+ * source objects to be addressed using a simple dot-separated path syntax
+ * within an EL expression. For example, to create a simple property representing
+ * a {@code Person} bean's mother's {@code firstName}:
  * <p>
  * <pre><code>
- *   Example
+ *    ELProperty.create("${mother.firstName}")
+ * </pre></code>
+ * </p>
+ * Note that {@link org.jdesktop.beansbinding.BeanProperty} is more suitable for
+ * such a simple property.
+ * <p> 
+ * To create a property representing the concatenation of a {@code Person} bean's
+ * {@code firstName} and {@code lastName} properties:
+ * <p>
+ * <pre><code>
+ *    ELProperty.create("${firstName} ${lastName}");
  *</code></pre>
  * <p>
- * Or:
+ * To create a property that is {@code true} or {@code false} depending
+ * on whether or not the {@code Person's} mother is older than 65:
  * <p>
  * <pre><code>
- *    Example
+ *    BeanProperty.create("${mother.age > 65}");
  * </code></pre>
  * <p>
- * An instance of {@code ELProperty} is immutable and can be used with
- * different source objects...
+ * Paths specified in the EL expressions are resolved against the source object
+ * with which the property is being used.
  * <p>
- * It is very important that any bean properties addressed via an {@code ELProperty}
- * follow the Java Beans specification...
+ * An instance of {@code ELProperty} is immutable and can be used with
+ * different source objects. When a {@code PropertyStateListener} is added to
+ * an {@code ELProperty} for a given source object, the {@code ELProperty}
+ * starts listening to all objects along the paths in the expression (based on that source object)
+ * for change notification, and reflects any changes by notifying the
+ * listener associated with the property for that source object. So, for example,
+ * if a {@code PropertyStateListener} is added to the property from the second example above
+ * for an object {@code Duke}, the {@code PropertyStateListener} is
+ * notified when either {@code Duke's} first name changes, or his last name changes.
+ * If a listener is added to the property from the third example, the {@code PropertyStateListener}
+ * is notified when either a change in {@code Duke's} mother or {@code Duke's} mother's {@code age}
+ * results in a change to the result of the expression.
+ * <p>
+ * It is very important that any bean properties addressed via a {@code ELProperty}
+ * follow the Java Beans specification, including firing property change notification;
+ * otherwise, {@code ELProperty} cannot respond to change. As some beans outside
+ * of your control may not follow the Java Beans specification, {@code ELProperty}
+ * always checks the {@link org.jdesktop.beansbinding.ext.BeanAdapterFactory} to
+ * see if a delegate provider has been registered to provide a delegate bean to take
+ * the place of an object for a given property. See the
+ * <a href="ext/package-summary.html">ext package level</a> documentation for more
+ * details.
  * <p>
  * When there are no {@code PropertyStateListeners} installed on an {@code ELProperty}
- * for a given source...
+ * for a given source, all {@code Property} methods act by evaluating the full expression,
+ * thereby always providing "live" information.
+ * On the contrary, when there are {@code PropertyStateListeners} installed, the beans
+ * along the paths, and the final value, are cached, and only updated upon
+ * notification of change from a bean. Again, this makes it very important that any
+ * bean property that could change along the path fires property change notification.
+ * <i>Note: The {@code setValue} method is currently excluded from the previous
+ * assertion; with the exception of checking the cache to determine if the property is
+ * writeable, it always evaluates the entire expression. The result of this is that
+ * when working with paths containing beans that don't fire property change notification,
+ * you can end up with all methods (including {@code getValue}) working on cached
+ * information, but {@code setValue} working on the live expression. There are plans
+ * to resolve this inconsistency in a future release.</i>
  * <p>
  * <a name="READABILITY"><b>Readability</b></a> of an {@code ELProperty} for a given source is defined as follows:
- * <i>Definition</i>
+ * <i>An {@code ELProperty} is readable for a given source if and only if the
+ * following is true for all paths used in the expression:
+ * a) each bean the path, starting with the source, defines a Java Beans getter
+ * method for the the property to be read on it AND b) each bean in the path,
+ * starting with the source and ending with the bean on which we read the final
+ * property, is {@code non-null}. The final value being {@code null} does not
+ * affect the readability.</i>
  * <p>
- * So, in the example given earlier...
+ * So, in the third example given earlier, the {@code ELProperty} is readable for {@code Duke} when all
+ * of the following are true: {@code Duke} defines a Java Beans getter for
+ * {@code mother}, {@code Duke's mother} defines a Java Beans getter for
+ * {@code age}, {@code Duke} is {@code non-null}, {@code Duke's mother}
+ * is {@code non-null}. The {@code ELProperty} is therefore unreadable when
+ * any of the following is true: {@code Duke} does not define a Java Beans
+ * getter for {@code mother}, {@code Duke's mother} does not define a Java
+ * Beans getter for {@code age}, {@code Duke} is {@code null},
+ * {@code Duke's mother} is {@code null}.
  * <p>
  * <a name="WRITEABILITY"><b>Writeability</b></a> of an {@code ELProperty} for a given source is defined as follows:
- * <i>Definition</i>
+ * <i>An {@code ELProperty} is writeable for a given source if and only if
+ * a) the EL expression itself is not read-only
+ * (ie. it is a simple expression involving one path such as "${foo.bar.baz}" AND
+ * b) each bean in the path, starting with the source and ending with the bean on
+ * which we set the final property, defines a Java Beans getter method for the
+ * property to be read on it AND c) the bean on which we set the final property
+ * defines a Java Beans setter for the property to be set on it AND d) each bean
+ * in the path, starting with the source and ending with the bean on which we
+ * set the final property, is {@code non-null}. The final value being {@code null}
+ * does not affect the writeability.</i>
  * <p>
- * So, in the example given earlier...
+ * So in the first example given earlier (a simple path), the {@code ELProperty}
+ * is writeable for {@code Duke} when all of the following are true: {@code Duke} defines a Java Beans getter for
+ * {@code mother}, {@code Duke's mother} defines a Java Beans setter for
+ * {@code firstName}, {@code Duke} is {@code non-null}, {@code Duke's mother}
+ * is {@code non-null}. The {@code ELProperty} is therefore unreadable when
+ * any of the following is true: {@code Duke} does not define a Java Beans
+ * getter for {@code mother}, {@code Duke's mother} does not define a Java
+ * Beans setter for {@code firstName}, {@code Duke} is {@code null},
+ * {@code Duke's mother} is {@code null}. The second and third examples above
+ * both represent read-only ELExpressions and are therefore unwritable.
  * <p>
- * In addition to working on Java Beans properties...{@code Map}...
+ * In addition to working on Java Beans properties, any object in the paths
+ * can be an instance of {@code Map}. In this case, the {@code Map's get}
+ * method is used with the property name as the getter, and the
+ * {@code Map's put} method is used with the property name as the setter.
+ * {@code ELProperty} can only respond to changes in {@code Maps}
+ * if they are instances of {@link org.jdesktop.observablecollections.ObservableMap}.
  * <p>
  * Some methods in this class document that they can throw
- * {@code PropertyResolutionException}...
+ * {@code PropertyResolutionException} if an exception occurs while trying
+ * to evaluate the expression. The throwing of this exception represents an abnormal
+ * condition and if listeners are installed for the given source object,
+ * leaves the {@code ELProperty} in an inconsistent state for that source object.
+ * An {@code ELProperty} should not be used again for that same source object
+ * after such an exception without first removing all listeners associated with
+ * the {@code ELProperty} for that source object.
  *
  * @param <S> the type of source object that this {@code ELProperty} operates on
  * @param <V> the type of value that this {@code ELProperty} represents
