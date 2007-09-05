@@ -10,9 +10,9 @@
 
     <p>
       In essence, Beans Binding (<a href="http://jcp.org/en/jsr/detail?id=295">JSR 295</a>)
-      is about keeping the properties of two beans in sync. This project provides the reference
-      implementation of Beans Binding, with an additional emphasis on the ability to bind to
-      Swing components, and easy integration with IDEs such as NetBeans.
+      is about keeping two properties (typically of two objects) in sync. An additional
+      emphasis is placed on the ability to bind to Swing components, and easy integration
+      with IDEs such as NetBeans. This project provides the reference implementation.
     </p>
     <p>
       In its current form, the Beans Binding work is targeted at version 5.0 of
@@ -20,42 +20,24 @@
       of the JDK.
     </p>
     <p>
-      The JSR 295 expert group launched this effort in late summer
+      The JSR 295 expert group launched this effort in the late summer of
       2006. Although the JSR has not reached the "Early Draft" JCP review
-      stage, this early prototype is being made public to give interested
-      members of the community the opportunity to provide feedback. This
-      version is just a snapshot of the ongoing design process, and it's
-      likely to change substantially in the coming months.
+      stage, the ongoing work is being hosted here to give interested
+      members of the community opportunity to provide feedback. The project
+      continues to change and grow with input from the experts, and members
+      of the community.
     </p>
     <p>
-      The intended audience for this snapshot is members of the community
+      The intended audience of this project is members of the community
       interested in binding, who want to see where we're headed and to
-      provide early feedback. So that's exactly what we're looking for at this
+      provide feedback. So that's exactly what we're looking for at this
       point; constructive feedback and bug reports are welcome.
-    </p>
-
-    <h3>A Note on EL</h3>
-
-    <p>
-    Bindings between beans are specified using the Expression Language (EL) syntax
-    from project Glassfish. As we required a handful of changes to EL in order to
-    support the needs of Beans Binding, the EL source has been included, with those
-    modifications, in this project. However, the eventual goal is to get these changes
-    back into the official EL (and hopefully EL into Java SE). We do not intend
-    to create a significant branch of EL with this project.
     </p>
 
     <h3>Downloads, Docs, and Feedback</h3>
 
     <p>
-      For the time being, the quickest way to see this project in action is to check
-      out the examples and discussion on
-      <a href="http://weblogs.java.net/blog/zixle/">Scott Violet's blog</a>.
-      An proper introduction and examples on this project page are forthcoming.
-    </p>
-
-    <p>
-      The following downloads are available for this project in the project's
+      The following downloads are available in the project's
       "Documents and Files" section:
 
       <ul>
@@ -76,6 +58,16 @@
       [The users email alias is the last one, all the way at the bottom.]
     </p>
 
+    <h3>A Note on EL</h3>
+
+    <p>
+    Beans Binding contains support for specifying properties using the Expression
+    Language (EL) syntax from project Glassfish. As we required a handful of changes
+    to EL in order to support the needs of Beans Binding, the EL source has been
+    included, with those modifications, in this project. However, the eventual
+    goal is to get these changes back into the official EL (and hopefully EL into
+    Java SE). We do not intend to create a significant branch of EL with this project.
+    </p>
 
     <h3>Presentations, Blogs, other Links</h3>
 
@@ -85,9 +77,6 @@
       </li>
       <li>
         <a href="http://weblogs.java.net/blog/shan_man/">Shannon Hickey's blog</a> for discussion and examples
-      </li>
-      <li>
-        <a href="http://weblogs.java.net/blog/zixle/">Scott Violet's blog</a> for older discussion and examples
       </li>
     </ul>
 
