@@ -2,7 +2,7 @@ Release notes for Beans Binding (http://beansbinding.dev.java.net)
 
 1.0 Release (2007/09/05)
 --------------------------
-This release represents a major re-architecture of Beans Binding, based
+This release represents a major re-architecture of the Beans Binding API, based
 on feedback from members of the expert group and the community (Thank You!).
 While the work on this project continues through the JCP process,
 with feature additions and possible API changes to come, the current
