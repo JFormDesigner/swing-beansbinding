@@ -668,7 +668,7 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         public void removeTableModelListener(TableModelListener l) {
-            listeners.add(l);
+            listeners.remove(l);
         }
 
         private void fireTableModelEvent(TableModelEvent e) {
