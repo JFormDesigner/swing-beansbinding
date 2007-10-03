@@ -40,7 +40,7 @@ public final class JSliderAdapterProvider implements BeanAdapterProvider {
             slider.setValue(value);
         }
         
-        public void setValue_ON_ADJUSTING(int value) {
+        public void setValue_IGNORE_ADJUSTING(int value) {
             setValue(value);
         }
 
