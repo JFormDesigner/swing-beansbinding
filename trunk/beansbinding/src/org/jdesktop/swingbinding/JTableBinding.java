@@ -61,7 +61,8 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * but no elements. If the strategy is {@code READ}, however, the {@code List} is synced
  * to the model every time the source {@code List} property changes value, or the
  * target {@code JTable} property changes value or becomes readable. For
- * {@code JTableBinding}, the {@code READ_WRITE} strategy behaves identical to {@code READ}.
+ * {@code JTableBinding}, the {@code READ_WRITE} strategy is translated to {@code READ}
+ * on construction.
  * <p>
  * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
  * column when all of the following are true: the property specified for that column

@@ -52,7 +52,8 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * but no items. If the strategy is {@code READ}, however, the {@code List} is synced
  * to the model every time the source {@code List} property changes value, or the
  * target {@code JComboBox} property changes value or becomes readable. For
- * {@code JComboBoxBinding}, the {@code READ_WRITE} strategy behaves identical to {@code READ}.
+ * {@code JComboBoxBinding}, the {@code READ_WRITE} strategy is translated to {@code READ}
+ * on construction.
  * <p>
  * Here is an example of creating a binding from a {@code List} of {@code Country}
  * objects to a {@code JComboBox}:

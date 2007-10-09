@@ -56,7 +56,8 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * but no elements. If the strategy is {@code READ}, however, the {@code List} is synced
  * to the model every time the source {@code List} property changes value, or the
  * target {@code JList} property changes value or becomes readable. For
- * {@code JListBinding}, the {@code READ_WRITE} strategy behaves identical to {@code READ}.
+ * {@code JListBinding}, the {@code READ_WRITE} strategy is translated to {@code READ}
+ * on construction.
  * <p>
  * {@code DetailBindings} are managed by the {@code JList}. They are not
  * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
