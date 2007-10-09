@@ -76,9 +76,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
     }
 
     public boolean isWriteable(TS source) {
-        return binding != null &&
-               targetProperty.isReadable(binding.getTargetObject()) &&
-               targetProperty.getValue(binding.getTargetObject()) != null;
+        return isReadable(source);
     }
 
     public String toString() {
@@ -97,12 +95,9 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
         this.binding = binding;
         targetProperty.addPropertyStateListener(binding.getTargetObject(), this);
 
-        if (this.isListening(null)) {
-            // someone outside the binding has installed listeners
-            // should be nice and notify them
-            if (isReadable(null)) {
-                PropertyStateEvent pse = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
-            }
+        if (isReadable(null)) {
+            PropertyStateEvent pse = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
+            firePropertyStateChange(pse);
         }
     }
 
@@ -112,17 +107,14 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
         }
 
         boolean wasReadable = isReadable(null);
-        List oldValue = getValue(null);
-
-        targetProperty.removePropertyStateListener(binding.getTargetObject(), this);
+        List old = list;
         this.binding = null;
+        this.list = null;
+        targetProperty.removePropertyStateListener(binding.getTargetObject(), this);
 
-        if (this.isListening(null)) {
-            // someone outside the binding has installed listeners
-            // should be nice and notify them
-            if (wasReadable) {
-                PropertyStateEvent pse = new PropertyStateEvent(this, null, true, oldValue, PropertyStateEvent.UNREADABLE, true, false);
-            }
+        if (wasReadable) {
+            PropertyStateEvent pse = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
+            firePropertyStateChange(pse);
         }
     }
 
