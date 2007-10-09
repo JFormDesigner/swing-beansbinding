@@ -18,23 +18,23 @@ import org.jdesktop.beansbinding.PropertyStateListener;
  */
 class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List> implements PropertyStateListener {
 
-    private Property tableTargetProperty;
+    private Property targetProperty;
     private List list;
     private Binding binding;
 
-    public ElementsProperty(Property tableTargetProperty) {
+    public ElementsProperty(Property targetProperty) {
         super(true);
 
-        if (tableTargetProperty == null) {
-            throw new IllegalArgumentException("can't have table target property");
+        if (targetProperty == null) {
+            throw new IllegalArgumentException("can't have null target property");
         }
 
-        this.tableTargetProperty = tableTargetProperty;
+        this.targetProperty = targetProperty;
     }
 
     public T getComponent() {
         assert binding != null;
-        return (T)tableTargetProperty.getValue(binding.getTargetObject());
+        return (T)targetProperty.getValue(binding.getTargetObject());
     }
 
     public Class<List> getWriteType(TS source) {
@@ -71,18 +71,18 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
 
     public boolean isReadable(TS source) {
         return binding != null &&
-               tableTargetProperty.isReadable(binding.getTargetObject()) &&
-               tableTargetProperty.getValue(binding.getTargetObject()) != null;
+               targetProperty.isReadable(binding.getTargetObject()) &&
+               targetProperty.getValue(binding.getTargetObject()) != null;
     }
 
     public boolean isWriteable(TS source) {
         return binding != null &&
-               tableTargetProperty.isReadable(binding.getTargetObject()) &&
-               tableTargetProperty.getValue(binding.getTargetObject()) != null;
+               targetProperty.isReadable(binding.getTargetObject()) &&
+               targetProperty.getValue(binding.getTargetObject()) != null;
     }
 
     public String toString() {
-        return "JTable.elements";
+        return "elements";
     }
 
     private static boolean isReadableSourceValue(Object value) {
@@ -95,7 +95,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
         }
 
         this.binding = binding;
-        tableTargetProperty.addPropertyStateListener(binding.getTargetObject(), this);
+        targetProperty.addPropertyStateListener(binding.getTargetObject(), this);
 
         if (this.isListening(null)) {
             // someone outside the binding has installed listeners
@@ -114,7 +114,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
         boolean wasReadable = isReadable(null);
         List oldValue = getValue(null);
 
-        tableTargetProperty.removePropertyStateListener(binding.getTargetObject(), this);
+        targetProperty.removePropertyStateListener(binding.getTargetObject(), this);
         this.binding = null;
 
         if (this.isListening(null)) {
