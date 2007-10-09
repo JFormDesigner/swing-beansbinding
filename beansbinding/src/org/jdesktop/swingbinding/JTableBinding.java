@@ -22,6 +22,7 @@ import org.jdesktop.swingbinding.impl.ListBindingManager;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
 
 /**
  * Binds a {@code List} of objects to act as the elements of a {@code JTable}.
@@ -138,7 +139,8 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JTableBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
-        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetJTableProperty), name);
+        super(strategy == READ_WRITE ? READ : strategy,
+              sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetJTableProperty), name);
         ep = (ElementsProperty<TS, JTable>)getTargetProperty();
     }
 
