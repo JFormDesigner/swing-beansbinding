@@ -251,6 +251,10 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
         // flag  0 - source property changed value or readability
         // flag  1 - something else changed
         private void validateCache(int flag) {
+
+/* In the future, this debugging code can be enabled via a flag */
+            
+/*
             if (flag != 0 && getBeanFromSource(source, false) != cachedBean) {
                 log("validateCache()", "concurrent modification");
             }
@@ -283,6 +287,7 @@ public final class ELProperty<S, V> extends PropertyHelper<S, V> {
                     expression.setSource(null);
                 }
             }
+ */
         }
 
         public void propertyStateChanged(PropertyStateEvent pe) {
