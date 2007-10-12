@@ -297,7 +297,12 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     /**
-     * Sets the source property on the {@code Binding}.
+     * Sets the {@code Binding's} source property.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "sourceProperty"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a bound binding.
      *
      * @param sourceProperty the source property
@@ -310,11 +315,18 @@ public abstract class Binding<SS, SV, TS, TV> {
         if (sourceProperty == null) {
             throw new IllegalArgumentException("source property can't be null");
         }
+        Property<SS, SV> old = this.sourceProperty;
         this.sourceProperty = sourceProperty;
+        firePropertyChange("sourceProperty", old, sourceProperty);
     }
     
     /**
-     * Sets the target property on the {@code Binding}.
+     * Sets the {@code Binding's} target property.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "targetProperty"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a bound binding.
      *
      * @param targetProperty the target property
@@ -327,7 +339,9 @@ public abstract class Binding<SS, SV, TS, TV> {
         if (targetProperty == null) {
             throw new IllegalArgumentException("target property can't be null");
         }
+        Property<TS, TV> old = this.targetProperty;
         this.targetProperty = targetProperty;
+        firePropertyChange("targetProperty", old, targetProperty);
     }
     
     /**
@@ -343,6 +357,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Returns the {@code Binding's} source property, which may not be {@code null}.
      *
      * @return the {@code Binding's} source property, {@code non-null}
+     * @see #setSourceProperty
      */
     public final Property<SS, SV> getSourceProperty() {
         return sourceProperty;
@@ -352,6 +367,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Returns the {@code Binding's} target property, which may not be {@code null}.
      *
      * @return the {@code Binding's} target property, {@code non-null}
+     * @see #setTargetProperty
      */
     public final Property<TS, TV> getTargetProperty() {
         return targetProperty;
@@ -361,6 +377,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Returns the {@code Binding's} source object, which may be {@code null}.
      *
      * @return the {@code Binding's} source object, or {@code null}
+     * @see #setSourceObject
      */
     public final SS getSourceObject() {
         return sourceObject;
@@ -370,6 +387,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Returns the {@code Binding's} target object, which may be {@code null}.
      *
      * @return the {@code Binding's} target object, or {@code null}
+     * @see #setTargetObject
      */
     public final TS getTargetObject() {
         return targetObject;
@@ -377,6 +395,11 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     /**
      * Sets the {@code Binding's} source object, which may be {@code null}.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "sourceObject"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a managed or bound binding.
      *
      * @param sourceObject the source object, or {@code null}
@@ -402,11 +425,18 @@ public abstract class Binding<SS, SV, TS, TV> {
      */
     protected final void setSourceObjectUnmanaged(SS sourceObject) {
         throwIfBound();
+        SS old = this.sourceObject;
         this.sourceObject = sourceObject;
+        firePropertyChange("sourceObject", old, sourceObject);
     }
 
     /**
      * Sets the {@code Binding's} target object, which may be {@code null}.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "targetObject"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a managed or bound binding.
      *
      * @param targetObject the target object, or {@code null}
@@ -432,11 +462,18 @@ public abstract class Binding<SS, SV, TS, TV> {
      */
     protected final void setTargetObjectUnmanaged(TS targetObject) {
         throwIfBound();
+        TS old = this.targetObject;
         this.targetObject = targetObject;
+        firePropertyChange("targetObject", old, targetObject);
     }
 
     /**
      * Sets the {@code Validator} for the {@code Binding}, which may be {@code null}.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "validator"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a bound binding.
      * <p>
      * See the documentation on {@link #getTargetValueForSource} for details on how
@@ -448,7 +485,9 @@ public abstract class Binding<SS, SV, TS, TV> {
      */
     public final void setValidator(Validator<? super SV> validator) {
         throwIfBound();
+        Validator<? super SV> old = this.validator;
         this.validator = validator;
+        firePropertyChange("validator", old, validator);
     }
 
     /**
@@ -463,6 +502,11 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     /**
      * Sets the {@code Converter} for the {@code Binding}, which may be {@code null}.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "converter"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a bound binding.
      * <p>
      * See the documentation on {@link #getTargetValueForSource} and
@@ -475,7 +519,9 @@ public abstract class Binding<SS, SV, TS, TV> {
      */
     public final void setConverter(Converter<SV, TV> converter) {
         throwIfBound();
+        Converter<SV, TV> old = this.converter;
         this.converter = converter;
+        firePropertyChange("converter", old, converter);
     }
 
     /**
@@ -492,14 +538,21 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Sets the value to be returned by {@link #getSourceValueForTarget}
      * when the source property returns {@code null} for the source object.
      * The default for this property is {@code null}.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "sourceNullValue"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a bound binding.
      *
-     * @param value the value, or {@code null}
+     * @param sourceNullValue the value, or {@code null}
      * @throws IllegalStateException if the {@code Binding} is bound
      */
-    public final void setSourceNullValue(TV value) {
+    public final void setSourceNullValue(TV sourceNullValue) {
         throwIfBound();
-        sourceNullValue = value;
+        TV old = this.sourceNullValue;
+        this.sourceNullValue = sourceNullValue;
+        firePropertyChange("sourceNullValue", old, sourceNullValue);
     }
 
     /**
@@ -519,14 +572,21 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Sets the value to be returned by {@link #getTargetValueForSource}
      * when the target property returns {@code null} for the target object.
      * The default for this property is {@code null}.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "targetNullValue"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a bound binding.
      *
-     * @param value the value, or {@code null}
+     * @param targetNullValue the value, or {@code null}
      * @throws IllegalStateException if the {@code Binding} is bound
      */
-    public final void setTargetNullValue(SV value) {
+    public final void setTargetNullValue(SV targetNullValue) {
         throwIfBound();
-        targetNullValue = value;
+        SV old = this.targetNullValue;
+        this.targetNullValue = targetNullValue;
+        firePropertyChange("targetNullValue", old, targetNullValue);
     }
 
     /**
@@ -546,14 +606,21 @@ public abstract class Binding<SS, SV, TS, TV> {
      * Sets the value to be returned by {@link #getSourceValueForTarget}
      * when the source property is unreadable for the source object.
      * The default for this property is {@code null}.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "sourceUnreadableValue"} when the value of
+     * this property changes.
+     * <p>
      * This method may not be called on a bound binding.
      *
-     * @param value the value, or {@code null}
+     * @param sourceUnreadableValue the value, or {@code null}
      * @throws IllegalStateException if the {@code Binding} is bound
      */
-    public final void setSourceUnreadableValue(TV value) {
+    public final void setSourceUnreadableValue(TV sourceUnreadableValue) {
         throwIfBound();
-        sourceUnreadableValue = value;
+        TV old = this.sourceUnreadableValue;
+        this.sourceUnreadableValue = sourceUnreadableValue;
+        firePropertyChange("sourceUnreadableValue", old, sourceUnreadableValue);
     }
 
     /**
@@ -563,7 +630,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      *
      * @return the value that replaces an unreadable source value, or {@code null}
      *         if there is no replacement
-     * @see #setSourceNullValue
+     * @see #setSourceUnreadableValue
      */
     public final TV getSourceUnreadableValue() {
         return sourceUnreadableValue;
@@ -762,11 +829,13 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     /**
-     * Binds this binding. Adds a {@code PropertyStateListener} to the source
+     * Binds this binding. Calls {@link #bindImpl} to allow subclasses
+     * to initiate binding, adds a {@code PropertyStateListener} to the source
      * property for the source object and the target property for the target
-     * object to start tracking changes, calls {@link #bindImpl} to allow
-     * subclasses to initiate binding, and then notifies all registered
-     * {@code BindingListeners} that the binding has become bound.
+     * object to start tracking changes, notifies all registered
+     * {@code BindingListeners} that the binding has become bound, and
+     * fires a property change notification to indicate a change to the
+     * {@code "bound"} property.
      *
      * @throws UnsupportedOperationException if the {@code Binding} is managed
      * @throws IllegalStateException if the {@code Binding} is already bound
@@ -791,21 +860,23 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected final void bindUnmanaged() {
         throwIfBound();
 
-        hasEditedSource = false;
-        hasEditedTarget = false;
-        isBound = true;
+        bindImpl();
 
         psl = new PSL();
         sourceProperty.addPropertyStateListener(sourceObject, psl);
         targetProperty.addPropertyStateListener(targetObject, psl);
 
-        bindImpl();
+        hasEditedSource = false;
+        hasEditedTarget = false;
+        isBound = true;
 
         if (listeners != null) {
             for (BindingListener listener : listeners) {
                 listener.bindingBecameBound(this);
             }
         }
+        
+        firePropertyChange("bound", false, true);
     }
 
     /**
@@ -820,10 +891,11 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected abstract void bindImpl();
 
     /**
-     * Unbinds this binding. Calls {@code unbindImpl} to allow subclasses
-     * to uninitiate the binding, removes the {@code PropertyStateListeners}
-     * added by {@code bind}, and then notifies all registered
-     * {@code BindingListeners} that the binding has become unbound.
+     * Unbinds this binding. Calls {@link #unbindImpl} to allow subclasses
+     * to uninitiate binding, removes the {@code PropertyStateListeners}
+     * added by {@code bind}, notifies all registered {@code BindingListeners}
+     * that the binding has become unbound, and fires a property change
+     * notification to indicate a change to the {@code "bound"} property.
      *
      * @throws UnsupportedOperationException if the {@code Binding} is managed
      * @throws IllegalStateException if the {@code Binding} is not bound
@@ -863,6 +935,8 @@ public abstract class Binding<SS, SV, TS, TV> {
                 listener.bindingBecameUnbound(this);
             }
         }
+        
+        firePropertyChange("bound", true, false);
     }
 
     /**
@@ -874,9 +948,14 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     /**
      * Returns whether or not this {@code Binding} is bound.
+     * <p>
+     * {@code Binding} fires a property change notification with
+     * property name {@code "bound"} when the value of
+     * this property changes.
      *
      * @return whether or not the {@code Binding} is bound
      * @see #bind
+     * @see #unbind
      */
     public final boolean isBound() {
         return isBound;
@@ -888,11 +967,11 @@ public abstract class Binding<SS, SV, TS, TV> {
      * call to {@code bind} or the last time the {@code Binding} was
      * successfully synced (refreshed or saved).
      * <p>
-     * This method can only be called on a bound {@code Binding}.
-     * <p>
      * {@code Binding} fires a property change notification with
      * property name {@code "hasEditedSource"} when the value of
      * this property changes.
+     * <p>
+     * This method can only be called on a bound {@code Binding}.
      *
      * @return whether or not the source has been edited
      * @throws IllegalStateException if the {@code Binding} is not bound
@@ -909,11 +988,11 @@ public abstract class Binding<SS, SV, TS, TV> {
      * call to {@code bind} or the last time the {@code Binding} was
      * successfully synced (refreshed or saved).
      * <p>
-     * This method can only be called on a bound {@code Binding}.
-     * <p>
      * {@code Binding} fires a property change notification with
      * property name {@code "hasEditedTarget"} when the value of
      * this property changes.
+     * <p>
+     * This method can only be called on a bound {@code Binding}.
      *
      * @return whether or not the target has been edited
      * @throws IllegalStateException if the {@code Binding} is not bound
@@ -1006,11 +1085,9 @@ public abstract class Binding<SS, SV, TS, TV> {
      *
      * @return the return value from the call to {@code refresh}
      * @throws UnsupportedOperationException if the {@code Binding} is managed
-     * @throws IllegalStateException if the {@code Binding} is not bound
      * @throws RuntimeException as specified by {@link #refresh}
      * @throws ClassCastException as specified by {@link #refresh}
      * @see #isManaged()
-     * @see #isBound()
      */
     public final SyncFailure refreshAndNotify() {
         return notifyAndReturn(refresh());
@@ -1021,11 +1098,10 @@ public abstract class Binding<SS, SV, TS, TV> {
      * subclasses to refresh and notify without throwing an exception
      * for being managed.
      *
-     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @return the return value from the call to {@code refresh}
      * @throws RuntimeException as specified by {@link #refresh}
      * @throws ClassCastException as specified by {@link #refresh}
      * @see #isManaged()
-     * @see #isBound()
      */
     protected final SyncFailure refreshAndNotifyUnmanaged() {
         return notifyAndReturn(refreshUnmanaged());
@@ -1040,10 +1116,8 @@ public abstract class Binding<SS, SV, TS, TV> {
      *
      * @return the return value from the call to {@code save}
      * @throws UnsupportedOperationException if the {@code Binding} is managed
-     * @throws IllegalStateException if the {@code Binding} is not bound
      * @throws ClassCastException as specified by {@link #refresh}
      * @see #isManaged()
-     * @see #isBound()
      */
     public final SyncFailure saveAndNotify() {
         return notifyAndReturn(save());
@@ -1054,10 +1128,9 @@ public abstract class Binding<SS, SV, TS, TV> {
      * subclasses to save and notify without throwing an exception
      * for being managed.
      *
-     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @return the return value from the call to {@code save}
      * @throws ClassCastException as specified by {@link #save}
      * @see #isManaged()
-     * @see #isBound()
      */
     protected final SyncFailure saveAndNotifyUnmanaged() {
         return notifyAndReturn(saveUnmanaged());
@@ -1074,11 +1147,9 @@ public abstract class Binding<SS, SV, TS, TV> {
      * @return the reason for failure if the binding could not be refreshed,
      *         or {@code null} for success
      * @throws UnsupportedOperationException if the {@code Binding} is managed
-     * @throws IllegalStateException if the {@code Binding} is not bound
      * @throws RuntimeException if thrown by {@link #getSourceValueForTarget}
      * @throws ClassCastException if thrown by {@link #getSourceValueForTarget}
      * @see #isManaged()
-     * @see #isBound()
      * @see #save
      */
     public final SyncFailure refresh() {
@@ -1091,13 +1162,13 @@ public abstract class Binding<SS, SV, TS, TV> {
      * subclasses to refresh without throwing an exception
      * for being managed.
      *
-     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @return the reason for failure if the binding could not be refreshed,
+     *         or {@code null} for success
+     * @throws RuntimeException if thrown by {@link #getSourceValueForTarget}
+     * @throws ClassCastException if thrown by {@link #getSourceValueForTarget}
      * @see #isManaged()
-     * @see #isBound()
      */
     protected final SyncFailure refreshUnmanaged() {
-        throwIfUnbound();
-
         ValueResult<TV> vr = getSourceValueForTarget();
         if (vr.failed()) {
             return vr.getFailure();
@@ -1126,10 +1197,8 @@ public abstract class Binding<SS, SV, TS, TV> {
      * @return the reason for failure if the binding could not be saved,
      *         or {@code null} for success
      * @throws UnsupportedOperationException if the {@code Binding} is managed
-     * @throws IllegalStateException if the {@code Binding} is not bound
      * @throws ClassCastException if thrown by {@link #getTargetValueForSource}
      * @see #isManaged()
-     * @see #isBound()
      * @see #refresh
      */
     public final SyncFailure save() {
@@ -1142,13 +1211,12 @@ public abstract class Binding<SS, SV, TS, TV> {
      * subclasses to save without throwing an exception
      * for being managed.
      *
-     * @throws IllegalStateException if the {@code Binding} is not bound
+     * @return the reason for failure if the binding could not be saved,
+     *         or {@code null} for success
+     * @throws ClassCastException if thrown by {@link #getTargetValueForSource}
      * @see #isManaged()
-     * @see #isBound()
      */
     protected final SyncFailure saveUnmanaged() {
-        throwIfUnbound();
-
         ValueResult<SV> vr = getTargetValueForSource();
         if (vr.failed()) {
             return vr.getFailure();
@@ -1477,7 +1545,21 @@ public abstract class Binding<SS, SV, TS, TV> {
         
         return changeSupport.getPropertyChangeListeners(propertyName);
     }
-    
+
+    /**
+     * Sends a {@code PropertyChangeEvent} to the {@code PropertyChangeListeners}
+     * registered on the {@code Binding}.
+     *
+     * @param propertyName the name of the property that's changed
+     * @param oldValue the old value of the property
+     * @param newValue the new value of the property
+     */
+    protected final void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
+        if (changeSupport != null) {
+            changeSupport.firePropertyChange(propertyName, oldValue, newValue);
+        }
+    }
+
     private class PSL implements PropertyStateListener {
         public void propertyStateChanged(PropertyStateEvent pse) {
             if (ignoreChange) {
