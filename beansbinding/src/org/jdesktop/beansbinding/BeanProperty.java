@@ -276,6 +276,10 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         // -1 already used to mean validate all
         // 0... means something in the path changed
         private void validateCache(int ignore) {
+
+/* In the future, this debugging code can be enabled via a flag */
+            
+/*
             for (int i = 0; i < path.length() - 1; i++) {
                 if (i == ignore - 1) {
                     continue;
@@ -312,6 +316,7 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
                     log("validateCache()", "concurrent modification");
                 }
             }
+ */
         }
         
         private void updateCachedWriter() {
