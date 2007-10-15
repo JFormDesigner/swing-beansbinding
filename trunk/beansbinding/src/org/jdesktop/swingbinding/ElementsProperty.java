@@ -33,7 +33,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
     }
 
     public T getComponent() {
-        assert binding != null;
+        assert isReadable(null);
         return (T)targetProperty.getValue(binding.getTargetObject());
     }
 
@@ -88,9 +88,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
     }
 
     void installBinding(Binding binding) {
-        if (this.binding != null) {
-            throw new IllegalStateException();
-        }
+        assert binding == null;
 
         this.binding = binding;
         targetProperty.addPropertyStateListener(binding.getTargetObject(), this);
@@ -102,9 +100,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
     }
 
     void uninstallBinding() {
-        if (this.binding == null) {
-            throw new IllegalStateException();
-        }
+        assert binding != null;
 
         boolean wasReadable = isReadable(null);
 
