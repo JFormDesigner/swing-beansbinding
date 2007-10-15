@@ -99,8 +99,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JComboBoxBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty, String name) {
-        super(strategy == READ_WRITE ? READ : strategy,
-              sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JComboBox>(targetJComboBoxProperty), name);
+        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JComboBox>(targetJComboBoxProperty), name);
         ep = (ElementsProperty<TS, JComboBox>)getTargetProperty();
     }
     
