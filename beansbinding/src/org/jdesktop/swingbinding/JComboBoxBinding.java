@@ -105,14 +105,12 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     
     protected void bindImpl() {
         model = new BindingComboBoxModel();
-        // order is important for the next two lines
         ep.addPropertyStateListener(null, handler);
         ep.installBinding(this);
         super.bindImpl();
     }
     
     protected void unbindImpl() {
-        // order is important for the next two lines
         ep.uninstallBinding();
         ep.removePropertyStateListener(null, handler);
         model = null;
