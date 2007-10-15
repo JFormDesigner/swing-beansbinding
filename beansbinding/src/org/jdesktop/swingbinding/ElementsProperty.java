@@ -107,10 +107,11 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
         }
 
         boolean wasReadable = isReadable(null);
-        List old = list;
-        this.binding = null;
-        this.list = null;
+
         targetProperty.removePropertyStateListener(binding.getTargetObject(), this);
+        this.binding = null;
+        List old = list;
+        this.list = null;
 
         if (wasReadable) {
             PropertyStateEvent pse = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
