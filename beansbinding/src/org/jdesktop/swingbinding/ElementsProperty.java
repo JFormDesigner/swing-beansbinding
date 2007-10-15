@@ -125,20 +125,21 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
         Object old = this.list;
         this.list = null;
 
-        if (wasReadableSource && !isReadableSource) {
-            PropertyStateEvent ps = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
-            firePropertyStateChange(ps);
-            return;
+        PropertyStateEvent ps = null;
+
+        if (wasReadableSource) {
+            if (isReadableSource) {
+                ps = new PropertyStateEvent(this, null, true, old, null, false, true);
+            } else {
+                ps = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
+            }
+        } else if (isReadableSource) {
+            ps = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
         }
 
-        if (!wasReadableSource && isReadableSource) {
-            PropertyStateEvent ps = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
+        if (ps != null) {
             firePropertyStateChange(ps);
-            return;
         }
-
-        PropertyStateEvent ps = new PropertyStateEvent(this, null, true, old, null, false, true);
-        firePropertyStateChange(ps);
     }
 
 }
