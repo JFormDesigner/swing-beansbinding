@@ -117,8 +117,7 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JListBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
-        super(strategy == READ_WRITE ? READ : strategy,
-              sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
+        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
         ep = (ElementsProperty<TS, JList>)getTargetProperty();
         setDetailBinding(null);
     }
