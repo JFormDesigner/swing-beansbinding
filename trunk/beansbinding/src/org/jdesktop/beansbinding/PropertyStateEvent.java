@@ -16,7 +16,7 @@ import java.util.EventObject;
  *
  * @author Shannon Hickey
  */
-public final class PropertyStateEvent extends EventObject {
+public class PropertyStateEvent extends EventObject {
 
     /**
      * Used to indicate that a particular value is unreadable.
@@ -84,7 +84,7 @@ public final class PropertyStateEvent extends EventObject {
      *
      * @return the {@code Property} whose state has changed.
      */
-    public Object getSource() {
+    public final Object getSource() {
         return super.getSource();
     }
 
@@ -93,7 +93,7 @@ public final class PropertyStateEvent extends EventObject {
      *
      * @return the {@code Property} whose state has changed.
      */
-    public Property getSourceProperty() {
+    public final Property getSourceProperty() {
         return (Property)getSource();
     }
 
@@ -102,7 +102,7 @@ public final class PropertyStateEvent extends EventObject {
      *
      * @return the source object for which the {@code Property's} state has changed
      */
-    public Object getSourceObject() {
+    public final Object getSourceObject() {
         return sourceObject;
     }
 
@@ -111,7 +111,7 @@ public final class PropertyStateEvent extends EventObject {
      *
      * @return whether or not the {@code Property's} value has changed for the source object.
      */
-    public boolean getValueChanged() {
+    public final boolean getValueChanged() {
         return valueChanged;
     }
 
@@ -127,7 +127,7 @@ public final class PropertyStateEvent extends EventObject {
      *         or {@code UNREADABLE}
      * @throws UnsupportedOperationException if the value hasn't changed
      */
-    public Object getOldValue() {
+    public final Object getOldValue() {
         if (!valueChanged) {
             throw new UnsupportedOperationException("value hasn't changed");
         }
@@ -147,7 +147,7 @@ public final class PropertyStateEvent extends EventObject {
      *         or {@code UNREADABLE}
      * @throws UnsupportedOperationException if the value hasn't changed
      */
-    public Object getNewValue() {
+    public final Object getNewValue() {
         if (!valueChanged) {
             throw new UnsupportedOperationException("value hasn't changed");
         }
@@ -164,7 +164,7 @@ public final class PropertyStateEvent extends EventObject {
      * @return whether or not the {@code Property's} readability has changed for
      * the source object.
      */
-    public boolean getReadableChanged() {
+    public final boolean getReadableChanged() {
         return valueChanged && oldValue != newValue && (oldValue == UNREADABLE || newValue == UNREADABLE);
     }
 
@@ -180,7 +180,7 @@ public final class PropertyStateEvent extends EventObject {
      * the source object.
      * @throws UnsupportedOperationException if the readability hasn't changed
      */
-    public boolean isReadable() {
+    public final boolean isReadable() {
         if (!getReadableChanged()) {
             throw new UnsupportedOperationException("readability hasn't changed");
         }
@@ -195,7 +195,7 @@ public final class PropertyStateEvent extends EventObject {
      * @return whether or not the {@code Property's} writeability has changed for
      * the source object.
      */
-    public boolean getWriteableChanged() {
+    public final boolean getWriteableChanged() {
         return writeableChanged;
     }
 
@@ -210,7 +210,7 @@ public final class PropertyStateEvent extends EventObject {
      * the source object.
      * @throws UnsupportedOperationException if the writeability hasn't changed
      */
-    public boolean isWriteable() {
+    public final boolean isWriteable() {
         if (!writeableChanged) {
             throw new UnsupportedOperationException("writeability hasn't changed");
         }
