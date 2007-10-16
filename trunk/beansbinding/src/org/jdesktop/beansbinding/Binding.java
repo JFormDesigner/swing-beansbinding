@@ -891,9 +891,9 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected abstract void bindImpl();
 
     /**
-     * Unbinds this binding. Calls {@link #unbindImpl} to allow subclasses
-     * to uninitiate binding, removes the {@code PropertyStateListeners}
-     * added by {@code bind}, notifies all registered {@code BindingListeners}
+     * Unbinds this binding. Removes the {@code PropertyStateListeners}
+     * added by {@code bind}, calls {@link #unbindImpl} to allow subclasses
+     * to uninitiate binding, notifies all registered {@code BindingListeners}
      * that the binding has become unbound, and fires a property change
      * notification to indicate a change to the {@code "bound"} property.
      *
@@ -920,11 +920,11 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected final void unbindUnmanaged() {
         throwIfUnbound();
 
-        unbindImpl();
-
         sourceProperty.removePropertyStateListener(sourceObject, psl);
         targetProperty.removePropertyStateListener(targetObject, psl);
         psl = null;
+
+        unbindImpl();
 
         isBound = false;
         hasEditedSource = false;
