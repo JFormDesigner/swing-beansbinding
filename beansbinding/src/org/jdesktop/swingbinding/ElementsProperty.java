@@ -16,29 +16,17 @@ import org.jdesktop.beansbinding.PropertyStateListener;
 /**
  * @author Shannon Hickey
  */
-class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List> implements PropertyStateListener {
+class ElementsProperty<TS> extends PropertyHelper<TS, List> {
 
-    private Property targetProperty;
+    private boolean accessible;
     private List list;
-    private Binding binding;
 
-    public ElementsProperty(Property targetProperty) {
+    ElementsProperty() {
         super(true);
-
-        if (targetProperty == null) {
-            throw new IllegalArgumentException("can't have null target property");
-        }
-
-        this.targetProperty = targetProperty;
-    }
-
-    public T getComponent() {
-        assert isReadable(null);
-        return (T)targetProperty.getValue(binding.getTargetObject());
     }
 
     public Class<List> getWriteType(TS source) {
-        if (!isWriteable(source)) {
+        if (!accessible) {
             throw new UnsupportedOperationException("Unwriteable");
         }
 
@@ -46,7 +34,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
     }
 
     public List getValue(TS source) {
-        if (!isReadable(source)) {
+        if (!accessible) {
             throw new UnsupportedOperationException("Unreadable");
         }
 
@@ -54,7 +42,7 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
     }
 
     public void setValue(TS source, List list) {
-        if (!isWriteable(source)) {
+        if (!accessible) {
             throw new UnsupportedOperationException("Unwriteable");
         }
 
@@ -70,76 +58,39 @@ class ElementsProperty<TS, T extends JComponent> extends PropertyHelper<TS, List
     }
 
     public boolean isReadable(TS source) {
-        return binding != null &&
-               targetProperty.isReadable(binding.getTargetObject()) &&
-               targetProperty.getValue(binding.getTargetObject()) != null;
+        return accessible;
     }
 
     public boolean isWriteable(TS source) {
-        return isReadable(source);
+        return accessible;
     }
 
     public String toString() {
         return "elements";
     }
 
-    private static boolean isReadableSourceValue(Object value) {
-        return value != null && value != PropertyStateEvent.UNREADABLE;
-    }
-
-    void installBinding(Binding binding) {
-        assert this.binding == null;
-
-        this.binding = binding;
-        targetProperty.addPropertyStateListener(binding.getTargetObject(), this);
-
-        if (isReadable(null)) {
-            PropertyStateEvent pse = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
-            firePropertyStateChange(pse);
-        }
-    }
-
-    void uninstallBinding() {
-        assert this.binding != null;
-
-        boolean wasReadable = isReadable(null);
-
-        targetProperty.removePropertyStateListener(binding.getTargetObject(), this);
-        this.binding = null;
-        List old = list;
-        this.list = null;
-
-        if (wasReadable) {
-            PropertyStateEvent pse = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
-            firePropertyStateChange(pse);
-        }
-    }
-
-    public void propertyStateChanged(PropertyStateEvent pse) {
-        if (!pse.getValueChanged()) {
+    void setAccessible(boolean accessible) {
+        if (this.accessible == accessible) {
             return;
         }
 
-        boolean wasReadableSource = isReadableSourceValue(pse.getOldValue());
-        boolean isReadableSource = isReadableSourceValue(pse.getNewValue());
-        Object old = this.list;
-        this.list = null;
+        this.accessible = accessible;
 
-        PropertyStateEvent ps = null;
+        PropertyStateEvent pse;
 
-        if (wasReadableSource) {
-            if (isReadableSource) {
-                ps = new PropertyStateEvent(this, null, true, old, null, false, true);
-            } else {
-                ps = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
-            }
-        } else if (isReadableSource) {
-            ps = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
+        if (accessible) {
+            pse = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
+        } else {
+            Object old = list;
+            list = null;
+            pse = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
         }
 
-        if (ps != null) {
-            firePropertyStateChange(ps);
-        }
+        firePropertyStateChange(pse);
+    }
+
+    boolean isAccessible() {
+        return accessible;
     }
 
 }
