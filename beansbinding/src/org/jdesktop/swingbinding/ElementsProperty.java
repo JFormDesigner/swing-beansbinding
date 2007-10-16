@@ -18,6 +18,50 @@ import org.jdesktop.beansbinding.PropertyStateListener;
  */
 class ElementsProperty<TS> extends PropertyHelper<TS, List> {
 
+    class ElementsPropertyStateEvent extends PropertyStateEvent {
+        private boolean ignore;
+
+        public ElementsPropertyStateEvent(Property sourceProperty,
+                                          Object sourceObject,
+                                          boolean valueChanged,
+                                          Object oldValue,
+                                          Object newValue,
+                                          boolean writeableChanged,
+                                          boolean isWriteable) {
+            this(sourceProperty,
+                 sourceObject,
+                 valueChanged,
+                 oldValue,
+                 newValue,
+                 writeableChanged,
+                 isWriteable,
+                 false);
+        }
+
+        public ElementsPropertyStateEvent(Property sourceProperty,
+                                          Object sourceObject,
+                                          boolean valueChanged,
+                                          Object oldValue,
+                                          Object newValue,
+                                          boolean writeableChanged,
+                                          boolean isWriteable,
+                                          boolean ignore) {
+            super(sourceProperty,
+                 sourceObject,
+                 valueChanged,
+                 oldValue,
+                 newValue,
+                 writeableChanged,
+                 isWriteable);
+            
+            this.ignore = ignore;
+        }
+        
+        boolean shouldIgnore() {
+            return ignore;
+        }
+    }
+
     private boolean accessible;
     private List list;
 
@@ -41,7 +85,7 @@ class ElementsProperty<TS> extends PropertyHelper<TS, List> {
         return list;
     }
 
-    public void setValue(TS source, List list) {
+    private void setValue0(TS source, List list, boolean ignore) {
         if (!accessible) {
             throw new UnsupportedOperationException("Unwriteable");
         }
@@ -53,8 +97,17 @@ class ElementsProperty<TS> extends PropertyHelper<TS, List> {
         List old = this.list;
         this.list = list;
 
-        PropertyStateEvent pse = new PropertyStateEvent(this, null, true, old, list, false, true);
+        PropertyStateEvent pse = new ElementsPropertyStateEvent(this, null, true, old, list, false, true, ignore);
         firePropertyStateChange(pse);
+    }
+
+    
+    public void setValue(TS source, List list) {
+        setValue0(source, list, false);
+    }
+
+    void setValueAndIgnore(TS source, List list) {
+        setValue0(source, list, true);
     }
 
     public boolean isReadable(TS source) {
@@ -79,11 +132,11 @@ class ElementsProperty<TS> extends PropertyHelper<TS, List> {
         PropertyStateEvent pse;
 
         if (accessible) {
-            pse = new PropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true);
+            pse = new ElementsPropertyStateEvent(this, null, true, PropertyStateEvent.UNREADABLE, null, true, true, true);
         } else {
             Object old = list;
             list = null;
-            pse = new PropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false);
+            pse = new ElementsPropertyStateEvent(this, null, true, old, PropertyStateEvent.UNREADABLE, true, false, true);
         }
 
         firePropertyStateChange(pse);
