@@ -35,7 +35,7 @@ public abstract class ListBindingManager implements ObservableListListener {
 
     protected abstract AbstractColumnBinding[] getColBindings();
 
-    public void setElements(List<?> elements) {
+    public void setElements(List<?> elements, boolean sendAllChanged) {
         if (this.elements != null) {
             if (this.elements instanceof ObservableList) {
                 ((ObservableList)this.elements).removeObservableListListener(this);
@@ -73,7 +73,9 @@ public abstract class ListBindingManager implements ObservableListListener {
             }
         }
 
-        allChanged();
+        if (sendAllChanged) {
+            allChanged();
+        }
     }
     
     public final Object getElement(int index) {
