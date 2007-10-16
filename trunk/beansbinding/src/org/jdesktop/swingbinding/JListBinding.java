@@ -99,10 +99,11 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  */
 public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, List> {
 
-    private ElementsProperty<TS, JList> ep;
+    private Property<TS, ? extends JList> listP;
+    private ElementsProperty<TS> elementsP;
     private Handler handler = new Handler();
-    private BindingListModel model;
     private JList list;
+    private BindingListModel model;
     private DetailBinding detailBinding;
 
     /**
@@ -117,27 +118,51 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JListBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
-        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JList>(targetJListProperty), name);
-        ep = (ElementsProperty<TS, JList>)getTargetProperty();
+        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS>(), name);
+
+        if (targetJListProperty == null) {
+            throw new IllegalArgumentException("target targetJListProperty property can't be null");
+        }
+
+        listP = targetJListProperty;
+        elementsP = (ElementsProperty<TS>)getTargetProperty();
         setDetailBinding(null);
     }
 
     protected void bindImpl() {
-        model = new BindingListModel();
-        // order is important for the next two lines
-        ep.addPropertyStateListener(null, handler);
-        ep.installBinding(this);
+        elementsP.setAccessible(isListAccessible());
+        listP.addPropertyStateListener(getTargetObject(), handler);
+        elementsP.addPropertyStateListener(null, handler);
         super.bindImpl();
     }
 
     protected void unbindImpl() {
-        // order is important for the next two lines
-        ep.uninstallBinding();
-        ep.removePropertyStateListener(null, handler);
-        model = null;
+        elementsP.removePropertyStateListener(null, handler);
+        listP.removePropertyStateListener(getTargetObject(), handler);
+        elementsP.setAccessible(false);
+        cleanupForLast();
         super.unbindImpl();
     }
 
+    private boolean isListAccessible() {
+        return listP.isReadable(getTargetObject()) && listP.getValue(getTargetObject()) != null;
+    }
+
+    private boolean isListAccessible(Object value) {
+        return value != null && value != PropertyStateEvent.UNREADABLE;
+    }
+
+    private void cleanupForLast() {
+        if (list == null) {
+            return;
+        }
+
+        list.setModel(new DefaultListModel());
+        list = null;
+        model.setElements(null, true);
+        model = null;
+    }
+    
     /**
      * Creates a {@code DetailBinding} and sets it as the {@code DetailBinding}
      * for this {@code JListBinding}. A {@code DetailBinding} specifies the property
@@ -254,16 +279,29 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
                 return;
             }
 
-            Object newValue = pse.getNewValue();
+            if (pse.getSourceProperty() == listP) {
+                cleanupForLast();
+                
+                boolean wasAccessible = isListAccessible(pse.getOldValue());
+                boolean isAccessible = isListAccessible(pse.getNewValue());
 
-            if (newValue == PropertyStateEvent.UNREADABLE) {
-                list.setModel(new DefaultListModel());
-                list = null;
-                model.setElements(null);
+                if (wasAccessible != isAccessible) {
+                    elementsP.setAccessible(isAccessible);
+                } else if (elementsP.isAccessible()) {
+                    elementsP.setValueAndIgnore(null, null);
+                }
             } else {
-                list = ep.getComponent();
-                model.setElements((List<E>)newValue);
-                list.setModel(model);
+                if (((ElementsProperty.ElementsPropertyStateEvent)pse).shouldIgnore()) {
+                    return;
+                }
+
+                if (list == null) {
+                    list = listP.getValue(getTargetObject());
+                    model = new BindingListModel();
+                    list.setModel(model);
+                }
+
+                model.setElements((List)pse.getNewValue(), true);
             }
         }
     }
