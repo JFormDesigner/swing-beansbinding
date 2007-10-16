@@ -85,8 +85,8 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     private Property<TS, ? extends JComboBox> comboP;
     private ElementsProperty<TS> elementsP;
     private Handler handler = new Handler();
-    private BindingComboBoxModel model;
     private JComboBox combo;
+    private BindingComboBoxModel model;
 
     /**
      * Constructs an instance of {@code JComboBoxBinding}.
@@ -111,16 +111,17 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     }
 
     protected void bindImpl() {
-        model = new BindingComboBoxModel();
         elementsP.setAccessible(isComboAccessible());
         comboP.addPropertyStateListener(getTargetObject(), handler);
+        elementsP.addPropertyStateListener(null, handler);
         super.bindImpl();
     }
 
     protected void unbindImpl() {
-        model = null;
-        elementsP.setAccessible(false);
+        elementsP.removePropertyStateListener(null, handler);
         comboP.removePropertyStateListener(getTargetObject(), handler);
+        elementsP.setAccessible(false);
+        cleanupForLast();
         super.unbindImpl();
     }
 
@@ -131,43 +132,50 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
     private boolean isComboAccessible(Object value) {
         return value != null && value != PropertyStateEvent.UNREADABLE;
     }
-    
+
+    private void cleanupForLast() {
+        if (combo == null) {
+            return;
+        }
+
+        combo.setModel(new DefaultComboBoxModel());
+        combo = null;
+        model.updateElements(null, combo.isEditable());
+        model = null;
+    }
+
     private class Handler implements PropertyStateListener {
         public void propertyStateChanged(PropertyStateEvent pse) {
             if (!pse.getValueChanged()) {
                 return;
             }
 
-            boolean wasAccessible = isComboAccessible(pse.getOldValue());
-            boolean isAccessible = isComboAccessible(pse.getNewValue());
+            if (pse.getSourceProperty() == comboP) {
+                cleanupForLast();
+                
+                boolean wasAccessible = isComboAccessible(pse.getOldValue());
+                boolean isAccessible = isComboAccessible(pse.getNewValue());
 
-            if (wasAccessible != isAccessible) {
-                elementsP.setAccessible(isAccessible);
-            } else if (elementsP.isAccessible()) {
-                elementsP.setValue(null, null);
+                if (wasAccessible != isAccessible) {
+                    elementsP.setAccessible(isAccessible);
+                } else if (elementsP.isAccessible()) {
+                    elementsP.setValueAndIgnore(null, null);
+                }
+            } else {
+                if (((ElementsProperty.ElementsPropertyStateEvent)pse).shouldIgnore()) {
+                    return;
+                }
+
+                if (combo == null) {
+                    combo = comboP.getValue(getTargetObject());
+                    model = new BindingComboBoxModel();
+                    combo.setModel(model);
+                }
+
+                model.updateElements((List)pse.getNewValue(), combo.isEditable());
             }
         }
     }
-    
-/*    private class Handler implements PropertyStateListener {
-        public void propertyStateChanged(PropertyStateEvent pse) {
-            if (!pse.getValueChanged()) {
-                return;
-            }
-            
-            Object newValue = pse.getNewValue();
-            
-            if (newValue == PropertyStateEvent.UNREADABLE) {
-                combo.setModel(new DefaultComboBoxModel());
-                combo = null;
-                model.setElements(null);
-            } else {
-                combo = ep.getComponent();
-                model.setElements((List<E>)newValue);
-                combo.setModel(model);
-            }
-        }
-    }*/
 
     private final class BindingComboBoxModel extends ListBindingManager implements ComboBoxModel  {
         private final List<ListDataListener> listeners;
@@ -178,9 +186,14 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             listeners = new CopyOnWriteArrayList<ListDataListener>();
         }
 
-        public void setElements(List<?> elements) {
-            super.setElements(elements);
+        public void updateElements(List<?> elements, boolean isEditable) {
+            setElements(elements, false);
 
+            if (!isEditable || selectedModelIndex != -1) {
+                selectedItem = null;
+                selectedModelIndex = -1;
+            }
+            
             if (size() <= 0) {
                 if (selectedModelIndex != -1) {
                     selectedModelIndex = -1;
@@ -192,6 +205,8 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
                     selectedItem = getElementAt(selectedModelIndex);
                 }
             }
+
+            allChanged();
         }
 
         protected AbstractColumnBinding[] getColBindings() {
