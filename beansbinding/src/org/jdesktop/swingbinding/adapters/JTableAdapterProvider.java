@@ -63,14 +63,12 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
             handler = new Handler();
             cachedElementOrElements = isPlural() ?
                 getSelectedElements() : JTableAdapterProvider.getSelectedElement(table);
-            table.addPropertyChangeListener("model", handler);
             table.addPropertyChangeListener("selectionModel", handler);
             table.getSelectionModel().addListSelectionListener(handler);
         }
         
         protected void listeningStopped() {
             table.getSelectionModel().removeListSelectionListener(handler);
-            table.removePropertyChangeListener("model", handler);
             table.removePropertyChangeListener("selectionModel", handler);
             cachedElementOrElements = null;
             handler = null;
@@ -94,15 +92,8 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
             }
             
             public void propertyChange(PropertyChangeEvent pce) {
-                String propertyName = pce.getPropertyName();
-
-                if (propertyName == "selectionModel") {
-                    ((ListSelectionModel)pce.getOldValue()).removeListSelectionListener(handler);
-                    ((ListSelectionModel)pce.getOldValue()).addListSelectionListener(handler);
-                    tableSelectionChanged();
-                } else if (propertyName == "model") {
-                    tableSelectionChanged();
-                }
+                ((ListSelectionModel)pce.getOldValue()).removeListSelectionListener(handler);
+                ((ListSelectionModel)pce.getOldValue()).addListSelectionListener(handler);
             }
         }
     }

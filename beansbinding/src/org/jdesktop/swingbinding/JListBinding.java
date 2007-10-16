@@ -118,10 +118,11 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JListBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JList> targetJListProperty, String name) {
-        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS>(), name);
+        super(strategy == READ_WRITE ? READ : strategy,
+              sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS>(), name);
 
         if (targetJListProperty == null) {
-            throw new IllegalArgumentException("target targetJListProperty property can't be null");
+            throw new IllegalArgumentException("target JList property can't be null");
         }
 
         listP = targetJListProperty;
@@ -157,6 +158,7 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
             return;
         }
 
+        resetListSelection();
         list.setModel(new DefaultListModel());
         list = null;
         model.setElements(null, true);
@@ -301,11 +303,22 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
                     list.setModel(model);
                 }
 
+                resetListSelection();
+
                 model.setElements((List)pse.getNewValue(), true);
             }
         }
     }
 
+    private void resetListSelection() {
+        ListSelectionModel selectionModel = list.getSelectionModel();
+        selectionModel.setValueIsAdjusting(true);
+        selectionModel.clearSelection();
+        selectionModel.setAnchorSelectionIndex(-1);
+        selectionModel.setLeadSelectionIndex(-1);
+        selectionModel.setValueIsAdjusting(false);
+    }
+    
     private final class BindingListModel extends ListBindingManager implements ListModel  {
         private final List<ListDataListener> listeners;
 

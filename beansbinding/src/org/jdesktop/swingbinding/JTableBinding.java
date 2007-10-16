@@ -121,10 +121,11 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  */
 public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, List> {
 
-    private ElementsProperty<TS, JTable> ep;
+    private Property<TS, ? extends JTable> tableP;
+    private ElementsProperty<TS> elementsP;
     private Handler handler = new Handler();
-    private BindingTableModel model;
     private JTable table;
+    private BindingTableModel model;
     private boolean editable = true;
     private List<ColumnBinding> columnBindings = new ArrayList<ColumnBinding>();
 
@@ -140,24 +141,49 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JTableBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JTable> targetJTableProperty, String name) {
-        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JTable>(targetJTableProperty), name);
-        ep = (ElementsProperty<TS, JTable>)getTargetProperty();
+        super(strategy == READ_WRITE ? READ : strategy,
+              sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS>(), name);
+
+        if (targetJTableProperty == null) {
+            throw new IllegalArgumentException("target JTable property can't be null");
+        }
+
+        tableP = targetJTableProperty;
+        elementsP = (ElementsProperty<TS>)getTargetProperty();
     }
 
     protected void bindImpl() {
-        model = new BindingTableModel();
-        // order is important for the next two lines
-        ep.addPropertyStateListener(null, handler);
-        ep.installBinding(this);
+        elementsP.setAccessible(isTableAccessible());
+        tableP.addPropertyStateListener(getTargetObject(), handler);
+        elementsP.addPropertyStateListener(null, handler);
         super.bindImpl();
     }
 
     protected void unbindImpl() {
-        // order is important for the next two lines
-        ep.uninstallBinding();
-        ep.removePropertyStateListener(null, handler);
-        model = null;
+        elementsP.removePropertyStateListener(null, handler);
+        tableP.removePropertyStateListener(getTargetObject(), handler);
+        elementsP.setAccessible(false);
+        cleanupForLast();
         super.unbindImpl();
+    }
+
+    private boolean isTableAccessible() {
+        return tableP.isReadable(getTargetObject()) && tableP.getValue(getTargetObject()) != null;
+    }
+
+    private boolean isTableAccessible(Object value) {
+        return value != null && value != PropertyStateEvent.UNREADABLE;
+    }
+
+    private void cleanupForLast() {
+        if (table == null) {
+            return;
+        }
+
+        table.setModel(new DefaultTableModel());
+        table = null;
+        model.setElements(null, true);
+        model = null;
     }
     
     /**
@@ -555,16 +581,29 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
                 return;
             }
 
-            Object newValue = pse.getNewValue();
+            if (pse.getSourceProperty() == tableP) {
+                cleanupForLast();
+                
+                boolean wasAccessible = isTableAccessible(pse.getOldValue());
+                boolean isAccessible = isTableAccessible(pse.getNewValue());
 
-            if (newValue == PropertyStateEvent.UNREADABLE) {
-                table.setModel(new DefaultTableModel());
-                table = null;
-                model.setElements(null);
+                if (wasAccessible != isAccessible) {
+                    elementsP.setAccessible(isAccessible);
+                } else if (elementsP.isAccessible()) {
+                    elementsP.setValueAndIgnore(null, null);
+                }
             } else {
-                table = ep.getComponent();
-                model.setElements((List<E>)newValue);
-                table.setModel(model);
+                if (((ElementsProperty.ElementsPropertyStateEvent)pse).shouldIgnore()) {
+                    return;
+                }
+
+                if (table == null) {
+                    table = tableP.getValue(getTargetObject());
+                    model = new BindingTableModel();
+                    table.setModel(model);
+                }
+
+                model.setElements((List)pse.getNewValue(), true);
             }
         }
     }
