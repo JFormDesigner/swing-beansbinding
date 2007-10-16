@@ -81,12 +81,13 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * @author Shannon Hickey
  */
 public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, List> {
-    
-    private ElementsProperty<TS, JComboBox> ep;
+
+    private Property<TS, ? extends JComboBox> comboP;
+    private ElementsProperty<TS> elementsP;
     private Handler handler = new Handler();
     private BindingComboBoxModel model;
     private JComboBox combo;
-    
+
     /**
      * Constructs an instance of {@code JComboBoxBinding}.
      *
@@ -99,25 +100,56 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JComboBoxBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty, String name) {
-        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS, JComboBox>(targetJComboBoxProperty), name);
-        ep = (ElementsProperty<TS, JComboBox>)getTargetProperty();
+        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS>(), name);
+
+        if (targetJComboBoxProperty == null) {
+            throw new IllegalArgumentException("target JComboBox property can't be null");
+        }
+
+        comboP = targetJComboBoxProperty;
+        elementsP = (ElementsProperty<TS>)getTargetProperty();
     }
-    
+
     protected void bindImpl() {
         model = new BindingComboBoxModel();
-        ep.addPropertyStateListener(null, handler);
-        ep.installBinding(this);
+        elementsP.setAccessible(isComboAccessible());
+        comboP.addPropertyStateListener(getTargetObject(), handler);
         super.bindImpl();
     }
-    
+
     protected void unbindImpl() {
-        ep.uninstallBinding();
-        ep.removePropertyStateListener(null, handler);
         model = null;
+        elementsP.setAccessible(false);
+        comboP.removePropertyStateListener(getTargetObject(), handler);
         super.unbindImpl();
+    }
+
+    private boolean isComboAccessible() {
+        return comboP.isReadable(getTargetObject()) && comboP.getValue(getTargetObject()) != null;
+    }
+
+    private boolean isComboAccessible(Object value) {
+        return value != null && value != PropertyStateEvent.UNREADABLE;
     }
     
     private class Handler implements PropertyStateListener {
+        public void propertyStateChanged(PropertyStateEvent pse) {
+            if (!pse.getValueChanged()) {
+                return;
+            }
+
+            boolean wasAccessible = isComboAccessible(pse.getOldValue());
+            boolean isAccessible = isComboAccessible(pse.getNewValue());
+
+            if (wasAccessible != isAccessible) {
+                elementsP.setAccessible(isAccessible);
+            } else if (elementsP.isAccessible()) {
+                elementsP.setValue(null, null);
+            }
+        }
+    }
+    
+/*    private class Handler implements PropertyStateListener {
         public void propertyStateChanged(PropertyStateEvent pse) {
             if (!pse.getValueChanged()) {
                 return;
@@ -135,7 +167,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
                 combo.setModel(model);
             }
         }
-    }
+    }*/
 
     private final class BindingComboBoxModel extends ListBindingManager implements ComboBoxModel  {
         private final List<ListDataListener> listeners;
