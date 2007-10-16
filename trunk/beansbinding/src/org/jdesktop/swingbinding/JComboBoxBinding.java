@@ -100,7 +100,8 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
      * @throws IllegalArgumentException if the source property or target property is {@code null}
      */
     protected JComboBoxBinding(UpdateStrategy strategy, SS sourceObject, Property<SS, List<E>> sourceListProperty, TS targetObject, Property<TS, ? extends JComboBox> targetJComboBoxProperty, String name) {
-        super(strategy, sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS>(), name);
+        super(strategy == READ_WRITE ? READ : strategy,
+              sourceObject, sourceListProperty, targetObject, new ElementsProperty<TS>(), name);
 
         if (targetJComboBoxProperty == null) {
             throw new IllegalArgumentException("target JComboBox property can't be null");
@@ -139,8 +140,8 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
         }
 
         combo.setModel(new DefaultComboBoxModel());
-        combo = null;
         model.updateElements(null, combo.isEditable());
+        combo = null;
         model = null;
     }
 

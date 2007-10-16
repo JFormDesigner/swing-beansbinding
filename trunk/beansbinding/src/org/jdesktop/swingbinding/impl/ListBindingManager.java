@@ -23,6 +23,10 @@ public abstract class ListBindingManager implements ObservableListListener {
     private List<?> elements;
     private List<ColumnDescriptionManager> managers;
 
+    public ListBindingManager() {
+        bindings = getColBindings();
+    }
+
     private List<ColumnDescriptionManager> createManagers(AbstractColumnBinding[] bindings) {
         List<ColumnDescriptionManager> managers = new ArrayList<ColumnDescriptionManager>(bindings.length);
 
@@ -61,7 +65,6 @@ public abstract class ListBindingManager implements ObservableListListener {
             addListeners = true;
         }
 
-        bindings = getColBindings();
         if (bindings.length != 0) {
             reusableBinding = new ReusableColumnBinding(bindings[0]);
         }
