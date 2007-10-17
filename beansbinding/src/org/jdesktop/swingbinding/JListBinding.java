@@ -299,11 +299,12 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
 
                 if (list == null) {
                     list = listP.getValue(getTargetObject());
+                    resetListSelection();
                     model = new BindingListModel();
                     list.setModel(model);
+                } else {
+                    resetListSelection();
                 }
-
-                resetListSelection();
 
                 model.setElements((List)pse.getNewValue(), true);
             }
