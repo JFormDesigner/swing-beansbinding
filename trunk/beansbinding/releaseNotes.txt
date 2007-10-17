@@ -1,5 +1,38 @@
 Release notes for Beans Binding (http://beansbinding.dev.java.net)
 
+1.1 Release (2007/10/17)
+--------------------------
+This release provides a major performance improvement over version 1.0,
+a small set of bug fixes, and the addition of support for binding to JSpinner's
+value property.
+
+An extreme difference in performance can be seen with BeanProperty and
+ELProperty in this version. As these classes are central to binding, the result
+is that most things now perform MUCH faster. Consider the following simple
+testcase:
+
+    Person person = new Person(10, "John", "Smith", true, 30);
+    Property p = BeanProperty.create("firstName");
+    p.addPropertyStateListener(person, new PSL());
+    long start = System.currentTimeMillis();
+    for (int i = 0; i < 100000; i++) {
+        p.getValue(person);
+    }
+    System.out.println(System.currentTimeMillis() - start);
+
+In 1.0, this test takes approximately 13,100 milliseconds on my fast machine.
+On the contrary, this test takes approximately 8 milliseconds in 1.1!
+
+In addition to the performance improvements, the following were fixed or enhanced:
+
+- Added support for binding to a JSpinner's value property
+- JSlider's "value_IGNORE_ADJUSTING" property, which was broken in 1.0, has been fixed
+- Fixed Issue 8: Typo in removeTableModelListener
+- Fixed Issue 10: Binding does not work after updating a target value with JList/JTable/JComboBox
+- Fixed Issue 11: Setting convertor on ColumnBinding dosn't work
+- Other small tweaks and fixes
+
+
 1.0 Release (2007/09/05)
 --------------------------
 This release represents a major re-architecture of the Beans Binding API, based
