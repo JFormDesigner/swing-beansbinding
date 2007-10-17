@@ -228,6 +228,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
             return;
         }
 
+        combo.setSelectedItem(null);
         combo.setModel(new DefaultComboBoxModel());
         model.updateElements(null, combo.isEditable());
         combo = null;
@@ -258,6 +259,7 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
 
                 if (combo == null) {
                     combo = comboP.getValue(getTargetObject());
+                    combo.setSelectedItem(null);
                     model = new BindingComboBoxModel();
                     combo.setModel(model);
                 }
