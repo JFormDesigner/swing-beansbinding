@@ -39,7 +39,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  *    JListBinding lb = SwingBindings.createJListBinding(READ, people, jList);
  *
  *    // define the property to be used to derive list elements
- *    ELProperty fullNameP = ELProperty.create("${fistName} ${lastName}");
+ *    ELProperty fullNameP = ELProperty.create("${firstName} ${lastName}");
  *
  *    // add the detail binding
  *    lb.setDetailBinding(fullNameP);
