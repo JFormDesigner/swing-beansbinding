@@ -25,63 +25,13 @@ import java.awt.FocusTraversalPolicy;
 import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
 
 /**
- * Binds a {@code List} of objects to act as the elements of a {@code JTable}.
+ * Binds a {@code List} of objects to act as the rows of a {@code JTable}.
  * Each object in the source {@code List} represents one row in the {@code JTable}.
  * Mappings from properties of the source objects to columns are created by
  * adding {@link org.jdesktop.swingbinding.JTableBinding.ColumnBinding ColumnBindings}
- * to this {@code JTableBinding}.
- * <p>
- * If the {@code List} is an instance of {@code ObservableList}, then changes
- * to the {@code List} are reflected in the {@code JTable}. {@code JTableBinding}
- * also listens to the properties specified for {@code ColumnBindings}, for all rows,
- * and updates its display values in response to change.
- * <p>
- * Instances of {@code JTableBinding} are obtained by calling one of the
- * {@code createJTableBinding} methods in the {@code SwingBindings} class. There
- * are methods for creating a {@code JTableBinding} using direct references to a
- * {@code List} and/or {@code JTable} and methods for creating a {@code JTableBinding} by
- * providing the {@code List} and/or {@code JTable} as {@code Property} instances
- * that derive the {@code List} and/or {@code JTable} from binding's the source/target objects.
- * <p>
- * {@code JTableBinding} works by installing a custom model on the target {@code JTable},
- * at bind time if the {@code JTable} property is readable, or whenever it becomes
- * readable after binding. This model is uninstalled when the property becomes unreadable
- * or the binding is unbound. It is also uninstalled, and installed on the replacement,
- * when the value of the {@code JTable} property changes. When the model is uninstalled from a
- * {@code JTable}, the {@code JTable's} model is replaced with an empty {@code DefaultTableModel}
- * so that it is left functional.
- * <p>
- * This class is a subclass of {@code AutoBinding}. The update strategy dictates how
- * the binding applies the value of the source {@code List} property to the model
- * used for the {@code JTable}. At bind time, if the source {@code List} property and
- * the target {@code JTable} property are both readable, the source {@code List}
- * becomes the source of elements for the model. If the strategy is {@code READ_ONCE}
- * then there is no further automatic syncing after this point, including if the
- * target {@code JTable} property changes or becomes readable; the new {@code JTable} gets the model,
- * but no elements. If the strategy is {@code READ}, however, the {@code List} is synced
- * to the model every time the source {@code List} property changes value, or the
- * target {@code JTable} property changes value or becomes readable. For
- * {@code JTableBinding}, the {@code READ_WRITE} strategy is translated to {@code READ}
- * on construction.
- * <p>
- * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
- * column when all of the following are true: the property specified for that column
- * by its {@code ColumnBinding} is editable for the object in that row, the {@code "editable"} property
- * of the {@code JTableBinding} is {@code true} (the default), and the {@code "editable"}
- * property of the {@code ColumnBinding} is {@code true} (the default).
- * <p>
- * Note that the {@code JTable} target of a {@code JTableBinding} is acting as a view for the
- * live {@code List} of elements in the source {@code List}. As such, all successful changes made
- * to cell values are committed back immediately to the source {@code List}.
- * <p>
- * {@code ColumnBindings} are managed by the {@code JTableBinding}. They are not
- * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
- * in a way that is not allowed for a managed binding. {@code BindingListeners}
- * added to a {@code ColumnBinding} are notified at the time an edited table value
- * is to be committed back to the source {@code List}. They receive notification of either
- * {@code synced} or {@code syncFailed}. {@code BindingListeners} added to the
- * {@code JTableBinding} itself are also notified of {@code sync} and {@code syncFailed}
- * for the {@code JTableBinding's ColumnBindings}.
+ * to a {@code JTableBinding}. Instances of {@code JTableBinding} are obtained by
+ * calling one of the {@code createJTableBinding} methods in the {@code SwingBindings}
+ * class.
  * <p>
  * Here is an example of creating a binding from a {@code List} of {@code Person}
  * objects to a {@code JTable}:
@@ -106,6 +56,144 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  *    // realize the binding
  *    tb.bind();
  * </code></pre>
+ * <p>
+ * The {@code JTable} target of a {@code JTableBinding} acts as a live view of
+ * the objects in the source {@code List},
+ * regardless of the update strategy (the meaning of the update strategy is
+ * <a href="#CLARIFICATION">clarified later</a> in this document). {@code JTableBinding}
+ * listens to the properties specified for the {@code ColumnBindings}, 
+ * for all objects in the {@code List}, and updates the values
+ * displayed in the {@code JTable} in response to change. All successful
+ * edits made to {@code JTable} cell values are immediately committed back to
+ * corresponding objects in the source {@code List}. If the {@code List} is an
+ * instance of {@code ObservableList}, then changes to the {@code List} contents
+ * (such as adding, removing or replacing an object) are also reflected in the
+ * {@code JTable}. <b>Important:</b> Changing the contents of a non-observable
+ * {@code List} while it is participating in a {@code JTableBinding} is unsupported,
+ * resulting in undefined behavior and possible exceptions.
+ * <p>
+ * <a name="EDITABILITY">A cell</a> in the {@code JTable} is editable for any given row and
+ * column when all of the following are true: the property specified for that column
+ * by its {@code ColumnBinding} is writeable for the object representing that row,
+ * the {@code "editable"} property of the {@code JTableBinding} is {@code true}
+ * (the default), and the {@code "editable"} property of the {@code ColumnBinding}
+ * is {@code true} (the default).
+ * <p>
+ * <a name="CLARIFICATION">{@code JTableBinding} requires</a>
+ * extra clarification on the operation of the
+ * {@code refresh} and {@code save} methods and the meaning of the update
+ * strategy. The target property of a {@code JTableBinding} is not the
+ * target {@code JTable} property provided in the constructor, but rather a
+ * private synthetic property representing the {@code List} of objects to show
+ * in the target {@code JTable}. This synthetic property is readable/writeable
+ * only when the {@code JTableBinding} is bound and the target {@code JTable}
+ * property is readable with a {@code non-null} value.
+ * <p>
+ * It is this private synthetic property on which the {@code refresh} and
+ * {@code save} methods operate; meaning that these methods simply cause syncing
+ * between the value of the source {@code List} property and the value of the
+ * synthetic target property (representing the {@code List} to be shown in the
+ * target {@code JTable}). These methods do not, therefore, have anything to do
+ * with refreshing or saving <i>values</i> in the table. Likewise, the update
+ * strategy, which simply controls when {@code refresh} and {@code save} are
+ * automatically called, also has nothing to do with refreshing or saving
+ * <i>values</i> in the table.
+ * <p>
+ * <b>Note:</b> At the current time, the {@code READ_WRITE} update strategy
+ * is rather confusing and not useful for {@code JTableBinding}. To prevent
+ * unwanted side effects from using it, {@code READ_WRITE} is translated to
+ * {@code READ} by {@code JTableBinding's} constructor.
+ * <p>
+ * {@code JTableBinding} works by installing a custom model on the target
+ * {@code JTable}, as appropriate, to represent the source {@code List}. The
+ * model is installed on a target {@code JTable} with the first succesful call
+ * to {@code refresh} with that {@code JTable} as the target. Subsequent calls
+ * to {@code refresh} update the elements in this already-installed model.
+ * The model is uninstalled from a target {@code JTable} when either the
+ * {@code JTableBinding} is unbound or when the target {@code JTable} property
+ * changes to no longer represent that {@code JTable}. Note: When the model is
+ * uninstalled from a table, it is replaced with a {@code DefaultTableModel},
+ * in order to leave the table functional.
+ * <p>
+ * Some of the above is easier to understand with an example. Let's consider
+ * a {@code JTableBinding} ({@code binding}), with update strategy
+ * {@code READ}, between a property representing a {@code List} ({@code listP})
+ * and a property representing a {@code JTable} ({@code jTableP}). {@code listP}
+ * and {@code jTableP} both start off readable, referring to a {@code non-null}
+ * {@code List} and {@code non-null} {@code JTable} respectively. Let's look at
+ * what happens for each of a sequence of events:
+ * <p>
+ * <table border=1>
+ *   <tr><th>Sequence</th><th>Event</th><th>Result</th></tr>
+ *   <tr valign="baseline">
+ *     <td align="center">1</td>
+ *     <td>explicit call to {@code binding.bind()}</td>
+ *     <td>
+ *         - synthetic target property becomes readable/writeable
+ *         <br>
+ *         - {@code refresh()} is called
+ *         <br>
+ *         - model is installed on target {@code JTable}, representing list of objects
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center">2</td>
+ *     <td>source property changes to a new {@code List}</td>
+ *     <td>
+ *         - {@code refresh()} is called
+ *         <br>
+ *         - model is updated with new list of objects
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center"><a name="STEP3" href="#NOTICE">3</a></td>
+ *     <td>target {@code JTable} property changes to a new {@code JTable}</td>
+ *     <td>
+ *         - model is uninstalled from old {@code JTable}
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center">4</td>
+ *     <td>explicit call to {@code binding.refresh()}</td>
+ *     <td>
+ *         - model is installed on target {@code JTable}, representing list of objects
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center">5</td>
+ *     <td>source property changes to a new {@code List}</td>
+ *     <td>
+ *         - {@code refresh()} is called
+ *         <br>
+ *         - model is updated with new list of objects
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center">6</td>
+ *     <td>explicit call to {@code binding.unbind()}</td>
+ *     <td>
+ *         - model is uninstalled from target {@code JTable}
+ *     </td>
+ *   </tr>
+ * </table>
+ * <p>
+ * <a name="NOTICE">Notice</a> that in <a href="#STEP3">step 3</a>, when the value
+ * of the {@code JTable} property changed, the new {@code JTable} did not
+ * automatically get the model with the elements applied to it. A change to the
+ * target value should not cause an {@code AutoBinding} to sync the target from
+ * the source. Step 4 forces a sync by explicitly calling {@code refresh}.
+ * Alternatively, it could be caused by any other action that results
+ * in a {@code refresh} (for example, the source property changing value, or an
+ * explicit call to {@code unbind} followed by {@code bind}).
+ * <p>
+ * {@code ColumnBindings} are managed by the {@code JTableBinding}. They are not
+ * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
+ * in a way that is not allowed for a managed binding. {@code BindingListeners}
+ * added to a {@code ColumnBinding} are notified at the time an edited table value
+ * is to be committed back to the source {@code List}. They receive notification of either
+ * {@code synced} or {@code syncFailed}. {@code BindingListeners} added to the
+ * {@code JTableBinding} itself are also notified of {@code sync} and {@code syncFailed}
+ * for the {@code JTableBinding's ColumnBindings}.
  * <p>
  * In addition to binding the elements of a {@code JTable}, it is possible to
  * bind to the selection of a {@code JTable}. When binding to the selection of a {@code JTable}
