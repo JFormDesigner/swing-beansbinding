@@ -22,50 +22,14 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * Binds a {@code List} of objects to act as the elements of a {@code JList}.
  * Each object in the source {@code List} provides one element in the {@code JList}.
  * By setting a {@link org.jdesktop.swingbinding.JListBinding.DetailBinding DetailBinding}
- * you can specify the property to use to
- * derive each list element from its corresponding object in the source {@code List}.
- * The default {@code DetailBinding} uses the objects directly.
- * <p>
- * If the {@code List} is an instance of {@code ObservableList}, then changes
- * to the {@code List} are reflected in the {@code JList}. {@code JListBinding}
- * also listens to the property specified for any {@code DetailBinding}, for all elements,
- * and updates its display values in response to change.
- * <p>
- * Instances of {@code JListBinding} are obtained by calling one of the
- * {@code createJListBinding} methods in the {@code SwingBindings} class. There
- * are methods for creating a {@code JListBinding} using direct references to a
- * {@code List} and/or {@code JList} and methods for creating a {@code JListBinding} by
- * providing the {@code List} and/or {@code JList} as {@code Property} instances
- * that derive the {@code List}/{@code JList} from the binding's source/target objects.
- * <p>
- * {@code JListBinding} works by installing a custom model on the target {@code JList},
- * at bind time if the {@code JList} property is readable, or whenever it becomes
- * readable after binding. This model is uninstalled when the property becomes unreadable
- * or the binding is unbound. It is also uninstalled, and installed on the replacement,
- * when the value of the {@code JList} property changes. When the model is uninstalled from a
- * {@code JList}, the {@code JList's} model is replaced with an empty {@code DefaultListModel}
- * so that it is left functional.
- * <p>
- * This class is a subclass of {@code AutoBinding}. The update strategy dictates how
- * the binding applies the value of the source {@code List} property to the model
- * used for the {@code JList}. At bind time, if the source {@code List} property and
- * the target {@code JList} property are both readable, the source {@code List}
- * becomes the source of elements for the model. If the strategy is {@code READ_ONCE}
- * then there is no further automatic syncing after this point, including if the
- * target {@code JList} property changes or becomes readable; the new {@code JList} gets the model,
- * but no elements. If the strategy is {@code READ}, however, the {@code List} is synced
- * to the model every time the source {@code List} property changes value, or the
- * target {@code JList} property changes value or becomes readable. For
- * {@code JListBinding}, the {@code READ_WRITE} strategy is translated to {@code READ}
- * on construction.
- * <p>
- * {@code DetailBindings} are managed by the {@code JList}. They are not
- * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
- * in a way that is not allowed for a managed binding.
+ * you can specify the property to use to derive each list element from its
+ * corresponding object in the source {@code List}. The default {@code DetailBinding} uses
+ * the objects directly. Instances of {@code JListBinding} are obtained by
+ * calling one of the {@code createJListBinding} methods in the {@code SwingBindings}
+ * class.
  * <p>
  * Here is an example of creating a binding from a {@code List} of {@code Person}
- * objects to a {@code JList} and specifying that it should use the full
- * name of the person as the list elements:
+ * objects to a {@code JList}:
  * <p>
  * <pre><code>
  *    // create the person list
@@ -74,7 +38,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  *    // create the binding from List to JList
  *    JListBinding lb = SwingBindings.createJListBinding(READ, people, jList);
  *
- *    // define the property to be used as the items
+ *    // define the property to be used to derive list elements
  *    ELProperty fullNameP = ELProperty.create("${fistName} ${lastName}");
  *
  *    // add the detail binding
@@ -83,6 +47,130 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  *    // realize the binding
  *    lb.bind();
  * </code></pre>
+ * <p>
+ * The {@code JList} target of a {@code JListBinding} acts as a live view of
+ * the objects in the source {@code List}, regardless of the update strategy (the
+ * meaning of the update strategy is <a href="#CLARIFICATION">clarified later</a>
+ * in this document). {@code JListBinding} listens to the property specified for
+ * any {@code DetailBinding}, for all objects in the {@code List}, and updates
+ * the values displayed in the {@code JList} in response to change. If the
+ * {@code List} is an instance of {@code ObservableList}, then changes to the
+ * {@code List} contents (such as adding, removing or replacing an object) are
+ * also reflected in the {@code JList}. <b>Important:</b> Changing the contents
+ * of a non-observable {@code List} while it is participating in a
+ * {@code JListBinding} is unsupported, resulting in undefined behavior and
+ * possible exceptions.
+ * <p>
+ * <a name="CLARIFICATION">{@code JListBinding} requires</a>
+ * extra clarification on the operation of the
+ * {@code refresh} and {@code save} methods and the meaning of the update
+ * strategy. The target property of a {@code JListBinding} is not the
+ * target {@code JList} property provided in the constructor, but rather a
+ * private synthetic property representing the {@code List} of objects to show
+ * in the target {@code JList}. This synthetic property is readable/writeable
+ * only when the {@code JListBinding} is bound and the target {@code JList}
+ * property is readable with a {@code non-null} value.
+ * <p>
+ * It is this private synthetic property on which the {@code refresh} and
+ * {@code save} methods operate; meaning that these methods simply cause syncing
+ * between the value of the source {@code List} property and the value of the
+ * synthetic target property (representing the {@code List} to be shown in the
+ * target {@code JList}). These methods do not, therefore, have anything to do
+ * with refreshing <i>values</i> in the {@code JList}. Likewise, the update
+ * strategy, which simply controls when {@code refresh} and {@code save} are
+ * automatically called, also has nothing to do with refreshing <i>values</i>
+ * in the {@code JList}.
+ * <p>
+ * <b>Note:</b> At the current time, the {@code READ_WRITE} update strategy
+ * is rather confusing and not useful for {@code JListBinding}. To prevent
+ * unwanted side effects from using it, {@code READ_WRITE} is translated to
+ * {@code READ} by {@code JListBinding's} constructor.
+ * <p>
+ * {@code JListBinding} works by installing a custom model on the target
+ * {@code JList}, as appropriate, to represent the source {@code List}. The
+ * model is installed on a target {@code JList} with the first succesful call
+ * to {@code refresh} with that {@code JList} as the target. Subsequent calls
+ * to {@code refresh} update the elements in this already-installed model.
+ * The model is uninstalled from a target {@code JList} when either the
+ * {@code JListBinding} is unbound or when the target {@code JList} property
+ * changes to no longer represent that {@code JList}. Note: When the model is
+ * uninstalled from a {@code JList}, it is replaced with a {@code DefaultListModel},
+ * in order to leave the {@code JList} functional.
+ * <p>
+ * Some of the above is easier to understand with an example. Let's consider
+ * a {@code JListBinding} ({@code binding}), with update strategy
+ * {@code READ}, between a property representing a {@code List} ({@code listP})
+ * and a property representing a {@code JList} ({@code jListP}). {@code listP}
+ * and {@code jListP} both start off readable, referring to a {@code non-null}
+ * {@code List} and {@code non-null} {@code JList} respectively. Let's look at
+ * what happens for each of a sequence of events:
+ * <p>
+ * <table border=1>
+ *   <tr><th>Sequence</th><th>Event</th><th>Result</th></tr>
+ *   <tr valign="baseline">
+ *     <td align="center">1</td>
+ *     <td>explicit call to {@code binding.bind()}</td>
+ *     <td>
+ *         - synthetic target property becomes readable/writeable
+ *         <br>
+ *         - {@code refresh()} is called
+ *         <br>
+ *         - model is installed on target {@code JList}, representing list of objects
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center">2</td>
+ *     <td>{@code listP} changes to a new {@code List}</td>
+ *     <td>
+ *         - {@code refresh()} is called
+ *         <br>
+ *         - model is updated with new list of objects
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center"><a name="STEP3" href="#NOTICE">3</a></td>
+ *     <td>{@code jListP} changes to a new {@code JList}</td>
+ *     <td>
+ *         - model is uninstalled from old {@code JList}
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center">4</td>
+ *     <td>explicit call to {@code binding.refresh()}</td>
+ *     <td>
+ *         - model is installed on target {@code JList}, representing list of objects
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center">5</td>
+ *     <td>{@code listP} changes to a new {@code List}</td>
+ *     <td>
+ *         - {@code refresh()} is called
+ *         <br>
+ *         - model is updated with new list of objects
+ *     </td>
+ *   </tr>
+ *   <tr valign="baseline">
+ *     <td align="center">6</td>
+ *     <td>explicit call to {@code binding.unbind()}</td>
+ *     <td>
+ *         - model is uninstalled from target {@code JList}
+ *     </td>
+ *   </tr>
+ * </table>
+ * <p>
+ * <a name="NOTICE">Notice</a> that in <a href="#STEP3">step 3</a>, when the value
+ * of the {@code JList} property changed, the new {@code JList} did not
+ * automatically get the model with the elements applied to it. A change to the
+ * target value should not cause an {@code AutoBinding} to sync the target from
+ * the source. Step 4 forces a sync by explicitly calling {@code refresh}.
+ * Alternatively, it could be caused by any other action that results
+ * in a {@code refresh} (for example, the source property changing value, or an
+ * explicit call to {@code unbind} followed by {@code bind}).
+ * <p>
+ * {@code DetailBindings} are managed by the {@code JList}. They are not
+ * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
+ * in a way that is not allowed for a managed binding.
  * <p>
  * In addition to binding the elements of a {@code JList}, it is possible to
  * bind to the selection of a {@code JList}. When binding to the selection of a {@code JList}

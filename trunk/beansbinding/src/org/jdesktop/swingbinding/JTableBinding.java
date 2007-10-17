@@ -94,10 +94,10 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * between the value of the source {@code List} property and the value of the
  * synthetic target property (representing the {@code List} to be shown in the
  * target {@code JTable}). These methods do not, therefore, have anything to do
- * with refreshing or saving <i>values</i> in the table. Likewise, the update
+ * with refreshing or saving <i>values</i> in the {@code JTable}. Likewise, the update
  * strategy, which simply controls when {@code refresh} and {@code save} are
  * automatically called, also has nothing to do with refreshing or saving
- * <i>values</i> in the table.
+ * <i>values</i> in the {@code JTable}.
  * <p>
  * <b>Note:</b> At the current time, the {@code READ_WRITE} update strategy
  * is rather confusing and not useful for {@code JTableBinding}. To prevent
@@ -112,8 +112,8 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * The model is uninstalled from a target {@code JTable} when either the
  * {@code JTableBinding} is unbound or when the target {@code JTable} property
  * changes to no longer represent that {@code JTable}. Note: When the model is
- * uninstalled from a table, it is replaced with a {@code DefaultTableModel},
- * in order to leave the table functional.
+ * uninstalled from a {@code JTable}, it is replaced with a {@code DefaultTableModel},
+ * in order to leave the {@code JTable} functional.
  * <p>
  * Some of the above is easier to understand with an example. Let's consider
  * a {@code JTableBinding} ({@code binding}), with update strategy
@@ -138,7 +138,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  *   </tr>
  *   <tr valign="baseline">
  *     <td align="center">2</td>
- *     <td>source property changes to a new {@code List}</td>
+ *     <td>{@code listP} changes to a new {@code List}</td>
  *     <td>
  *         - {@code refresh()} is called
  *         <br>
@@ -147,7 +147,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  *   </tr>
  *   <tr valign="baseline">
  *     <td align="center"><a name="STEP3" href="#NOTICE">3</a></td>
- *     <td>target {@code JTable} property changes to a new {@code JTable}</td>
+ *     <td>{@code jTableP} changes to a new {@code JTable}</td>
  *     <td>
  *         - model is uninstalled from old {@code JTable}
  *     </td>
@@ -161,7 +161,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  *   </tr>
  *   <tr valign="baseline">
  *     <td align="center">5</td>
- *     <td>source property changes to a new {@code List}</td>
+ *     <td>{@code listP} changes to a new {@code List}</td>
  *     <td>
  *         - {@code refresh()} is called
  *         <br>
@@ -189,7 +189,7 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * {@code ColumnBindings} are managed by the {@code JTableBinding}. They are not
  * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
  * in a way that is not allowed for a managed binding. {@code BindingListeners}
- * added to a {@code ColumnBinding} are notified at the time an edited table value
+ * added to a {@code ColumnBinding} are notified at the time an edited {@code JTable} value
  * is to be committed back to the source {@code List}. They receive notification of either
  * {@code synced} or {@code syncFailed}. {@code BindingListeners} added to the
  * {@code JTableBinding} itself are also notified of {@code sync} and {@code syncFailed}
