@@ -100,9 +100,9 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * <i>values</i> in the {@code JTable}.
  * <p>
  * <b>Note:</b> At the current time, the {@code READ_WRITE} update strategy
- * is rather confusing and not useful for {@code JTableBinding}. To prevent
- * unwanted side effects from using it, {@code READ_WRITE} is translated to
- * {@code READ} by {@code JTableBinding's} constructor.
+ * is not useful for {@code JTableBinding}. To prevent unwanted confusion,
+ * {@code READ_WRITE} is translated to {@code READ} by {@code JTableBinding's}
+ * constructor.
  * <p>
  * {@code JTableBinding} works by installing a custom model on the target
  * {@code JTable}, as appropriate, to represent the source {@code List}. The
