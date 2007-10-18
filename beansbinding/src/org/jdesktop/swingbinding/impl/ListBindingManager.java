@@ -248,10 +248,12 @@ public abstract class ListBindingManager implements ObservableListListener {
         public void setBaseAndSource(AbstractColumnBinding base, Object source) {
             try {
                 setManaged(false);
-                this.setConverter(base.getConverter());
                 this.setSourceProperty(base.getSourceProperty());
                 this.setTargetProperty(base.getTargetProperty());
                 this.setSourceObject(source);
+                this.setConverter(base.getConverter());
+                this.setSourceNullValue(base.getSourceNullValue());
+                this.setSourceUnreadableValue(base.getSourceUnreadableValue());
             } finally {
                 setManaged(true);
             }
