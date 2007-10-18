@@ -7,6 +7,7 @@ This release contains one bug fix, for the following issue:
 Issue 12: sourceUnreadableValue/sourceNullValue ignored for
           JTableBinding.ColumnBinding and JListBinding.DetailBinding
 
+
 1.1 Release (2007/10/17)
 --------------------------
 This release provides a major performance improvement over version 1.0,
