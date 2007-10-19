@@ -154,10 +154,6 @@ import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
  * in a {@code refresh} (for example, the source property changing value, or an
  * explicit call to {@code unbind} followed by {@code bind}).
  * <p>
- * {@code DetailBindings} are managed by the {@code JComboBox}. They are not
- * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
- * in a way that is not allowed for a managed binding.
- * <p>
  * In addition to binding the items of a {@code JComboBox}, it is possible to
  * bind to the selected item of a {@code JComboBox}.
  * See the list of <a href="package-summary.html#SWING_PROPS">
