@@ -15,9 +15,9 @@ import java.util.ArrayList;
  * on creation, and is one of:
  * <p>
  * <ul>
- *     <li>{@code Binding.UpdateStrategy.READ_ONCE}</li>
- *     <li>{@code Binding.UpdateStrategy.READ}</li>
- *     <li>{@code Binding.UpdateStrategy.READ_WRITE}</li>
+ *     <li>{@code AutoBinding.UpdateStrategy.READ_ONCE}</li>
+ *     <li>{@code AutoBinding.UpdateStrategy.READ}</li>
+ *     <li>{@code AutoBinding.UpdateStrategy.READ_WRITE}</li>
  * </ul>
  * <p>
  * <a name="STRATEGY_BEHAVIOR">The behavior</a> of {@code AutoBinding} for each
