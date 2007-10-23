@@ -511,7 +511,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * <p>
      * See the documentation on {@link #getTargetValueForSource} and
      * {@link #getSourceValueForTarget} for details on how
-     * a {@code Binding's Covnerter} is used.
+     * a {@code Binding's Converter} is used.
      *
      * @param converter the {@code Converter}, or {@code null}
      * @throws IllegalStateException if the {@code Binding} is bound
