@@ -345,11 +345,11 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
      * value of the {@code DetailBinding's} source property for the associated object
      * in the source {@code List}.
      * <p>
-     * A {@code Converter} may be specified on a {@code ColumnBinding}. Specifying a
+     * A {@code Converter} may be specified on a {@code DetailBinding}. Specifying a
      * {@code Validator} is also possible, but doesn't make sense since {@code JList}
      * values aren't editable.
      * <p>
-     * {@code ColumnBindings} are managed by their {@code JListBinding}. They are not
+     * {@code DetailBindings} are managed by their {@code JListBinding}. They are not
      * to be explicitly bound, unbound, added to a {@code BindingGroup}, or accessed
      * in a way that is not allowed for a managed binding.
      *
