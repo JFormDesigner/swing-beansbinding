@@ -129,7 +129,7 @@ class ELUtil {
             ResourceBundle rb = null;
             if (null == (rb = (ResourceBundle)
             threadMap.get(locale.toString()))) {
-                rb = ResourceBundle.getBundle("javax.el.PrivateMessages",
+                rb = ResourceBundle.getBundle("org.jdesktop.el.PrivateMessages",
                                               locale);
                 threadMap.put(locale.toString(), rb);
             }
