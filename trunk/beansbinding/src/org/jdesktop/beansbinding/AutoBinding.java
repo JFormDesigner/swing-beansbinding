@@ -229,8 +229,6 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
                ", sourceNullValue=" + getSourceNullValue() +
                ", targetNullValue=" + getTargetNullValue() +
                ", sourceUnreadableValue=" + getSourceUnreadableValue() +
-               ", hasChangedSource=" + getHasEditedSource() +
-               ", hasChangedTarget=" + getHasEditedTarget() +
                ", bound=" + isBound() +
                ", updateStrategy=" + getUpdateStrategy();
     }
