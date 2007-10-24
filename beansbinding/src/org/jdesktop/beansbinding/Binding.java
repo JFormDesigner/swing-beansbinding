@@ -49,7 +49,6 @@ public abstract class Binding<SS, SV, TS, TV> {
     private TV sourceUnreadableValue;
     private List<BindingListener> listeners;
     private PropertyStateListener psl;
-    private boolean hasEditedTarget;
     private boolean ignoreChange;
     private boolean isManaged;
     private boolean isBound;
@@ -865,7 +864,6 @@ public abstract class Binding<SS, SV, TS, TV> {
         sourceProperty.addPropertyStateListener(sourceObject, psl);
         targetProperty.addPropertyStateListener(targetObject, psl);
 
-        hasEditedTarget = false;
         isBound = true;
 
         if (listeners != null) {
@@ -925,7 +923,6 @@ public abstract class Binding<SS, SV, TS, TV> {
         unbindImpl();
 
         isBound = false;
-        hasEditedTarget = false;
 
         if (listeners != null) {
             for (BindingListener listener : listeners) {
@@ -956,27 +953,6 @@ public abstract class Binding<SS, SV, TS, TV> {
      */
     public final boolean isBound() {
         return isBound;
-    }
-
-    /**
-     * Returns whether or not the value of the target property of this
-     * {@code Binding} has been edited for the target object since the
-     * call to {@code bind} or the last time the {@code Binding} was
-     * successfully synced (refreshed or saved).
-     * <p>
-     * {@code Binding} fires a property change notification with
-     * property name {@code "hasEditedTarget"} when the value of
-     * this property changes.
-     * <p>
-     * This method can only be called on a bound {@code Binding}.
-     *
-     * @return whether or not the target has been edited
-     * @throws IllegalStateException if the {@code Binding} is not bound
-     * @see #isBound()
-     */
-    public final boolean getHasEditedTarget() {
-        throwIfUnbound();
-        return hasEditedTarget;
     }
 
     /**
@@ -1318,7 +1294,6 @@ public abstract class Binding<SS, SV, TS, TV> {
                ", sourceNullValue=" + sourceNullValue +
                ", targetNullValue=" + targetNullValue +
                ", sourceUnreadableValue=" + sourceUnreadableValue +
-               ", hasChangedTarget=" + hasEditedTarget +
                ", bound=" + isBound();
     }
     
@@ -1372,14 +1347,6 @@ public abstract class Binding<SS, SV, TS, TV> {
      * to detect target changes and perform syncing as appropriate.
      */
     protected void targetChangedImpl(PropertyStateEvent pse) {
-    }
-
-    private void notifyTargetEdited(boolean newValue) {
-        boolean old = hasEditedTarget;
-        hasEditedTarget = newValue;
-        if (changeSupport != null) {
-            changeSupport.firePropertyChange("hasEditedTarget", old, hasEditedTarget);
-        }
     }
 
     /**
