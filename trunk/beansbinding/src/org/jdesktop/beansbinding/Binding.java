@@ -1133,8 +1133,6 @@ public abstract class Binding<SS, SV, TS, TV> {
             ignoreChange = false;
         }
 
-        notifySourceEdited(false);
-        notifyTargetEdited(false);
         return null;
     }
 
@@ -1181,8 +1179,6 @@ public abstract class Binding<SS, SV, TS, TV> {
             ignoreChange = false;
         }
 
-        notifySourceEdited(false);
-        notifyTargetEdited(false);
         return null;
     }
 
@@ -1299,8 +1295,6 @@ public abstract class Binding<SS, SV, TS, TV> {
     
     private void sourceChanged(PropertyStateEvent pse) {
         if (pse.getValueChanged()) {
-            notifySourceEdited(true);
-
             if (listeners != null) {
                 for (BindingListener listener : listeners) {
                     listener.sourceEdited(this);
@@ -1325,8 +1319,6 @@ public abstract class Binding<SS, SV, TS, TV> {
 
     private void targetChanged(PropertyStateEvent pse) {
         if (pse.getValueChanged()) {
-            notifyTargetEdited(true);
-
             if (listeners != null) {
                 for (BindingListener listener : listeners) {
                     listener.targetEdited(this);
