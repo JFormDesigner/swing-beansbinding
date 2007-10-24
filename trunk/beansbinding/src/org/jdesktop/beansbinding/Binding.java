@@ -49,7 +49,6 @@ public abstract class Binding<SS, SV, TS, TV> {
     private TV sourceUnreadableValue;
     private List<BindingListener> listeners;
     private PropertyStateListener psl;
-    private boolean hasEditedSource;
     private boolean hasEditedTarget;
     private boolean ignoreChange;
     private boolean isManaged;
@@ -866,7 +865,6 @@ public abstract class Binding<SS, SV, TS, TV> {
         sourceProperty.addPropertyStateListener(sourceObject, psl);
         targetProperty.addPropertyStateListener(targetObject, psl);
 
-        hasEditedSource = false;
         hasEditedTarget = false;
         isBound = true;
 
@@ -927,7 +925,6 @@ public abstract class Binding<SS, SV, TS, TV> {
         unbindImpl();
 
         isBound = false;
-        hasEditedSource = false;
         hasEditedTarget = false;
 
         if (listeners != null) {
@@ -959,27 +956,6 @@ public abstract class Binding<SS, SV, TS, TV> {
      */
     public final boolean isBound() {
         return isBound;
-    }
-
-    /**
-     * Returns whether or not the value of the source property of this
-     * {@code Binding} has been edited for the source object since the
-     * call to {@code bind} or the last time the {@code Binding} was
-     * successfully synced (refreshed or saved).
-     * <p>
-     * {@code Binding} fires a property change notification with
-     * property name {@code "hasEditedSource"} when the value of
-     * this property changes.
-     * <p>
-     * This method can only be called on a bound {@code Binding}.
-     *
-     * @return whether or not the source has been edited
-     * @throws IllegalStateException if the {@code Binding} is not bound
-     * @see #isBound()
-     */
-    public final boolean getHasEditedSource() {
-        throwIfUnbound();
-        return hasEditedSource;
     }
 
     /**
@@ -1342,7 +1318,6 @@ public abstract class Binding<SS, SV, TS, TV> {
                ", sourceNullValue=" + sourceNullValue +
                ", targetNullValue=" + targetNullValue +
                ", sourceUnreadableValue=" + sourceUnreadableValue +
-               ", hasChangedSource=" + hasEditedSource +
                ", hasChangedTarget=" + hasEditedTarget +
                ", bound=" + isBound();
     }
@@ -1399,14 +1374,6 @@ public abstract class Binding<SS, SV, TS, TV> {
     protected void targetChangedImpl(PropertyStateEvent pse) {
     }
 
-    private void notifySourceEdited(boolean newValue) {
-        boolean old = hasEditedSource;
-        hasEditedSource = newValue;
-        if (changeSupport != null) {
-            changeSupport.firePropertyChange("hasEditedSource", old, hasEditedSource);
-        }
-    }
-    
     private void notifyTargetEdited(boolean newValue) {
         boolean old = hasEditedTarget;
         hasEditedTarget = newValue;
@@ -1426,8 +1393,16 @@ public abstract class Binding<SS, SV, TS, TV> {
      * properties:
      * <p>
      * <ul>
-     *    <li>{@code hasEditedSource}
-     *    <li>{@code hasEditedTarget}
+     *    <li>{@code sourceProperty}
+     *    <li>{@code targetProperty}
+     *    <li>{@code sourceObject}
+     *    <li>{@code targetObject}
+     *    <li>{@code validator}
+     *    <li>{@code converter}
+     *    <li>{@code sourceNullValue}
+     *    <li>{@code targetNullValue}
+     *    <li>{@code sourceUnreadableValue}
+     *    <li>{@code bound}
      * </ul>
      * <p>
      * For other types of {@code Binding} notifications register a
@@ -1456,8 +1431,16 @@ public abstract class Binding<SS, SV, TS, TV> {
      * properties:
      * <p>
      * <ul>
-     *    <li>{@code hasEditedSource}
-     *    <li>{@code hasEditedTarget}
+     *    <li>{@code sourceProperty}
+     *    <li>{@code targetProperty}
+     *    <li>{@code sourceObject}
+     *    <li>{@code targetObject}
+     *    <li>{@code validator}
+     *    <li>{@code converter}
+     *    <li>{@code sourceNullValue}
+     *    <li>{@code targetNullValue}
+     *    <li>{@code sourceUnreadableValue}
+     *    <li>{@code bound}
      * </ul>
      * <p>
      * For other types of {@code Binding} notifications register a
