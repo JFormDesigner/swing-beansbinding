@@ -6,7 +6,6 @@
 package org.jdesktop.beansbinding;
 
 import java.util.*;
-import java.beans.*;
 
 /**
  * {@code BindingGroup} allows you to create a group of {@code Bindings}
@@ -21,8 +20,6 @@ public class BindingGroup {
     private List<BindingListener> listeners;
     private Handler handler;
     private Map<String, Binding> namedBindings;
-    private Set<Binding> editedTargets;
-    private PropertyChangeSupport changeSupport;
 
     /**
      * Creates an empty {@code BindingGroup}.
@@ -60,13 +57,9 @@ public class BindingGroup {
         }
 
         binding.addBindingListener(getHandler());
-        binding.addPropertyChangeListener("hasEditedTarget", getHandler());
 
         if (binding.isBound()) {
             bound.add(binding);
-            if (binding.getHasEditedTarget()) {
-                updateEditedTargets(binding, true);
-            }
         } else {
             unbound.add(binding);
         }
@@ -88,7 +81,6 @@ public class BindingGroup {
             if (!bound.remove(binding)) {
                 throw new IllegalArgumentException("Unknown Binding");
             }
-            updateEditedTargets(binding, false);
         } else {
             if (!unbound.remove(binding)) {
                 throw new IllegalArgumentException("Unknown Binding");
@@ -102,7 +94,6 @@ public class BindingGroup {
         }
 
         binding.removeBindingListener(getHandler());
-        binding.removePropertyChangeListener("hasEditedTarget", getHandler());
     }
 
     private void putNamed(String name, Binding binding) {
@@ -160,60 +151,6 @@ public class BindingGroup {
         List<Binding> toUnbind = new ArrayList<Binding>(bound);
         for (Binding binding : toUnbind) {
             binding.unbind();
-        }
-    }
-
-    /**
-     * Returns whether or not any of the {@code Bindings} in this group
-     * have an edited target. {@code BindingGroup} fires a
-     * property change notification with property name {@code "hasEditedTargetBindings"}
-     * when this property changes.
-     *
-     * @return whether or not any of the {@code Bindings} in this group
-     *         have an edited target
-     * @see Binding#getHasEditedTarget
-     * @see #getEditedTargetBindings
-     */
-    public final boolean getHasEditedTargetBindings() {
-        return editedTargets != null && editedTargets.size() != 0;
-    }
-
-    /**
-     * Returns the list of {@code Bindings} in this group that
-     * have an edited target. Order is undefined.
-     * Returns an empty list if the group contains no {@code Bindings}
-     * with an edited target.
-     *
-     * @return the list of {@code Bindings} in this group that
-     *         have an edited target
-     * @see Binding#getHasEditedTarget
-     * @see #getHasEditedTargetBindings
-     */
-    public List<Binding> getEditedTargetBindings() {
-        if (editedTargets == null) {
-            return Collections.emptyList();
-        }
-
-        List<Binding> retVal = new ArrayList<Binding>();
-        retVal.addAll(editedTargets);
-        return retVal;
-    }
-
-    private void updateEditedTargets(Binding binding, boolean add) {
-        if (add) {
-            if (editedTargets == null) {
-                editedTargets = new LinkedHashSet<Binding>();
-            }
-
-            if (editedTargets.add(binding) && editedTargets.size() == 1 && changeSupport != null) {
-                changeSupport.firePropertyChange("hasEditedTargetBindings", false, true);
-            }
-        } else {
-            if (editedTargets == null) {
-                return;
-            } else if (editedTargets.remove(binding) && editedTargets.size() == 0 && changeSupport != null) {
-                changeSupport.firePropertyChange("hasEditedTargetBindings", true, false);
-            }
         }
     }
 
@@ -276,128 +213,6 @@ public class BindingGroup {
         return ret;
     }
 
-    /**
-     * Adds a {@code PropertyChangeListener} to be notified when any property of
-     * this {@code BindingGroup} changes. Does nothing if the listener is
-     * {@code null}. If a listener is added more than once, notifications are
-     * sent to that listener once for every time that it has been added.
-     * The ordering of listener notification is unspecified.
-     * <p>
-     * {@code BindingGroup} fires property change notification for the following
-     * properties:
-     * <p>
-     * <ul>
-     *    <li>{@code hasEditedTargetBindings}
-     * </ul>
-     *
-     * @param listener the listener to add
-     */
-    public final void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (changeSupport == null) {
-            changeSupport = new PropertyChangeSupport(this);
-        }
-
-        changeSupport.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Adds a {@code PropertyChangeListener} to be notified when the property identified
-     * by the {@code propertyName} argument changes on this {@code BindingGroup}.
-     * Does nothing if the property name or listener is {@code null}.
-     * If a listener is added more than once, notifications are
-     * sent to that listener once for every time that it has been added.
-     * The ordering of listener notification is unspecified.
-     * <p>
-     * {@code BindingGroup} fires property change notification for the following
-     * properties:
-     * <p>
-     * <ul>
-     *    <li>{@code hasEditedTargetBindings}
-     * </ul>
-     *
-     * @param propertyName the name of the property to listen for changes on
-     * @param listener the listener to add
-     */
-    public final void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        if (changeSupport == null) {
-            changeSupport = new PropertyChangeSupport(this);
-        }
-
-        changeSupport.addPropertyChangeListener(propertyName, listener);
-    }
-
-    /**
-     * Removes a {@code PropertyChangeListener} from the group. Does
-     * nothing if the listener is {@code null} or is not one of those registered.
-     * If the listener being removed was registered more than once, only one
-     * occurrence of the listener is removed from the list of listeners.
-     * The ordering of listener notification is unspecified.
-     *
-     * @param listener the listener to remove
-     * @see #addPropertyChangeListener
-     */
-    public final void removePropertyChangeListener(PropertyChangeListener listener) {
-        if (changeSupport == null) {
-            return;
-        }
-
-        changeSupport.removePropertyChangeListener(listener);
-    }
-
-    /**
-     * Removes a {@code PropertyChangeListener} from the group for the given
-     * property name. Does nothing if the property name or listener is
-     * {@code null} or the listener is not one of those registered.
-     * If the listener being removed was registered more than once, only one
-     * occurrence of the listener is removed from the list of listeners.
-     * The ordering of listener notification is unspecified.
-     * 
-     * @param propertyName the name of the property to remove the listener for
-     * @param listener the listener to remove
-     * @see #addPropertyChangeListener(String, PropertyChangeListener)
-     */
-    public final void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        if (changeSupport == null) {
-            return;
-        }
-
-        changeSupport.removePropertyChangeListener(propertyName, listener);
-    }
-
-    /**
-     * Returns the list of {@code PropertyChangeListeners} registered on this
-     * group. Order is undefined. Returns an empty array if there are
-     * no listeners.
-     *
-     * @return the list of {@code PropertyChangeListeners} registered on this group
-     * @see #addPropertyChangeListener
-     */
-    public final PropertyChangeListener[] getPropertyChangeListeners() {
-        if (changeSupport == null) {
-            return new PropertyChangeListener[0];
-        }
-        
-        return changeSupport.getPropertyChangeListeners();
-    }
-
-    /**
-     * Returns the list of {@code PropertyChangeListeners} registered on this
-     * group for the given property name. Order is undefined. Returns an empty array
-     * if there are no listeners registered for the property name.
-     *
-     * @param propertyName the property name to retrieve the listeners for
-     * @return the list of {@code PropertyChangeListeners} registered on this group
-     *         for the given property name
-     * @see #addPropertyChangeListener(String, PropertyChangeListener)
-     */
-    public final PropertyChangeListener[] getPropertyChangeListeners(String propertyName) {
-        if (changeSupport == null) {
-            return new PropertyChangeListener[0];
-        }
-        
-        return changeSupport.getPropertyChangeListeners(propertyName);
-    }
-
     private final Handler getHandler() {
         if (handler == null) {
             handler = new Handler();
@@ -406,7 +221,7 @@ public class BindingGroup {
         return handler;
     }
 
-    private class Handler implements BindingListener, PropertyChangeListener {
+    private class Handler implements BindingListener {
         public void syncFailed(Binding binding, Binding.SyncFailure... failures) {
             if (listeners == null) {
                 return;
@@ -450,9 +265,6 @@ public class BindingGroup {
         public void bindingBecameBound(Binding binding) {
             unbound.remove(binding);
             bound.add(binding);
-            if (binding.getHasEditedTarget()) {
-                updateEditedTargets(binding, true);
-            }
 
             if (listeners == null) {
                 return;
@@ -466,7 +278,6 @@ public class BindingGroup {
         public void bindingBecameUnbound(Binding binding) {
             bound.remove(binding);
             unbound.add(binding);
-            updateEditedTargets(binding, false);
 
             if (listeners == null) {
                 return;
@@ -476,11 +287,6 @@ public class BindingGroup {
                 listener.bindingBecameUnbound(binding);
             }
         }
-
-        public void propertyChange(PropertyChangeEvent pce) {
-            if (pce.getPropertyName() == "hasEditedTarget") {
-                updateEditedTargets((Binding)pce.getSource(), (Boolean)pce.getNewValue());
-            }
-        }
     }
+
 }
