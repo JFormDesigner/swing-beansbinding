@@ -611,30 +611,32 @@ public abstract class Binding<SS, SV, TS, TV> {
     /**
      * Sets the value to be returned by {@link #getSourceValueForTarget}
      * when the source property is unreadable for the source object.
-     * This may be the value {@code null}.
      * Calling this method stores the given value and indicates that
      * {@code getSourceValueForTarget} should use it, by setting the
      * {@code sourceUnreadableValueSet} property to {@code true}.
      * <p>
      * By default, the {@code sourceUnreadableValue} property is unset,
-     * indicated by its value being {@code null} <b>and</b> the value of the
-     * {@code sourceUnreadableValueSet} property being {@code false}.
+     * indicated by the {@code sourceUnreadableValueSet} property being
+     * {@code false}.
      * <p>
      * Setting this property to {@code null} acts the same as setting it to
-     * any other value. To return the property to the unset state (nulling
-     * the value <b>and</b> setting {@code sourceUnreadableValueSet} back to
+     * any other value. To return the property to the unset state (clearing
+     * the value and setting {@code sourceUnreadableValueSet} back to
      * {@code false}) call {@link #unsetSourceUnreadableValue}.
      * <p>
-     * {@code Binding} fires a property change notification with property name
-     * {@code "sourceUnreadableValue"} when the value of this property changes,
-     * and with property name {@code "sourceUnreadableValueSet"} when the
-     * {@code sourceUnreadableValueSet} property changes.
+     * If this property was previously unset, this method fires a property
+     * change notification with property name {@code "sourceUnreadableValueSet"}.
+     * For all invocations, it also fires a property change notification with
+     * property name {@code "sourceUnreadableValue"}, if necessary, to indicate
+     * a change in the property value. If previously unset, the event will
+     * indicate an old value of {@code null}.
      * <p>
      * This method may not be called on a bound binding.
      *
      * @param sourceUnreadableValue the value, which may be {@code null}
      * @throws IllegalStateException if the {@code Binding} is bound
      * @see #isSourceUnreadableValueSet
+     * @see #getSourceUnreadableValue
      */
     public final void setSourceUnreadableValue(TV sourceUnreadableValue) {
         throwIfBound();
@@ -650,9 +652,15 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     /**
-     * Unsets the value of the {@code sourceUnreadableValue} property.
-     * Sets its value to {@code null} and the value of the
-     * {@code sourceUnreadableValueSet} property to {@code false}.
+     * Unsets the value of the {@code sourceUnreadableValue} property by clearing
+     * the value and setting the value of the {@code sourceUnreadableValueSet}
+     * property to {@code false}.
+     * <p>
+     * If the property was previously set, fires a property change notification
+     * with property name {@code "sourceUnreadableValueSet"}, and a property
+     * change notification with property name {@code "sourceUnreadableValue"}.
+     * The event for the latter notification will have a new value of {@code null}.
+     * <p>
      * See the documentation for {@link #setSourceUnreadableValue} for more
      * information on the {@code sourceUnreadableValue} property.
      * <p>
@@ -660,6 +668,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      *
      * @throws IllegalStateException if the {@code Binding} is bound
      * @see #isSourceUnreadableValueSet
+     * @see #getSourceUnreadableValue
      */
     public final void unsetSourceUnreadableValue() {
         throwIfBound();
@@ -679,35 +688,40 @@ public abstract class Binding<SS, SV, TS, TV> {
     /**
      * Returns the value of the {@code sourceUnreadableValueSet} property,
      * which indicates whether or not the {@code sourceUnreadableValue} property
-     * is set on the {@code Binding}. See the documentation for
-     * {@link #setSourceUnreadableValue} for more information on the
-     * {@code sourceUnreadableValue} property.
+     * is set on the {@code Binding}.
+     * <p>
+     * See the documentation for {@link #setSourceUnreadableValue} for more
+     * information on the {@code sourceUnreadableValue} property.
      *
      * @return whether or not the {@code sourceUnreadableValue} property
      *         is set on the {@code Binding}
      * @see #unsetSourceUnreadableValue
+     * @see #getSourceUnreadableValue
      */
     public final boolean isSourceUnreadableValueSet() {
         return sourceUnreadableValueSet;
     }
 
     /**
-     * Returns the value to be returned by {@link #getSourceValueForTarget}
-     * when the source property is unreadable for the source object.
+     * If set, returns the value to be returned by {@link #getSourceValueForTarget}
+     * when the source property is unreadable for the source object. Throws
+     * {@code UnsupportedOperationException} if the property is not set,
+     * as indicated by {@link #isSourceUnreadableValueSet}.
      * <p>
-     * Note that a {@code null} return value from this method can mean either
-     * that the property is unset, or has been explicitly set to {@code null}.
-     * Callers should check the return value of the {@link #isSourceUnreadableValueSet}
-     * method to distinguish.
-     * <p>
-     * See the documentation for {@link #setSourceUnreadableValue} for
-     * details on the handling of this property.
+     * See the documentation for {@link #setSourceUnreadableValue} for more
+     * information on this property.
      *
      * @return the value that replaces an unreadable source value, which may
      *         be {@code null}
-     * @see #setSourceUnreadableValue
+     * @see #unsetSourceUnreadableValue
+     * @throws UnsupportedOperatioException if the property is not set,
+     *         as indicated by {@code isSourceUnreadableValueSet}
      */
     public final TV getSourceUnreadableValue() {
+        if (!isSourceUnreadableValueSet()) {
+            throw new UnsupportedOperationException("not set");
+        }
+
         return sourceUnreadableValue;
     }
 
