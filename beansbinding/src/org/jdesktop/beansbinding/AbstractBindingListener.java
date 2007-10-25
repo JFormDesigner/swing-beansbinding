@@ -17,25 +17,21 @@ public abstract class AbstractBindingListener implements BindingListener {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void bindingBecameBound(Binding binding) {}
 
     /**
      * {@inheritDoc}
      */
-    @Override
     public void bindingBecameUnbound(Binding binding) {}
 
     /**
      * {@inheritDoc}
      */
-    @Override
     public void syncFailed(Binding binding, Binding.SyncFailure failure) {}
 
     /**
      * {@inheritDoc}
      */
-    @Override
     public void synced(Binding binding) {}
 
     /**
@@ -44,7 +40,6 @@ public abstract class AbstractBindingListener implements BindingListener {
      * This implementation calls {@code sourceEdited} if the provided event returns
      * {@code true} from {@code getValueChanged}.
      */
-    @Override
     public void sourceChanged(Binding binding, PropertyStateEvent event) {
         if (event.getValueChanged()) {
             sourceEdited(binding);
@@ -57,7 +52,6 @@ public abstract class AbstractBindingListener implements BindingListener {
      * This implementation calls {@code targetEdited} if the provided event returns
      * {@code true} from {@code getValueChanged}.
      */
-    @Override
     public void targetChanged(Binding binding, PropertyStateEvent event) {
         if (event.getValueChanged()) {
             targetEdited(binding);
