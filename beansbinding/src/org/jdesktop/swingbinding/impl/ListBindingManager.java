@@ -253,12 +253,16 @@ public abstract class ListBindingManager implements ObservableListListener {
                 this.setSourceObject(source);
                 this.setConverter(base.getConverter());
                 this.setSourceNullValue(base.getSourceNullValue());
-                this.setSourceUnreadableValue(base.getSourceUnreadableValue());
+                if (base.isSourceUnreadableValueSet()) {
+                    this.setSourceUnreadableValue(base.getSourceUnreadableValue());
+                } else {
+                    this.unsetSourceUnreadableValue();
+                }
             } finally {
                 setManaged(true);
             }
         }
-        
+
         private void clearSourceObject() {
             try {
                 setManaged(false);
