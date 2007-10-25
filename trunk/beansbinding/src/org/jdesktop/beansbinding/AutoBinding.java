@@ -170,7 +170,7 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
             if (saveFailure == null) {
                 notifySynced();
             } else {
-                notifySyncFailed(refreshFailure, saveFailure);
+                notifySyncFailed(refreshFailure); //, saveFailure);
             }
         }
     }
@@ -186,7 +186,7 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
             if (refreshFailure == null) {
                 notifySynced();
             } else {
-                notifySyncFailed(saveFailure, refreshFailure);
+                notifySyncFailed(saveFailure); //, refreshFailure);
             }
         }
     }
