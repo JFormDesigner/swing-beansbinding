@@ -104,7 +104,8 @@ public abstract class ListBindingManager implements ObservableListListener {
         AbstractColumnBinding cb = bindings[column];
         try {
             reusableBinding.setBaseAndSource(cb, elements.get(row));
-            return reusableBinding.getSourceValueForTarget().getValue();
+            Binding.ValueResult result = reusableBinding.getSourceValueForTarget();
+            return result.failed() ? null : result.getValue();
         } finally {
             reusableBinding.clearSourceObject();
         }
