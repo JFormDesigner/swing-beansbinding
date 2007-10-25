@@ -47,6 +47,7 @@ public abstract class Binding<SS, SV, TS, TV> {
     private TV sourceNullValue;
     private SV targetNullValue;
     private TV sourceUnreadableValue;
+    private boolean sourceUnreadableValueSet;
     private List<BindingListener> listeners;
     private PropertyStateListener psl;
     private boolean ignoreChange;
@@ -610,31 +611,100 @@ public abstract class Binding<SS, SV, TS, TV> {
     /**
      * Sets the value to be returned by {@link #getSourceValueForTarget}
      * when the source property is unreadable for the source object.
-     * The default for this property is {@code null}.
+     * This may be the value {@code null}.
+     * Calling this method stores the given value and indicates that
+     * {@code getSourceValueForTarget} should use it, by setting the
+     * {@code sourceUnreadableValueSet} property to {@code true}.
      * <p>
-     * {@code Binding} fires a property change notification with
-     * property name {@code "sourceUnreadableValue"} when the value of
-     * this property changes.
+     * By default, the {@code sourceUnreadableValue} property is unset,
+     * indicated by its value being {@code null} <b>and</b> the value of the
+     * {@code sourceUnreadableValueSet} property being {@code false}.
+     * <p>
+     * Setting this property to {@code null} acts the same as setting it to
+     * any other value. To return the property to the unset state (nulling
+     * the value <b>and</b> setting {@code sourceUnreadableValueSet} back to
+     * {@code false}) call {@link #unsetSourceUnreadableValue}.
+     * <p>
+     * {@code Binding} fires a property change notification with property name
+     * {@code "sourceUnreadableValue"} when the value of this property changes,
+     * and with property name {@code "sourceUnreadableValueSet"} when the
+     * {@code sourceUnreadableValueSet} property changes.
      * <p>
      * This method may not be called on a bound binding.
      *
-     * @param sourceUnreadableValue the value, or {@code null}
+     * @param sourceUnreadableValue the value, which may be {@code null}
      * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isSourceUnreadableValueSet
      */
     public final void setSourceUnreadableValue(TV sourceUnreadableValue) {
         throwIfBound();
+
         TV old = this.sourceUnreadableValue;
+        boolean oldSet = this.sourceUnreadableValueSet;
+
         this.sourceUnreadableValue = sourceUnreadableValue;
+        this.sourceUnreadableValueSet = true;
+
+        firePropertyChange("sourceUnreadableValueSet", oldSet, true);
         firePropertyChange("sourceUnreadableValue", old, sourceUnreadableValue);
+    }
+
+    /**
+     * Unsets the value of the {@code sourceUnreadableValue} property.
+     * Sets its value to {@code null} and the value of the
+     * {@code sourceUnreadableValueSet} property to {@code false}.
+     * See the documentation for {@link #setSourceUnreadableValue} for more
+     * information on the {@code sourceUnreadableValue} property.
+     * <p>
+     * This method may not be called on a bound binding.
+     *
+     * @throws IllegalStateException if the {@code Binding} is bound
+     * @see #isSourceUnreadableValueSet
+     */
+    public final void unsetSourceUnreadableValue() {
+        throwIfBound();
+
+        if (isSourceUnreadableValueSet()) {
+            TV old = this.sourceUnreadableValue;
+            
+            this.sourceUnreadableValue = null;
+            this.sourceUnreadableValueSet = false;
+
+            firePropertyChange("sourceUnreadableValueSet", true, false);
+            firePropertyChange("sourceUnreadableValue", old, null);
+        }
+
+    }
+
+    /**
+     * Returns the value of the {@code sourceUnreadableValueSet} property,
+     * which indicates whether or not the {@code sourceUnreadableValue} property
+     * is set on the {@code Binding}. See the documentation for
+     * {@link #setSourceUnreadableValue} for more information on the
+     * {@code sourceUnreadableValue} property.
+     *
+     * @return whether or not the {@code sourceUnreadableValue} property
+     *         is set on the {@code Binding}
+     * @see #unsetSourceUnreadableValue
+     */
+    public final boolean isSourceUnreadableValueSet() {
+        return sourceUnreadableValueSet;
     }
 
     /**
      * Returns the value to be returned by {@link #getSourceValueForTarget}
      * when the source property is unreadable for the source object.
-     * The default for this property is {@code null}.
+     * <p>
+     * Note that a {@code null} return value from this method can mean either
+     * that the property is unset, or has been explicitly set to {@code null}.
+     * Callers should check the return value of the {@link #isSourceUnreadableValueSet}
+     * method to distinguish.
+     * <p>
+     * See the documentation for {@link #setSourceUnreadableValue} for
+     * details on the handling of this property.
      *
-     * @return the value that replaces an unreadable source value, or {@code null}
-     *         if there is no replacement
+     * @return the value that replaces an unreadable source value, which may
+     *         be {@code null}
      * @see #setSourceUnreadableValue
      */
     public final TV getSourceUnreadableValue() {
@@ -1296,6 +1366,7 @@ public abstract class Binding<SS, SV, TS, TV> {
                ", converter=" + converter +
                ", sourceNullValue=" + sourceNullValue +
                ", targetNullValue=" + targetNullValue +
+               ", sourceUnreadableValueSet=" + sourceUnreadableValueSet +
                ", sourceUnreadableValue=" + sourceUnreadableValue +
                ", bound=" + isBound();
     }
@@ -1367,6 +1438,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      *    <li>{@code converter}
      *    <li>{@code sourceNullValue}
      *    <li>{@code targetNullValue}
+     *    <li>{@code sourceUnreadableValueSet}
      *    <li>{@code sourceUnreadableValue}
      *    <li>{@code bound}
      * </ul>
@@ -1405,6 +1477,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      *    <li>{@code converter}
      *    <li>{@code sourceNullValue}
      *    <li>{@code targetNullValue}
+     *    <li>{@code sourceUnreadableValueSet}
      *    <li>{@code sourceUnreadableValue}
      *    <li>{@code bound}
      * </ul>
