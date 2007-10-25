@@ -792,8 +792,11 @@ public abstract class Binding<SS, SV, TS, TV> {
      * a {@code ValueResult} is returned representing a failure
      * with failure type {@code SyncFailureType.TARGET_UNWRITEABLE}.
      * Then, if the source property is unreadable for the source object,
-     * a {@code ValueResult} is returned containing the value of the
-     * {@code Binding's} {@link #getSourceUnreadableValue}.
+     * the value of {@link #isSourceUnreadableValueSet} is checked. If {@code true}
+     * then a {@code ValueResult} is returned containing the value of the
+     * {@code Binding's} {@link #getSourceUnreadableValue}. Otherwise a
+     * {@code ValueResult} is returned representing a failure with failure
+     * type {@code SyncFailureType.SOURCE_UNREADABLE}.
      * <p>
      * Next, the value of the source property is fetched for the source
      * object. If the value is {@code null}, a {@code ValueResult} is
@@ -821,23 +824,27 @@ public abstract class Binding<SS, SV, TS, TV> {
             return new ValueResult<TV>(SyncFailure.TARGET_UNWRITEABLE);
         }
 
-        TV value;
-
-        if (sourceProperty.isReadable(sourceObject)) {
-            SV rawValue = sourceProperty.getValue(sourceObject);
-
-            if (rawValue == null) {
-                value = sourceNullValue;
+        if (!sourceProperty.isReadable(sourceObject)) {
+            if (sourceUnreadableValueSet) {
+                return new ValueResult<TV>(sourceUnreadableValue);
             } else {
-                // may throw ClassCastException or other RuntimeException here;
-                // allow it to be propogated back to the user of Binding
-                value = convertForward(rawValue);
+                return new ValueResult<TV>(SyncFailure.SOURCE_UNREADABLE);
             }
-        } else {
-            value = sourceUnreadableValue;
         }
 
-        return new ValueResult<TV>((TV)value);
+        TV value;
+
+        SV rawValue = sourceProperty.getValue(sourceObject);
+
+        if (rawValue == null) {
+            value = sourceNullValue;
+        } else {
+            // may throw ClassCastException or other RuntimeException here;
+            // allow it to be propogated back to the user of Binding
+            value = convertForward(rawValue);
+        }
+
+        return new ValueResult<TV>(value);
     }
 
     /**
@@ -845,12 +852,12 @@ public abstract class Binding<SS, SV, TS, TV> {
      * returns a {@code ValueResult} representing that value in terms that
      * can be set on the source property for the source object.
      * <p>
-     * First, if the target property is not readable for the target object,
-     * a {@code ValueResult} is returned representing a failure
-     * with failure type {@code SyncFailureType.TARGET_UNREADABLE}.
-     * Then, if the source property is not writeable for the source object,
+     * First, if the source property is not writeable for the source object,
      * a {@code ValueResult} is returned representing a failure
      * with failure type {@code SyncFailureType.SOURCE_UNWRITEABLE}.
+     * Then, if the target property is not readable for the target object,
+     * a {@code ValueResult} is returned representing a failure
+     * with failure type {@code SyncFailureType.TARGET_UNREADABLE}.
      * <p>
      * Next, the value of the target property is fetched for the target
      * object. If the value is {@code null}, a {@code ValueResult} is
@@ -884,12 +891,12 @@ public abstract class Binding<SS, SV, TS, TV> {
      * @throws ClassCastException if thrown by a converter or the final cast
      */
     public final ValueResult<SV> getTargetValueForSource() {
-        if (!targetProperty.isReadable(targetObject)) {
-            return new ValueResult<SV>(SyncFailure.TARGET_UNREADABLE);
-        }
-
         if (!sourceProperty.isWriteable(sourceObject)) {
             return new ValueResult<SV>(SyncFailure.SOURCE_UNWRITEABLE);
+        }
+
+        if (!targetProperty.isReadable(targetObject)) {
+            return new ValueResult<SV>(SyncFailure.TARGET_UNREADABLE);
         }
 
         SV value = null;
