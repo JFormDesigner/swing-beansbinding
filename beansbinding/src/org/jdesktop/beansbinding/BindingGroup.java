@@ -222,13 +222,13 @@ public class BindingGroup {
     }
 
     private class Handler implements BindingListener {
-        public void syncFailed(Binding binding, Binding.SyncFailure... failures) {
+        public void syncFailed(Binding binding, Binding.SyncFailure failure) {
             if (listeners == null) {
                 return;
             }
-            
+
             for (BindingListener listener : listeners) {
-                listener.syncFailed(binding, failures);
+                listener.syncFailed(binding, failure);
             }
         }
 
@@ -242,23 +242,23 @@ public class BindingGroup {
             }
         }
 
-        public void sourceEdited(Binding binding) {
+        public void sourceChanged(Binding binding, PropertyStateEvent event) {
             if (listeners == null) {
                 return;
             }
             
             for (BindingListener listener : listeners) {
-                listener.sourceEdited(binding);
+                listener.sourceChanged(binding, event);
             }
         }
 
-        public void targetEdited(Binding binding) {
+        public void targetChanged(Binding binding, PropertyStateEvent event) {
             if (listeners == null) {
                 return;
             }
 
             for (BindingListener listener : listeners) {
-                listener.targetEdited(binding);
+                listener.targetChanged(binding, event);
             }
         }
 

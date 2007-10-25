@@ -37,9 +37,9 @@ public interface BindingListener extends EventListener {
      * target, but the sync failed.
      *
      * @param binding the {@code Binding}
-     * @param failures the reasons the sync failed
+     * @param failure the reason the sync failed
      */
-    public void syncFailed(Binding binding, Binding.SyncFailure... failures);
+    public void syncFailed(Binding binding, Binding.SyncFailure failure);
 
     /**
      * Notification that the source and target of a {@code Binding} have
@@ -51,19 +51,17 @@ public interface BindingListener extends EventListener {
 
     /**
      * Notification that the source property of a {@code Binding} has fired
-     * a {@code PropertyStateEvent} indicating that its value has changed
-     * for the {@code Binding's} source object.
+     * a {@code PropertyStateEvent} for the {@code Binding's} source object.
      *
      * @param binding the {@code Binding}
      */
-    public void sourceEdited(Binding binding);
+    public void sourceChanged(Binding binding, PropertyStateEvent event);
 
     /**
      * Notification that the target property of a {@code Binding} has fired
-     * a {@code PropertyStateEvent} indicating that its value has changed
-     * for the {@code Binding's} target object.
+     * a {@code PropertyStateEvent} for the {@code Binding's} target object.
      *
      * @param binding the {@code Binding}
      */
-    public void targetEdited(Binding binding);
+    public void targetChanged(Binding binding, PropertyStateEvent event);
 }

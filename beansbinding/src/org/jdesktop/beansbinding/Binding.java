@@ -1104,15 +1104,15 @@ public abstract class Binding<SS, SV, TS, TV> {
      * sync ({@code refresh} or {@code save}), by calling
      * {@code syncFailed} on each one.
      *
-     * @param failures the reasons that the sync failed
+     * @param failure the reason that the sync failed
      */
-    protected final void notifySyncFailed(SyncFailure... failures) {
+    protected final void notifySyncFailed(SyncFailure failure) {
         if (listeners == null) {
             return;
         }
 
         for (BindingListener listener : listeners) {
-            listener.syncFailed(this, failures);
+            listener.syncFailed(this, failure);
         }
     }
 
@@ -1393,11 +1393,9 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
     
     private void sourceChanged(PropertyStateEvent pse) {
-        if (pse.getValueChanged()) {
-            if (listeners != null) {
-                for (BindingListener listener : listeners) {
-                    listener.sourceEdited(this);
-                }
+        if (listeners != null) {
+            for (BindingListener listener : listeners) {
+                listener.sourceChanged(this, pse);
             }
         }
 
@@ -1417,11 +1415,9 @@ public abstract class Binding<SS, SV, TS, TV> {
     }
 
     private void targetChanged(PropertyStateEvent pse) {
-        if (pse.getValueChanged()) {
-            if (listeners != null) {
-                for (BindingListener listener : listeners) {
-                    listener.targetEdited(this);
-                }
+        if (listeners != null) {
+            for (BindingListener listener : listeners) {
+                listener.targetChanged(this, pse);
             }
         }
 
