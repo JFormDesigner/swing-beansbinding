@@ -80,6 +80,12 @@ public abstract class Binding<SS, SV, TS, TV> {
          * for the {@code Binding's} target object.
          */
         TARGET_UNREADABLE,
+
+        /**
+         * A {@code refresh} failed because the {@code Binding's} source property is unreadable
+         * for the {@code Binding's} source object.
+         */
+        SOURCE_UNREADABLE,
         
         /**
          * A {@code save} failed due to a conversion failure on the value
@@ -107,6 +113,7 @@ public abstract class Binding<SS, SV, TS, TV> {
         private static SyncFailure TARGET_UNWRITEABLE = new SyncFailure(SyncFailureType.TARGET_UNWRITEABLE);
         private static SyncFailure SOURCE_UNWRITEABLE = new SyncFailure(SyncFailureType.SOURCE_UNWRITEABLE);
         private static SyncFailure TARGET_UNREADABLE = new SyncFailure(SyncFailureType.TARGET_UNREADABLE);
+        private static SyncFailure SOURCE_UNREADABLE = new SyncFailure(SyncFailureType.SOURCE_UNREADABLE);
 
         private static SyncFailure conversionFailure(RuntimeException rte) {
             return new SyncFailure(rte);
