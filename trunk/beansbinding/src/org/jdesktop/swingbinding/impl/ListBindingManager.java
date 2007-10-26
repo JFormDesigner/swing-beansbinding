@@ -19,7 +19,7 @@ import org.jdesktop.beansbinding.*;
  */
 public abstract class ListBindingManager implements ObservableListListener {
     private AbstractColumnBinding[] bindings;
-    private ReusableColumnBinding reusableBinding;
+    private ReusableBinding reusableBinding;
     private List<?> elements;
     private List<ColumnDescriptionManager> managers;
 
@@ -66,7 +66,7 @@ public abstract class ListBindingManager implements ObservableListListener {
         }
 
         if (bindings.length != 0) {
-            reusableBinding = new ReusableColumnBinding(bindings[0]);
+            reusableBinding = new ReusableBinding(bindings[0]);
         }
 
         if (addListeners) {
@@ -101,14 +101,9 @@ public abstract class ListBindingManager implements ObservableListListener {
             }
         }
 
-        AbstractColumnBinding cb = bindings[column];
-        try {
-            reusableBinding.setBaseAndSource(cb, elements.get(row));
-            Binding.ValueResult result = reusableBinding.getSourceValueForTarget();
-            return result.failed() ? null : result.getValue();
-        } finally {
-            reusableBinding.clearSourceObject();
-        }
+        reusableBinding.setBaseAndSource(bindings[column], elements.get(row));
+        Binding.ValueResult result = reusableBinding.getSourceValueForTarget();
+        return result.failed() ? null : result.getValue();
     }
 
     public final int columnCount() {
@@ -241,37 +236,27 @@ public abstract class ListBindingManager implements ObservableListListener {
         }
     }
 
-    private final class ReusableColumnBinding extends AbstractColumnBinding {
-        public ReusableColumnBinding(AbstractColumnBinding base) {
-            super(0, base.getSourceProperty(), base.getTargetProperty(), null);
+    private final class ReusableBinding extends Binding {
+        public ReusableBinding(AbstractColumnBinding base) {
+            super(null, base.getSourceProperty(), null, base.getTargetProperty(), null);
         }
 
         public void setBaseAndSource(AbstractColumnBinding base, Object source) {
-            try {
-                setManaged(false);
-                this.setSourceProperty(base.getSourceProperty());
-                this.setTargetProperty(base.getTargetProperty());
-                this.setSourceObject(source);
-                this.setConverter(base.getConverter());
-                this.setSourceNullValue(base.getSourceNullValue());
-                if (base.isSourceUnreadableValueSet()) {
-                    this.setSourceUnreadableValue(base.getSourceUnreadableValue());
-                } else {
-                    this.unsetSourceUnreadableValue();
-                }
-            } finally {
-                setManaged(true);
+            setSourceProperty(base.getSourceProperty());
+            setTargetProperty(base.getTargetProperty());
+            setSourceObject(source);
+            setConverter(base.getConverter());
+            setSourceNullValue(base.getSourceNullValue());
+            if (base.isSourceUnreadableValueSet()) {
+                setSourceUnreadableValue(base.getSourceUnreadableValue());
+            } else {
+                unsetSourceUnreadableValue();
             }
         }
+        
+        public final void bindImpl() {}
+        public final void unbindImpl() {}
 
-        private void clearSourceObject() {
-            try {
-                setManaged(false);
-                setSourceObject(null);
-            } finally {
-                setManaged(true);
-            }
-        }
     }
 
 }
