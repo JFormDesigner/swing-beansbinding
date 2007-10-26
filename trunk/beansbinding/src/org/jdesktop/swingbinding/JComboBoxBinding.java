@@ -9,15 +9,12 @@ import javax.swing.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.AutoBinding;
-import org.jdesktop.beansbinding.ObjectProperty;
 import org.jdesktop.beansbinding.Property;
 import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.PropertyStateListener;
 import org.jdesktop.swingbinding.impl.AbstractColumnBinding;
 import org.jdesktop.swingbinding.impl.ListBindingManager;
-import org.jdesktop.swingbinding.impl.*;
 import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
 
 /**

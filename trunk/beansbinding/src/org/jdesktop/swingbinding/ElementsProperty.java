@@ -6,12 +6,9 @@
 package org.jdesktop.swingbinding;
 
 import java.util.*;
-import javax.swing.*;
-import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.Property;
 import org.jdesktop.beansbinding.PropertyHelper;
 import org.jdesktop.beansbinding.PropertyStateEvent;
-import org.jdesktop.beansbinding.PropertyStateListener;
 
 /**
  * @author Shannon Hickey
