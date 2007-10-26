@@ -65,8 +65,8 @@ import java.util.ArrayList;
  *     of a successful sync. If the call returns failure, then tries to instead sync the
  *     source from the target by calling {@code save}. If this second call succeeds,
  *     notifies the binding listeners of a succesful sync. If it returns failure, notifies
- *     the binding listeners of a failed sync, providing the reasons for both
- *     the refresh and save failures.
+ *     the binding listeners of a failed sync, indicating the reason for the original
+ *     refresh failure.
  *     <p>
  *     Automatically responds to changes in the state of the source as follows:
  *     If the change represents a value change, use the try-refresh-then-save
@@ -86,8 +86,8 @@ import java.util.ArrayList;
  *     failure, providing the conversion or validation failure. If it fails for
  *     any other reason, then instead try to sync the target from the source by
  *     calling {@code refresh}. If this succeeds, notify the listeners of successful
- *     sync. Otherwise notify them of failure with the reasons for both the save
- *     and refresh failures.
+ *     sync. Otherwise notify them of failure with the reasons for the original
+ *     save failure.
  *   </td>
  * </tr>
  * </table>
@@ -170,7 +170,7 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
             if (saveFailure == null) {
                 notifySynced();
             } else {
-                notifySyncFailed(refreshFailure); //, saveFailure);
+                notifySyncFailed(refreshFailure);
             }
         }
     }
@@ -186,7 +186,7 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
             if (refreshFailure == null) {
                 notifySynced();
             } else {
-                notifySyncFailed(saveFailure); //, refreshFailure);
+                notifySyncFailed(saveFailure);
             }
         }
     }
