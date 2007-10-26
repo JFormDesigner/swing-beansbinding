@@ -5,9 +5,6 @@
 
 package org.jdesktop.beansbinding;
 
-import java.util.*;
-import javax.swing.*;
-
 /**
  * A factory class for creating instances of the concrete {@code Binding}
  * implementations provided by this package.
