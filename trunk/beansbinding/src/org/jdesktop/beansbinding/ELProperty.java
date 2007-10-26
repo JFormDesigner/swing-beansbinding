@@ -10,7 +10,6 @@ import org.jdesktop.el.ELContext;
 import org.jdesktop.el.ELException;
 import org.jdesktop.el.Expression;
 import org.jdesktop.el.Expression.ResolvedProperty;
-import org.jdesktop.el.Expression.Result;
 import org.jdesktop.el.ValueExpression;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;

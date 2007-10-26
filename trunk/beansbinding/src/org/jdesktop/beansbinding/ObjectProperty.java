@@ -5,8 +5,6 @@
 
 package org.jdesktop.beansbinding;
 
-import java.util.List;
-import java.util.ArrayList;
 import static org.jdesktop.beansbinding.PropertyStateEvent.UNREADABLE;
 
 /**

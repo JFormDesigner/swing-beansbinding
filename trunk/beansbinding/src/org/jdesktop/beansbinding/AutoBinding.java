@@ -5,9 +5,6 @@
 
 package org.jdesktop.beansbinding;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /**
  * An implementation of {@code Binding} that automatically syncs the source
  * and target by refreshing and saving according to one of three update
