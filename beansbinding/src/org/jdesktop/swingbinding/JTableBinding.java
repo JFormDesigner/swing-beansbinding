@@ -10,7 +10,6 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.jdesktop.beansbinding.Binding;
 import org.jdesktop.beansbinding.BindingListener;
 import org.jdesktop.beansbinding.Binding.*;
 import org.jdesktop.beansbinding.AutoBinding;
@@ -19,9 +18,6 @@ import org.jdesktop.beansbinding.PropertyStateEvent;
 import org.jdesktop.beansbinding.PropertyStateListener;
 import org.jdesktop.swingbinding.impl.AbstractColumnBinding;
 import org.jdesktop.swingbinding.impl.ListBindingManager;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import static org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.*;
 
 /**
@@ -719,34 +715,61 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
 
         public void setValueAt(Object value, int rowIndex, int columnIndex) {
             ColumnBinding cb = JTableBinding.this.getColumnBinding(columnIndex);
+            BindingListener[] cbListeners = cb.getBindingListeners();
+            BindingListener[] tbListeners = getBindingListeners();
+            
             cb.setSourceObjectUnmanaged0(this.getElement(rowIndex));
             cb.setEditingObject(value);
             cb.bindUnmanaged0();
+            
+            for (BindingListener listener : tbListeners) {
+                listener.bindingBecameBound(cb);
+            }
+            
+            PropertyStateEvent pse = new PropertyStateEvent(cb.getTargetProperty(),
+                    cb.getTargetObject(),
+                    true,
+                    getValueAt(rowIndex, columnIndex),
+                    value,
+                    false,
+                    cb.getSourceProperty().isWriteable(cb.getSourceObject()));
+            
+            for (BindingListener listener : cbListeners) {
+                listener.targetChanged(cb, pse);
+            }
+            
+            for (BindingListener listener : tbListeners) {
+                listener.targetChanged(cb, pse);
+            }
+            
             SyncFailure failure = cb.saveUnmanaged0();
-            cb.unbindUnmanaged0();
-            cb.setEditingObject(null);
-            cb.setSourceObjectUnmanaged0(null);
+            
             if (failure == null) {
-                BindingListener[] listeners;
-                listeners = cb.getBindingListeners();
-                for (BindingListener listener : listeners) {
+                for (BindingListener listener : cbListeners) {
                     listener.synced(cb);
                 }
-                listeners = JTableBinding.this.getBindingListeners();
-                for (BindingListener listener : listeners) {
+                
+                for (BindingListener listener : tbListeners) {
                     listener.synced(cb);
                 }
             } else {
-                BindingListener[] listeners;
-                listeners = cb.getBindingListeners();
-                for (BindingListener listener : listeners) {
+                for (BindingListener listener : cbListeners) {
                     listener.syncFailed(cb, failure);
                 }
-                listeners = JTableBinding.this.getBindingListeners();
-                for (BindingListener listener : listeners) {
+                
+                for (BindingListener listener : tbListeners) {
                     listener.syncFailed(cb, failure);
                 }
             }
+
+            cb.unbindUnmanaged0();
+            
+            for (BindingListener listener : tbListeners) {
+                listener.bindingBecameUnbound(cb);
+            }
+            
+            cb.setEditingObject(null);
+            cb.setSourceObjectUnmanaged0(null);
         }
 
         public Class<?> getColumnClass(int columnIndex) {
