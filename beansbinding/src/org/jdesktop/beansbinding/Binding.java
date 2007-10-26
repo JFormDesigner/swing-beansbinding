@@ -1377,7 +1377,16 @@ public abstract class Binding<SS, SV, TS, TV> {
         return getClass().getName() + " [" + paramString() + "]";
     }
 
-    private String paramString() {
+    /**
+     * Returns a string representing the internal state of the {@code Binding}.
+     * This method is intended to be used for debugging purposes only,
+     * and the content and format of the returned string may vary between
+     * implementations. The returned string may be empty but may not
+     * be {@code null}.
+     *
+     * @return a string representing the state of the {@code Binding}.
+     */
+    protected String paramString() {
         return "name=" + getName() +
                ", sourceObject=" + sourceObject +
                ", sourceProperty=" + sourceProperty +
@@ -1389,7 +1398,7 @@ public abstract class Binding<SS, SV, TS, TV> {
                ", targetNullValue=" + targetNullValue +
                ", sourceUnreadableValueSet=" + sourceUnreadableValueSet +
                ", sourceUnreadableValue=" + sourceUnreadableValue +
-               ", bound=" + isBound();
+               ", bound=" + isBound;
     }
     
     private void sourceChanged(PropertyStateEvent pse) {

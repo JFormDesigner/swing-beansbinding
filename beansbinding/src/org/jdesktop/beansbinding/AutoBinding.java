@@ -206,31 +206,16 @@ public class AutoBinding<SS, SV, TS, TV> extends Binding<SS, SV, TS, TV> {
     protected void unbindImpl() {}
 
     /**
-     * Returns a string representation of the {@code AutoBinding}. This
-     * method is intended to be used for debugging purposes only, and
-     * the content and format of the returned string may vary between
+     * Returns a string representing the internal state of the {@code Binding}.
+     * This method is intended to be used for debugging purposes only,
+     * and the content and format of the returned string may vary between
      * implementations. The returned string may be empty but may not
      * be {@code null}.
      *
-     * @return a string representation of this {@code AutoBinding}
+     * @return a string representing the state of the {@code Binding}.
      */
-    public String toString() {
-        return getClass().getName() + " [" + paramString() + "]";
-    }
-
-    private String paramString() {
-        return "name=" + getName() +
-               ", sourceObject=" + getSourceObject() +
-               ", sourceProperty=" + getSourceProperty() +
-               ", targetObject=" + getTargetObject() +
-               ", targetProperty" + getTargetProperty() +
-               ", validator=" + getValidator() +
-               ", converter=" + getConverter() +
-               ", sourceNullValue=" + getSourceNullValue() +
-               ", targetNullValue=" + getTargetNullValue() +
-               ", sourceUnreadableValue=" + getSourceUnreadableValue() +
-               ", bound=" + isBound() +
-               ", updateStrategy=" + getUpdateStrategy();
+    protected String paramString() {
+        return super.paramString() + ", updateStrategy=" + getUpdateStrategy();
     }
 
     protected void sourceChangedImpl(PropertyStateEvent pse) {
