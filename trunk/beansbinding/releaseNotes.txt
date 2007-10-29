@@ -1,5 +1,38 @@
 Release notes for Beans Binding (http://beansbinding.dev.java.net)
 
+
+1.2 Release (2007/10/29)
+--------------------------
+This release contains some minor API changes and bug fixes.
+
+API changes:
+
+- The hasEditedSource and hasEditedTarget properties have been removed from
+  Binding and AutoBinding, as have the hasEditedTargetBindings property and
+  getEditedTargetBindings() method from BindingGroup. These properties and
+  methods, which existed to assist in tracking which Bindings require saving,
+  are to be replaced with a more robust system of notifications and methods.
+
+- The semantics of Binding's sourceUnreadableValue property has changed such
+  that it is only used if explicity set by the developer. A new SyncFailure
+  type, SOURCE_UNREADABLE, has been added to indicate an attempt to refresh
+  with an unreadable source and no sourceUnreadableValue set.
+
+- BindingListener's sourceEdited and targetEdited methods have been deprecated
+  and replaced with sourceChanged and targetChanged methods that provide the
+  originating PropertyStateEvent.
+
+- BindingListener's syncFailed method has been changed to take a single
+  SyncFailure rather than a varargs. The original signature was designed to
+  support AutoBinding's current update strategies, which have been deemed
+  too complex and will be simplified in a future update.
+
+Issues Resolved:
+
+Issue 15: MissingResourceException on wrong ELProperty
+Issue 4: targetEdited not fired when changing a JTable cell
+
+
 1.1.1 Release (2007/10/18)
 --------------------------
 This release contains one bug fix, for the following issue:
