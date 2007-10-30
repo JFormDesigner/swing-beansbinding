@@ -1391,7 +1391,7 @@ public abstract class Binding<SS, SV, TS, TV> {
                ", sourceObject=" + sourceObject +
                ", sourceProperty=" + sourceProperty +
                ", targetObject=" + targetObject +
-               ", targetProperty" + targetProperty +
+               ", targetProperty=" + targetProperty +
                ", validator=" + validator +
                ", converter=" + converter +
                ", sourceNullValue=" + sourceNullValue +
