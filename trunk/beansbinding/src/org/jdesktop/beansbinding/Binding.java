@@ -714,7 +714,7 @@ public abstract class Binding<SS, SV, TS, TV> {
      * @return the value that replaces an unreadable source value, which may
      *         be {@code null}
      * @see #unsetSourceUnreadableValue
-     * @throws UnsupportedOperatioException if the property is not set,
+     * @throws UnsupportedOperationException if the property is not set,
      *         as indicated by {@code isSourceUnreadableValueSet}
      */
     public final TV getSourceUnreadableValue() {
