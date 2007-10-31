@@ -93,7 +93,8 @@ public final class JTableAdapterProvider implements BeanAdapterProvider {
             
             public void propertyChange(PropertyChangeEvent pce) {
                 ((ListSelectionModel)pce.getOldValue()).removeListSelectionListener(handler);
-                ((ListSelectionModel)pce.getOldValue()).addListSelectionListener(handler);
+                ((ListSelectionModel)pce.getNewValue()).addListSelectionListener(handler);
+                tableSelectionChanged();
             }
         }
     }

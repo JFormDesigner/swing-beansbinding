@@ -93,7 +93,7 @@ public final class JListAdapterProvider implements BeanAdapterProvider {
 
                 if (propertyName == "selectionModel") {
                     ((ListSelectionModel)pce.getOldValue()).removeListSelectionListener(handler);
-                    ((ListSelectionModel)pce.getOldValue()).addListSelectionListener(handler);
+                    ((ListSelectionModel)pce.getNewValue()).addListSelectionListener(handler);
                     listSelectionChanged();
                 } else if (propertyName == "model") {
                     listSelectionChanged();
