@@ -330,6 +330,8 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
         }
 
         protected void added(int index, int length) {
+            assert length > 0; // enforced by ListBindingManager
+
             ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_ADDED, index, index + length - 1);
             int size = listeners.size();
             for (int i = size - 1; i >= 0; i--) {
@@ -342,6 +344,8 @@ public final class JComboBoxBinding<E, SS, TS> extends AutoBinding<SS, List<E>, 
         }
 
         protected void removed(int index, int length) {
+            assert length > 0; // enforced by ListBindingManager
+
             ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_REMOVED, index, index + length - 1);
             int size = listeners.size();
             for (int i = size - 1; i >= 0; i--) {

@@ -786,10 +786,14 @@ public final class JTableBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS,
         }
 
         protected void added(int row, int length) {
+            assert length > 0; // enforced by ListBindingManager
+
             fireTableModelEvent(new TableModelEvent(this, row, row + length - 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
         }
 
         protected void removed(int row, int length) {
+            assert length > 0; // enforced by ListBindingManager
+
             fireTableModelEvent(new TableModelEvent(this, row, row + length - 1, TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE));
         }
 
