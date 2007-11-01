@@ -428,6 +428,8 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
         }
 
         protected void added(int index, int length) {
+            assert length > 0; // enforced by ListBindingManager
+
             ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_ADDED, index, index + length - 1);
             for (ListDataListener listener : listeners) {
                 listener.intervalAdded(e);
@@ -435,6 +437,8 @@ public final class JListBinding<E, SS, TS> extends AutoBinding<SS, List<E>, TS, 
         }
 
         protected void removed(int index, int length) {
+            assert length > 0; // enforced by ListBindingManager
+
             ListDataEvent e = new ListDataEvent(this, ListDataEvent.INTERVAL_REMOVED, index, index + length - 1);
             for (ListDataListener listener : listeners) {
                 listener.intervalRemoved(e);

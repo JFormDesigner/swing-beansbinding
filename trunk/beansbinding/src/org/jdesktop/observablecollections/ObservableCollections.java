@@ -323,8 +323,10 @@ public final class ObservableCollections {
             List<E> dup = new ArrayList<E>(list);
             list.clear();
             modCount++;
-            for (ObservableListListener listener : listeners) {
-                listener.listElementsRemoved(this, 0, dup);
+            if (dup.size() != 0) {
+                for (ObservableListListener listener : listeners) {
+                    listener.listElementsRemoved(this, 0, dup);
+                }
             }
         }
 

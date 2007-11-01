@@ -110,6 +110,10 @@ public abstract class ListBindingManager implements ObservableListListener {
     }
 
     public final void listElementsAdded(ObservableList list, int index, int length) {
+        if (length == 0) {
+            return;
+        }
+
         if (managers != null) {
             for (ColumnDescriptionManager manager : managers) {
                 manager.add(index, length);
@@ -120,6 +124,10 @@ public abstract class ListBindingManager implements ObservableListListener {
     }
     
     public final void listElementsRemoved(ObservableList list, int index, List elements) {
+        if (elements.size() == 0) {
+            return;
+        }
+
         if (managers != null) {
             for (ColumnDescriptionManager manager : managers) {
                 manager.remove(index, elements.size());
