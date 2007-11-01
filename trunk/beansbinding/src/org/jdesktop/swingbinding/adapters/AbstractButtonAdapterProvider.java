@@ -37,6 +37,7 @@ public final class AbstractButtonAdapterProvider implements BeanAdapterProvider 
 
         protected void listeningStarted() {
             handler = new Handler();
+            cachedSelected = isSelected();
             button.addItemListener(handler);
             button.addPropertyChangeListener("model", handler);
         }
