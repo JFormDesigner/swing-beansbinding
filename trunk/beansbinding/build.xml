@@ -71,7 +71,7 @@
     <property name="javac.debug" value="on"/>
   </target>
   <target name="dist" depends="javadoc,jar">
-    <property name="buildVersion" value="1.2"/>
+    <property name="buildVersion" value="1.2.1"/>
     <zip destfile="${dist.dir}/${ant.project.name}-${buildVersion}-doc.zip"
          basedir="${dist.javadoc.dir}"/>
     <zip destfile="${dist.dir}/${ant.project.name}-${buildVersion}-src.zip" >

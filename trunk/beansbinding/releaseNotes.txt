@@ -1,6 +1,15 @@
 Release notes for Beans Binding (http://beansbinding.dev.java.net)
 
 
+1.2.1 Release (2007/11/02)
+--------------------------
+This is a bug fix release, solving the following issues:
+
+Issue 16: JTable/JListAdapterProvider: don't re-wire listening to selectionModel on change
+Issue 19: clear() on an empty ObservableList bound to JList/JTable causes exception
+Issue 20: AbstractButtonAdapterProvider.Adapter.cachedSelected
+
+
 1.2 Release (2007/10/29)
 --------------------------
 This release contains some minor API changes and bug fixes.
