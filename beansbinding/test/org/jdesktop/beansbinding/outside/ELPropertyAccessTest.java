@@ -3,9 +3,10 @@
  * subject to license terms.
  */
 
-package org.jdesktop.beansbinding;
+package org.jdesktop.beansbinding.outside;
 
 import junit.framework.TestCase;
+import org.jdesktop.beansbinding.*;
 
 /**
  * Tests to ensure that {@code ELProperty} correctly exposes properties.
@@ -14,9 +15,9 @@ import junit.framework.TestCase;
  *
  * @author Shannon Hickey
  */
-public class BeanPropertyAccessTest extends TestCase {
+public class ELPropertyAccessTest extends TestCase {
 
-    private Property valP = BeanProperty.create("value");
+    private Property valP = ELProperty.create("${value}");
 
     public class Public_Reader {
         public int getValue() {
