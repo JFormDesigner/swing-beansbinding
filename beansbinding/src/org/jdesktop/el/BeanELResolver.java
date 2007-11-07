@@ -489,7 +489,10 @@ public class BeanELResolver extends ELResolver {
      **/
 
     static private Method getMethod(Class cl, Method method) {
-
+        if (method == null) {
+            return null;
+        }
+        
         if (Modifier.isPublic (cl.getModifiers ())) {
             return method;
         }
