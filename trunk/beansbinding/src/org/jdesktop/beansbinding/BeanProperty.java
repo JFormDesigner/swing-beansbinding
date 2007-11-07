@@ -15,12 +15,6 @@
  *
  *   - Do testing with applets/security managers.
  *
- *   - Introspector/reflection doesn't work for non-public classes. EL handles this
- *     by trying to find a version of the method in a public superclass/interface.
- *     Looking at the code for Introspector (also used by EL), I got the idea that
- *     it already does something like this. Investigate why EL handles this in an
- *     extra step, and decide what we need to do in this class.
- *
  *   - Add option to turn on validation. For now it's hard-coded to be off.
  */
 
