@@ -29,6 +29,7 @@ package org.jdesktop.beansbinding;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import org.jdesktop.observablecollections.ObservableMap;
 import org.jdesktop.observablecollections.ObservableMapListener;
@@ -740,6 +741,56 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
     }
 
     /**
+     * Returns a public form of the given method for the given class.
+     * <p>
+     * If a {@code PropertyDescriptor} is obtained for a non-public class that
+     * implements a public interface, the read/write methods will be for the
+     * class, and therefore inaccessible. To correct this, a version of the
+     * same method must be found in a superclass or interface.
+     *
+     * @param cl the class on which to search for the method
+     * @param method the method
+     * @return a public form of the given method for the given class,
+     *         or {@code null} if one can't be found
+     */
+    static private Method getPublicForm(Class cl, Method method) {
+        if (method == null) {
+            return null;
+        }
+
+        if (Modifier.isPublic(cl.getModifiers())) {
+            return method;
+        }
+
+        for (Class c : cl.getInterfaces()) {
+            Method m = null;
+            try {
+                m = c.getMethod(method.getName(), method.getParameterTypes());
+                c = m.getDeclaringClass();
+                if ((m = getPublicForm(c, m)) != null) {
+                    return m;
+                }
+            } catch (NoSuchMethodException ex) {
+            }
+        }
+
+        Class c = cl.getSuperclass();
+        if (c != null) {
+            Method m = null;
+            try {
+                m = c.getMethod(method.getName(), method.getParameterTypes());
+                c = m.getDeclaringClass();
+                if ((m = getPublicForm(c, m)) != null) {
+                    return m;
+                }
+            } catch (NoSuchMethodException ex) {
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @throws PropertyResolutionException
      */
     private static PropertyDescriptor getPropertyDescriptor(Object object, String string) {
@@ -801,8 +852,7 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         object = getAdapter(object, string);
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
-        Method readMethod = null;
-        return pd == null ? null : pd.getReadMethod();
+        return pd == null ? null : getPublicForm(object.getClass(), pd.getReadMethod());
     }
 
     /**
@@ -852,7 +902,7 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         object = getAdapter(object, string);
         
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
-        if (pd == null || pd.getWriteMethod() == null) {
+        if (pd == null || getPublicForm(object.getClass(), pd.getWriteMethod()) == null) {
             log("getType()", "missing write method");
             throw new UnsupportedOperationException("Unwritable");
         }
@@ -870,8 +920,7 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         object = getAdapter(object, string);
 
         PropertyDescriptor pd = getPropertyDescriptor(object, string);
-        Method writeMethod = null;
-        return pd == null ? null : pd.getWriteMethod();
+        return pd == null ? null : getPublicForm(object.getClass(), pd.getWriteMethod());
     }
 
     /**
@@ -947,7 +996,7 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         EventSetDescriptor ed = getEventSetDescriptor(object);
         Method addPCMethod = null;
 
-        if (ed == null || (addPCMethod = ed.getAddListenerMethod()) == null) {
+        if (ed == null || (addPCMethod = getPublicForm(object.getClass(), ed.getAddListenerMethod())) == null) {
             log("addPropertyChangeListener()", "can't add listener");
             return;
         }
@@ -962,7 +1011,7 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         EventSetDescriptor ed = getEventSetDescriptor(object);
         Method removePCMethod = null;
 
-        if (ed == null || (removePCMethod = ed.getRemoveListenerMethod()) == null) {
+        if (ed == null || (removePCMethod = getPublicForm(object.getClass(), ed.getRemoveListenerMethod())) == null) {
             log("removePropertyChangeListener()", "can't remove listener from source");
             return;
         }
