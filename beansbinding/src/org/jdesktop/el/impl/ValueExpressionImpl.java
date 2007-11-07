@@ -195,8 +195,11 @@ public final class ValueExpressionImpl extends ValueExpression implements
         if (value == ELContext.UNRESOLVABLE_RESULT) {
             return new Result(Result.Type.UNRESOLVABLE, null, resolvedProperties);
         }
-        
-        value = ELSupport.coerceToType(value, this.expectedType);
+
+        if (this.expectedType != null) {
+            value = ELSupport.coerceToType(value, this.expectedType);
+        }
+
         return new Result(Result.Type.VALUE, value, resolvedProperties);
     }
     
