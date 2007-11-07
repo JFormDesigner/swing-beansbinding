@@ -46,6 +46,14 @@ public class ELPropertyTest extends TestCase {
     
     private class E extends D {
     }
+
+    private class F {
+        public void setValue(int value) {
+        }
+    }
+    
+    private class G extends F {
+    }
     
     protected void setUp() {
     }
@@ -92,11 +100,18 @@ public class ELPropertyTest extends TestCase {
         valP.setValue(c, 21);
     }
 
-    public void testPrivateClassWithPublicSuperclassB() {
+    public void testPrivateClassWithPublicSuperclassAndNoWriter() {
         E e = new E();
         assertTrue(valP.isReadable(e));
         assertFalse(valP.isWriteable(e));
         assertEquals(30, valP.getValue(e));
+    }
+
+    public void testPrivateClassWithPublicSuperclassAndNoReader() {
+        G g = new G();
+        assertFalse(valP.isReadable(g));
+        assertTrue(valP.isWriteable(g));
+        valP.setValue(g, 21);
     }
 
 }
