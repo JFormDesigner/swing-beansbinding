@@ -874,13 +874,13 @@ public abstract class Binding<SS, SV, TS, TV> {
      * If a converter throws a {@code RuntimeException} other than
      * {@code ClassCastException}, this method returns a
      * {@code ValueResult} containing the failure, with failure type
-     * {@code SyncFailureType.CONVERSION_FAILURE}.
+     * {@code SyncFailureType.CONVERSION_FAILED}.
      * <p>
      * As the last step, the {@code Binding's Validator}, if any, is called
      * upon to validate the final value. If the {@code Validator}
      * returns {@code non-null} from its {@code validate} method,
      * a {@code ValueResult} is returned containing the validation
-     * result, with failure type {@code SyncFailureType.VALIDATION_FAILURE}.
+     * result, with failure type {@code SyncFailureType.VALIDATION_FAILED}.
      * Otherwise a {@code ValueResult} is returned containing the
      * final validated value.
      * <p>
