@@ -135,29 +135,6 @@ public final class BeanAdapterFactory {
         return null;
     }
 
-        private List<FeatureDescriptor> getDescriptors(Class<?> type) {
-            BeanInfo info = null;
-            try {
-                info = Introspector.getBeanInfo(type);
-            } catch (Exception ex) {
-            }
-            if (info == null) {
-                return Collections.emptyList();
-            }
-            ArrayList<FeatureDescriptor> list = new ArrayList<FeatureDescriptor>(
-                    info.getPropertyDescriptors().length);
-            for (PropertyDescriptor pd: info.getPropertyDescriptors()) {
-                // PENDING: The following properties come from EL, are they
-                // needed?
-                if (pd.getPropertyType() != null) {
-                    pd.setValue("type", pd.getPropertyType());
-                }
-                pd.setValue("resolvableAtDesignTime", Boolean.TRUE);
-                list.add(pd);
-            }
-            return list;
-        }
-
     private static BeanInfo getBeanInfo(Class<?> type) {
         try {
             return Introspector.getBeanInfo(type);
