@@ -104,6 +104,8 @@ public class ELPropertyAccessTest extends TestCase {
     }
 
     public void test_Public_Writer() {
+        // Currently failing since BeanELResolver currently excludes properties
+        // that aren't writable. This needs to be fixed.
         doCheck(new Public_Writer(), false, true, -1);
     }
 
@@ -120,6 +122,8 @@ public class ELPropertyAccessTest extends TestCase {
     }
 
     public void test_Private_Extends_Public_Writer() {
+        // Currently failing since BeanELResolver currently excludes properties
+        // that aren't writable. This needs to be fixed.
         doCheck(new Private_Extends_Public_Writer(), false, true, -1);
     }
 
