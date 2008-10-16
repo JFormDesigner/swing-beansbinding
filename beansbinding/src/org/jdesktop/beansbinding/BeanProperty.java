@@ -727,8 +727,7 @@ public final class BeanProperty<S, V> extends PropertyHelper<S, V> {
         assert object != null;
 
         try {
-            // PENDING(shannonh) - not sure about the last flag
-            return Introspector.getBeanInfo(object.getClass(), Introspector.IGNORE_ALL_BEANINFO);
+            return Introspector.getBeanInfo(object.getClass());
         } catch (IntrospectionException ie) {
             throw new PropertyResolutionException("Exception while introspecting " + object.getClass().getName(), ie);
         }
