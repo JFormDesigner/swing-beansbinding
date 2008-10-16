@@ -550,7 +550,7 @@ public class BindingTest extends TestCase {
                 target, targetProp);
     }
     
-    private static class TestBean {
+    public static class TestBean {
         String value = PROP_VALUE;
         Object objVal = null;
         Mystery mystVal = null;
